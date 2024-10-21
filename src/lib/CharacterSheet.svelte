@@ -111,7 +111,7 @@
     <Card.Content class="grid grid-cols-5 gap-2">
       {#each stats as stat}
         <div class="flex flex-col items-center gap-2">
-          <Input class="text-center" type="number" inputmode="decimal" min={-10} max={20} onfocus={autoSel} bind:value={character.stats[stat]}/>
+          <Input class="text-center" type="text" inputmode="numeric" min={-10} max={20} onfocus={autoSel} bind:value={character.stats[stat]}/>
           <Label>{stat}</Label>
         </div>
       {/each}
