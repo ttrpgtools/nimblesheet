@@ -47,8 +47,9 @@
   let invCount = $derived(character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0));
 
   let skillPoints = $derived(character.skills.reduce((p, c) => p + c.extra, 0));
+  let maxSkillPoints = $derived(+(character.level ?? '0') + 4)
 
-  function onroll(roll: string, label?: string) {
+  function onroll(roll: string, label?: string, addMod = 0) {
     const context = {
       LVL: +character.level,
       STR: +character.stats.STR,
@@ -56,10 +57,13 @@
       INT: +character.stats.INT,
       WIS: +character.stats.WIS,
       CHA: +character.stats.CHA,
+      WIL: Math.max(+character.stats.INT, +character.stats.WIS, +character.stats.CHA),
+      INIT: Math.max(+character.stats.WIS, +character.initiative),
+      KEY: (currentClass?.key ?? []).reduce((p, c) => Math.max(+character.stats[c], p), Number.NEGATIVE_INFINITY),
     }
     //toast(`Rolling ${roll}${label ? ` (${label})` : ``} = ${result}`);
     //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
+    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier: rollModifier + addMod }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
   }
   function autoSel(ev: FocusEvent) {
     const el = ev.target as HTMLInputElement;
@@ -156,40 +160,52 @@
   </Card.Root>
   <div class="flex gap-4">
     <Card.Root class="w-full">
-      <Card.Content class="grid gap-2">
-        {#each character.skills as skill, ind}
+      <Card.Content class="grid">
+        {#each character.skills as skill}
+        {@const score = +(character.stats[skill.type] ?? '0') + skill.extra}
         <div class="flex gap-2 items-center">
           <div class="w-full">
             {skill.name} <span class="text-muted-foreground">({skill.type})</span>
           </div>
-          <div class="flex gap-2 items-center">
-            {+(character.stats[skill.type] ?? '0') + skill.extra}
-            <CirclePlus class="size-5" onclick={() => {character.skills[ind].extra += 1; onchange();}} />
-            <CircleMinus class="size-5" onclick={() => {character.skills[ind].extra -= 1; onchange();}} />
+          <div class="flex items-center">
+            <span class="px-4">{score}</span>
+            <Button variant="ghost" size="icon" class="rounded-full" onclick={() => {skill.extra += 1; onchange();}}>
+              <CirclePlus class="size-5" />
+            </Button>
+            <Button variant="ghost" size="icon" class="rounded-full" disabled={skill.extra === 0} onclick={() => {skill.extra = Math.max(0, skill.extra - 1); onchange();}}>
+              <CircleMinus class="size-5" />
+            </Button>
+            <Button size="icon" variant="ghost">
+              <Dice class="size-5" onclick={() => onroll(`d20+${score}`, skill.name)} />
+            </Button>
           </div>
         </div>
         {/each}
-        <div class=" border-t pt-3 mt-1 text-sm text-muted-foreground">
-          Skill Points allocated: {skillPoints}
+        <div class="border-t pt-3 mt-1 text-sm {skillPoints > maxSkillPoints ? `text-destructive` : `text-muted-foreground`}">
+          Skill Points allocated: {skillPoints} / {maxSkillPoints}
         </div>
       </Card.Content>
     </Card.Root>
 
-    <Card.Root>
-      <Card.Content class="flex flex-col gap-3">
-        <X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" onclick={() => {character.wounds = 0; onchange();}}/>
-        {#each [1,2,3,4,5] as wnd}
-          <Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" onclick={() => {character.wounds = wnd; onchange();}}/>
-        {/each}
-        <Skull class="size-5 {character.wounds >= 6 ? `text-red-500` : ``}" onclick={() => {character.wounds = 6; onchange();}}/>
-      </Card.Content>
-    </Card.Root>
   </div>
+  <Card.Root>
+    <Card.Content class="flex gap-3">
+      <X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" onclick={() => {character.wounds = 0; onchange();}}/>
+      {#each [1,2,3,4,5] as wnd}
+        <Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" onclick={() => {character.wounds = wnd; onchange();}}/>
+      {/each}
+      <Skull class="size-5 {character.wounds >= 6 ? `text-red-500` : ``}" onclick={() => {character.wounds = 6; onchange();}}/>
+    </Card.Content>
+  </Card.Root>
 
   <Card.Root>
-    <Card.Content class="flex gap-4 items-center">
+    <Card.Content class="flex gap-4 items-center flex-wrap">
       <Button variant="secondary" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(character.hitdie, `Hit Die`)}>Roll HD</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[WIS]`, `Initiative`)}>Roll Initiative</Button>
+      <Button variant="secondary" onclick={() => onroll(`d20+[INIT]`, `Initiative`)}>Roll Initiative</Button>
+      <Button variant="secondary" onclick={() => onroll(`d20+[STR]`, `STR Save`, currentClass?.saves.STR ?? 0)}>STR Save</Button>
+      <Button variant="secondary" onclick={() => onroll(`d20+[DEX]`, `DEX Save`, currentClass?.saves.DEX ?? 0)}>DEX Save</Button>
+      <Button variant="secondary" onclick={() => onroll(`d20+[WIL]`, `WIL Save`, currentClass?.saves.WIL ?? 0)}>WIL Save</Button>
+      
     </Card.Content>
   </Card.Root>
 

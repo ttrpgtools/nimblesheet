@@ -20,50 +20,50 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Berserker",
     key: ["STR", "DEX"],
-    saves: [
-      ["STR", "+"],
-      ["WIL", "-"],
-    ],
+    saves: {
+      STR: 1,
+      WIL: -1,
+    },
     die: "d12",
     startHp: 20,
   },
   {
     name: "The Cheat",
     key: ["DEX", "CHA"],
-    saves: [
-      ["DEX", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      DEX: 1,
+      STR: -1,
+    },
     die: "d6",
     startHp: 10,
   },
   {
     name: "Commander",
     key: ["STR", "INT"],
-    saves: [
-      ["STR", "+"],
-      ["DEX", "-"],
-    ],
+    saves: {
+      STR: 1,
+      DEX: -1,
+    },
     die: "d10",
     startHp: 17,
   },
   {
     name: "Hunter",
     key: ["DEX", "WIS"],
-    saves: [
-      ["DEX", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      DEX: 1,
+      STR: -1,
+    },
     die: "d8",
     startHp: 13,
   },
   {
     name: "Mage",
     key: ["INT", "WIS"],
-    saves: [
-      ["WIL", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      WIL: 1,
+      STR: -1,
+    },
     die: "d6",
     startHp: 10,
     magicSchools: ["Fire", "Ice", "Lightning"],
@@ -71,10 +71,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Oathsworn",
     key: ["STR", "CHA"],
-    saves: [
-      ["STR", "+"],
-      ["DEX", "-"],
-    ],
+    saves: {
+      STR: 1,
+      DEX: -1,
+    },
     die: "d10",
     startHp: 17,
     magicSchools: ["Radiant"],
@@ -82,10 +82,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Shadowmancer",
     key: ["CHA", "INT"],
-    saves: [
-      ["WIL", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      WIL: 1,
+      STR: -1,
+    },
     die: "d8",
     startHp: 13,
     magicSchools: ["Necrotic"],
@@ -93,10 +93,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Shepherd",
     key: ["WIS", "STR"],
-    saves: [
-      ["WIL", "+"],
-      ["DEX", "-"],
-    ],
+    saves: {
+      WIL: 1,
+      DEX: -1,
+    },
     die: "d10",
     startHp: 17,
     magicSchools: ["Radiant", "Necrotic"],
@@ -104,10 +104,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Songweaver",
     key: ["CHA", "INT"],
-    saves: [
-      ["WIL", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      WIL: 1,
+      STR: -1,
+    },
     die: "d8",
     startHp: 13,
     magicSchools: ["Wind"],
@@ -115,10 +115,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Stormshifter",
     key: ["WIS", "DEX"],
-    saves: [
-      ["WIL", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      WIL: 1,
+      STR: -1,
+    },
     die: "d8",
     startHp: 13,
     magicSchools: ["Lightning", "Wind"],
@@ -126,10 +126,10 @@ export const allClasses: NimbleClass[] = [
   {
     name: "Zephyr",
     key: ["DEX", "WIS"],
-    saves: [
-      ["DEX", "+"],
-      ["STR", "-"],
-    ],
+    saves: {
+      DEX: 1,
+      STR: -1,
+    },
     die: "d8",
     startHp: 13,
   },

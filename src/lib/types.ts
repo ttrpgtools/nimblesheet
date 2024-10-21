@@ -1,6 +1,6 @@
 export type Stat = "STR" | "DEX" | "WIS" | "INT" | "CHA";
 export type Save = "STR" | "DEX" | "WIL";
-export type Alteration = "+" | "-";
+export type Alteration = 1 | -1;
 export type Die = "d4" | "d6" | "d8" | "d10" | "d12" | "d20";
 export type Skill = { name: string; type: Stat; extra: number };
 export type Resource = { name: string; max: number; current: number };
@@ -26,7 +26,7 @@ export type Spell = {
 export interface NimbleClass {
   name: string;
   key: Stat[];
-  saves: [Save, Alteration][];
+  saves: Partial<Record<Save, Alteration>>;
   die: Die;
   startHp: number;
   magicSchools?: MagicSchool[];
