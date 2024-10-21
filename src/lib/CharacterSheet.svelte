@@ -5,6 +5,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
+  import * as Popover from "$lib/components/ui/popover";
   import * as Select from "$lib/components/ui/select";
   import type { NimbleCharacter } from "./character.svelte";
   import Droplet from "lucide-svelte/icons/droplet";
@@ -14,6 +15,7 @@
   import CirclePlus from "lucide-svelte/icons/circle-plus";
   import CircleMinus from "lucide-svelte/icons/circle-minus";
   import Dice from "lucide-svelte/icons/dices";
+  import Question from "lucide-svelte/icons/circle-help";
 
   import { allClasses, stats } from "./nimble";
   import { type NimbleClass } from "./types";
@@ -112,11 +114,24 @@
     </Card.Content>
   </Card.Root>
   <Card.Root>
-    <Card.Content class="grid grid-cols-5 gap-2">
+    <Card.Content class="grid grid-cols-5 gap-2 relative">
+      <Popover.Root>
+        <Popover.Trigger class=" absolute top-1.5 right-1.5">
+          <Question class="size-4" />
+        </Popover.Trigger>
+        <Popover.Content>
+          <p>You can start out with one of the following allocations. Typically you would put the higher numbers in your <strong>KEY</strong> stats (starred).</p>
+          <ul class="pl-4 list-disc">
+            <li>Standard: +2, +2, +1, +0, -1</li>
+            <li>Balanced: +2, +1, +1, +1, +0</li>
+            <li>Min-Max: +3, +1, +1, +0, -2</li>
+          </ul>
+        </Popover.Content>
+      </Popover.Root>
       {#each stats as stat}
         <div class="flex flex-col items-center gap-2">
           <Input class="text-center" type="number" inputmode="url" min={-10} max={20} onfocus={autoSel} bind:value={character.stats[stat]}/>
-          <Label>{stat}</Label>
+          <Label class="{currentClass?.key.includes(stat) ? `font-bold` : ``} ">{stat}{#if currentClass?.key.includes(stat)}*{/if}</Label>
         </div>
       {/each}
     </Card.Content>

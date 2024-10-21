@@ -231,7 +231,7 @@
             {/each}
           </ul>
         </nav>
-        <Sheet.Footer>
+        <Sheet.Footer class="flex gap-2">
           <Button variant="secondary" onclick={exportAll}><Export class="size-4 mr-2"/>Export All</Button>
           <Button variant="secondary" onclick={importFromFile}><Import class="size-4 mr-2"/>Import from file</Button>
           <input type="file" class="sr-only" bind:files bind:this={uploader} onchange={gotFiles} accept=".json">
