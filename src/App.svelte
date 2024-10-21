@@ -51,7 +51,7 @@
   let rollModifier = $state(0);
   function simpleRoll(sides: number) {
     //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: `d${sides}`, rollModifier }});
+    toast(DiceRoll, {componentProps: { formula: `d${sides}`, rollModifier }, class: '![--initial-height:7rem] !bg-gray-200 dark:!bg-gray-800'});
   }
 
   async function newCharacter() {

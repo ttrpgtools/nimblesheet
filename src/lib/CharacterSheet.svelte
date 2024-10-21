@@ -59,9 +59,12 @@
     }
     //toast(`Rolling ${roll}${label ? ` (${label})` : ``} = ${result}`);
     //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier }, class: '![--initial-height:7rem] bg-background'})
+    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
   }
-
+  function autoSel(ev: FocusEvent) {
+    const el = ev.target as HTMLInputElement;
+    el.select();
+  }
 </script>
 <div class="flex flex-col gap-4 max-w-lg mx-auto" oninput={onchange}>
   <div class="flex gap-2">
@@ -91,7 +94,7 @@
         </div>
         <div class="flex gap-2">
           <Label for="level" class="sr-only">Level</Label>
-          <Input id="level" placeholder="LVL" type="number" inputmode="numeric" bind:value={character.level} />
+          <Input id="level" placeholder="LVL" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.level} />
         </div>
       </div>
       <div class="flex gap-2">
@@ -108,7 +111,7 @@
     <Card.Content class="flex gap-2">
       {#each stats as stat}
         <div class="flex flex-col items-center gap-2">
-          <Input class="text-center" type="number" inputmode="numeric" bind:value={character.stats[stat]}/>
+          <Input class="text-center" type="number" inputmode="decimal" onfocus={autoSel} bind:value={character.stats[stat]}/>
           <Label>{stat}</Label>
         </div>
       {/each}
@@ -117,36 +120,36 @@
   <Card.Root>
     <Card.Content class="grid gap-2 grid-cols-4">
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.armor}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.armor}/>
         <Label>Armor</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.hp}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hp}/>
         <Label>HP</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.hd}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hd}/>
         <Label>HD</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.initiative}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.initiative}/>
         <Label>Init</Label>
       </div>
 
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.tempHp}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.tempHp}/>
         <Label>Temp</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.maxHp}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHp}/>
         <Label>Max HP</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.maxHd}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHd}/>
         <Label>Max HD</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" bind:value={character.speed}/>
+        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.speed}/>
         <Label>Speed</Label>
       </div>
     </Card.Content>

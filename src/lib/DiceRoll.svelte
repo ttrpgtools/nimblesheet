@@ -26,7 +26,7 @@
   {:then roller}
     <div class="flex gap-4 items-center">
       <div class="text-2xl font-bold">{roller.value}</div>
-      <div class="flex gap-2 border rounded-md p-2">
+      <div class="flex gap-2 border border-gray-400 rounded-md p-2">
         {#each roller.dice as die}
         <div class="flex flex-col gap-1 items-center">
           {#if die.type === 'vicious'}
