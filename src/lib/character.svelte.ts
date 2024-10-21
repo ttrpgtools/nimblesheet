@@ -107,6 +107,10 @@ export class NimbleCharacter {
     return deserializeCharacter(save);
   }
 
+  touch() {
+    this.touched = new Date().toISOString();
+  }
+
   save() {
     debouncedPersist(this);
     console.log(this.toJSON());

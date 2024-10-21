@@ -7,9 +7,12 @@
   import Advantage from "lucide-svelte/icons/smile";
   import Disadvantage from "lucide-svelte/icons/frown";
   import X from "lucide-svelte/icons/x";
+  import Export from "lucide-svelte/icons/download";
+  import Import from "lucide-svelte/icons/upload";
 
   import { Badge } from "./lib/components/ui/badge";
   import { Button } from "./lib/components/ui/button";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import * as Sheet from "$lib/components/ui/sheet";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import CharacterSheet from "$lib/CharacterSheet.svelte";
@@ -18,8 +21,9 @@
 
   import { Die } from "$lib/dice";
   import { toast } from "svelte-sonner";
-  import { loadAllFromDb, loadSingle, persistToIndexedDB } from "$lib/persist";
+  import { loadAllFromDb, loadSingle, persistList, persistToIndexedDB } from "$lib/persist";
   import DiceRoll from "$lib/DiceRoll.svelte";
+  import { download } from "$lib/download";
 
 	let mycharacter: NimbleCharacter | undefined = $state(); // = new NimbleCharacter();
 	let characters: CharacterSave[] = $state([]); //[mycharacter];
@@ -77,6 +81,65 @@
   const MAX_ROLL_MOD = 9;
   function mod(delta: 1 | -1) {
     rollModifier = Math.min(rollModifier + delta, MAX_ROLL_MOD);
+  }
+
+  async function exportAll() {
+    const list = await loadAllFromDb();
+    const payload = JSON.stringify(list, null, 2);
+    download(payload, 'all-nimble-characters.json');
+    sheetOpen = false;
+    toast.info('Exported!');
+  }
+
+  let toOverwrite: NimbleCharacter[] = $state([]);
+  let incomingList: NimbleCharacter[] = $state([]);
+  let showAlert = $state(false);
+  let files: FileList | undefined = $state();
+  let uploader: HTMLInputElement;
+  async function handOff(ev: ProgressEvent<FileReader>) {
+    const content = ev.target?.result;
+    try {
+      if (typeof content !== 'string') return;
+      const list: unknown = JSON.parse(content);
+      if (!Array.isArray(list) || (list.length && typeof list[0] !== 'object')) {
+        toast.warning('Invalid file format.');
+        return;
+      }
+      incomingList = list.map(sheet => NimbleCharacter.load(sheet));
+      const currentIds = new Set(characters.map(c => c.id));
+      toOverwrite = incomingList.filter(incoming => currentIds.has(incoming.id));
+      if (toOverwrite.length) {
+        showAlert = true;
+      } else {
+        await doSaveUpload();
+      }
+      uploader.value = '';
+    } catch {
+      toast.warning('Could not load characters from file.');
+    }
+    
+  }
+  function gotFiles() {
+    if (!files) return;
+    for (let fi = 0; fi < files.length; fi += 1) {
+      const file = files[fi];
+      if (file.type !== 'application/json') {
+        continue;
+      }
+      const reader = new FileReader();
+      reader.addEventListener('load', handOff, {once: true});
+      reader.readAsText(file);
+    }
+  }
+  async function importFromFile() {
+    if (uploader) uploader.click();
+  }
+  async function doSaveUpload() {
+    await persistList(incomingList);
+    toast.info(`Imported ${incomingList.length} character${incomingList.length === 1 ? `` : `s`}`);
+    incomingList = [];
+    toOverwrite = [];
+    await loadList();
   }
 
   $effect(() => {
@@ -152,22 +215,49 @@
           <span class="sr-only">Toggle navigation menu</span>
         </Button>
       </Sheet.Trigger>
-      <Sheet.Content side="right">
-        <nav class="grid gap-6 text-lg font-medium">
-          <h2 class="flex items-center gap-2 text-lg font-semibold">
+      <Sheet.Content side="right" class="flex flex-col gap-8">
+        <Sheet.Header>
+          <Sheet.Title class="flex items-center gap-2 text-lg font-semibold">
             <SheetLogo class="h-6 w-6" />
             <span class="">Available Characters</span>
-					</h2>
+          </Sheet.Title>
+        </Sheet.Header>
+        <nav class="grid gap-6 text-lg font-medium flex-grow">
           <ul>
             {#each characters as char}
 						<li>
-              <Button variant={selectedId === char.id ? `default` : `ghost`} class="w-full" onclick={() => switchTo(char)}>{char.name || 'Unnamed Character'}</Button>
+              <Button variant={selectedId === char.id ? `outline` : `ghost`} class="w-full justify-start border-gray-500" onclick={() => switchTo(char)}>{char.name || 'Unnamed Character'}</Button>
             </li>
             {/each}
           </ul>
         </nav>
+        <Sheet.Footer>
+          <Button variant="secondary" onclick={exportAll}><Export class="size-4 mr-2"/>Export All</Button>
+          <Button variant="secondary" onclick={importFromFile}><Import class="size-4 mr-2"/>Import from file</Button>
+          <input type="file" class="sr-only" bind:files bind:this={uploader} onchange={gotFiles} accept=".json">
+        </Sheet.Footer>
       </Sheet.Content>
     </Sheet.Root>
+    <AlertDialog.Root bind:open={showAlert}>
+      <AlertDialog.Content>
+        <AlertDialog.Header>
+          <AlertDialog.Title>Overwriting Characters</AlertDialog.Title>
+          <AlertDialog.Description>
+            The following {toOverwrite.length} character{toOverwrite.length === 1 ? `` : `s`} will be
+            overwritten by the data from the uploaded file.
+          </AlertDialog.Description>
+        </AlertDialog.Header>
+        <ul class="flex flex-col gap-1 pl-8">
+          {#each toOverwrite as osheet}
+          <li class="list-disc">{osheet.name || 'Unnamed Character'}</li>
+          {/each}
+        </ul>
+        <AlertDialog.Footer>
+          <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+          <AlertDialog.Action onclick={doSaveUpload}>Overwrite</AlertDialog.Action>
+        </AlertDialog.Footer>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
   </header>
   <main class="flex flex-col gap-4 p-4 md:gap-8 md:p-10">
     {#if mycharacter}
