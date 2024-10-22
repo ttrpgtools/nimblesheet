@@ -21,9 +21,11 @@
 
   import { Die } from "$lib/dice";
   import { toast } from "svelte-sonner";
-  import { loadAllFromDb, loadSingle, persistList, persistToIndexedDB } from "$lib/persist";
+  import { deleteCharacters, loadAllFromDb, loadSingle, persistList, persistToIndexedDB } from "$lib/persist";
   import DiceRoll from "$lib/DiceRoll.svelte";
   import { download } from "$lib/download";
+  import Trash from "lucide-svelte/icons/trash-2";
+  import ConfirmButton from "$lib/ConfirmButton.svelte";
 
 	let mycharacter: NimbleCharacter | undefined = $state(); // = new NimbleCharacter();
 	let characters: CharacterSave[] = $state([]); //[mycharacter];
@@ -62,7 +64,6 @@
     await saveCharacter();
     mycharacter = new NimbleCharacter();
     selectedId = mycharacter.id;
-    sheetOpen = false;
   }
 
   let sheetOpen = $state(false);
@@ -74,7 +75,6 @@
       selectedId = data.id;
       mycharacter = NimbleCharacter.load(data);
     }
-    sheetOpen = false;
     isReady = true;
     saveCharacter();
   }
@@ -84,12 +84,27 @@
     rollModifier = Math.min(rollModifier + delta, MAX_ROLL_MOD);
   }
 
-  async function exportAll() {
+  async function exportCharacters() {
     const list = await loadAllFromDb();
-    const payload = JSON.stringify(list, null, 2);
-    download(payload, 'all-nimble-characters.json');
-    sheetOpen = false;
-    toast.info('Exported!');
+    const selected = selectedCharacterIds.length ? list.filter(cs => selectedCharacterIds.includes(cs.id)) : list;
+    const payload = JSON.stringify(selected, null, 2);
+    download(payload, `${selectedCharacterIds.length ? `selected` : `all`}-nimble-characters.json`);
+    toast.info(`Exported ${selectedCharacterIds.length ? selectedCharacterIds.length : `all`} character${selectedCharacterIds.length === 1 ? `` : `s`}!`);
+  }
+
+  async function deleteSelected() {
+    const reselect = selectedCharacterIds.includes(selectedId);
+    await deleteCharacters(selectedCharacterIds);
+    selectedCharacterIds = [];
+    await loadList();
+    if (reselect) {
+      if (characters.length) {
+        await switchTo(characters[0]);
+      } else {
+        mycharacter = new NimbleCharacter();
+        selectedId = mycharacter.id;
+      }
+    }
   }
 
   let toOverwrite: NimbleCharacter[] = $state([]);
@@ -141,6 +156,15 @@
     incomingList = [];
     toOverwrite = [];
     await loadList();
+  }
+
+  let selectedCharacterIds: string[] = $state([]);
+  function toggleAll() {
+    if (selectedCharacterIds.length === characters.length) {
+      selectedCharacterIds = [];
+    } else {
+      selectedCharacterIds = characters.map(c => c.id);
+    }
   }
 
   $effect(() => {
@@ -208,7 +232,7 @@
           <span class="sr-only">Toggle navigation menu</span>
         </Button>
       </Sheet.Trigger>
-      <Sheet.Content side="right" class="flex flex-col gap-8">
+      <Sheet.Content side="right" class="flex flex-col gap-4">
         <Sheet.Header class="flex flex-row items-center justify-between space-y-0">
           <Sheet.Title class="flex items-center gap-2 text-lg font-semibold">
             <SheetLogo class="h-6 w-6" />
@@ -218,23 +242,46 @@
             variant="secondary"
             size="icon"
             class="rounded-full"
-            onclick={newCharacter}
+            onclick={() => {newCharacter(); sheetOpen = false;}}
           >
             <UserPlus class="h-5 w-5 pointer-events-none" />
             <span class="sr-only">Add new character</span>
           </Button>
         </Sheet.Header>
-        <nav class="grid gap-6 text-lg font-medium flex-grow">
+        {#if characters.length}
+        <nav class="flex-grow -mx-2">
+          <label class="text-muted-foreground p-3 -mt-3 flex items-center gap-4">
+            <input type="checkbox" class="size-4" checked={selectedCharacterIds.length === characters.length} indeterminate={selectedCharacterIds.length > 0 && selectedCharacterIds.length < characters.length} onchange={toggleAll} />
+            Select All
+          </label>
           <ul>
             {#each characters as char}
 						<li>
-              <Button variant={selectedId === char.id ? `outline` : `ghost`} class="w-full justify-start border-gray-500" onclick={() => switchTo(char)}>{char.name || 'Unnamed Character'}</Button>
+              <Button variant={selectedId === char.id ? `outline` : `ghost`} class="w-full p-0 gap-1 justify-start border-gray-500" onclick={() => { switchTo(char); sheetOpen = false}}>
+                <label class="size-10 flex items-center justify-center">
+                  <span class="sr-only">Select {char.name}</span>
+                  <input type="checkbox" class="size-4" value={char.id} bind:group={selectedCharacterIds} />
+                </label>
+                {char.name || 'Unnamed Character'}
+              </Button>
             </li>
             {/each}
           </ul>
         </nav>
-        <Sheet.Footer class="flex gap-2">
-          <Button variant="secondary" onclick={exportAll}><Export class="size-4 mr-2"/>Export All</Button>
+        {:else}
+        <div class="flex-grow">
+          <div class="rounded-lg p-8 text-center text-muted-foreground italic border-dashed border-4 ">
+            No characters created. Close this and start editing, or import from a saved file below.
+          </div>
+        </div>
+        {/if}
+        <Sheet.Footer class="flex gap-2 flex-wrap sm:space-x-0 sm:flex-col flex-col">
+          {#if selectedCharacterIds.length > 0}
+          <ConfirmButton onconfirm={deleteSelected} confirmText={`Click again to confirm deleting ${selectedCharacterIds.length} character${selectedCharacterIds.length === 1 ? `` : `s`}.`}><Trash class="size-4 mr-2"/>Delete Selected</ConfirmButton>
+          {/if}
+          {#if characters.length > 0}
+          <Button variant="secondary" onclick={exportCharacters}><Export class="size-4 mr-2"/>Export {selectedCharacterIds.length ? `Selected` : `All`}</Button>
+          {/if}
           <Button variant="secondary" onclick={importFromFile}><Import class="size-4 mr-2"/>Import from file</Button>
           <input type="file" class="sr-only" bind:files bind:this={uploader} onchange={gotFiles} accept=".json">
         </Sheet.Footer>

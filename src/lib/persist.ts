@@ -1,4 +1,4 @@
-import { set, entries, get, setMany } from "idb-keyval";
+import { set, entries, get, setMany, delMany } from "idb-keyval";
 import type { CharacterSave, NimbleCharacter } from "./character.svelte";
 
 const DEBOUNCE_DELAY = 300; // Adjust the delay as needed
@@ -49,4 +49,9 @@ export async function persistList(list: NimbleCharacter[]) {
     return [`char:${sheet.id}`, sheet.toJSON()];
   });
   await setMany(entries);
+}
+
+export async function deleteCharacters(ids: string[]) {
+  const keys = ids.map((id) => `char:${id}`);
+  await delMany(keys);
 }
