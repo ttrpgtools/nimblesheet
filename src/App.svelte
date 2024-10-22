@@ -62,6 +62,7 @@
     await saveCharacter();
     mycharacter = new NimbleCharacter();
     selectedId = mycharacter.id;
+    sheetOpen = false;
   }
 
   let sheetOpen = $state(false);
@@ -193,15 +194,7 @@
           {/each}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-			<Button
-				variant="secondary"
-				size="icon"
-				class="rounded-full"
-        onclick={newCharacter}
-			>
-				<UserPlus class="h-5 w-5" />
-				<span class="sr-only">Add new character</span>
-			</Button>
+			
     </div>
     <Sheet.Root bind:open={sheetOpen}>
       <Sheet.Trigger asChild let:builder>
@@ -216,11 +209,20 @@
         </Button>
       </Sheet.Trigger>
       <Sheet.Content side="right" class="flex flex-col gap-8">
-        <Sheet.Header>
+        <Sheet.Header class="flex flex-row items-center justify-between space-y-0">
           <Sheet.Title class="flex items-center gap-2 text-lg font-semibold">
             <SheetLogo class="h-6 w-6" />
-            <span class="">Available Characters</span>
+            <span class="">Characters</span>
           </Sheet.Title>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="rounded-full"
+            onclick={newCharacter}
+          >
+            <UserPlus class="h-5 w-5 pointer-events-none" />
+            <span class="sr-only">Add new character</span>
+          </Button>
         </Sheet.Header>
         <nav class="grid gap-6 text-lg font-medium flex-grow">
           <ul>

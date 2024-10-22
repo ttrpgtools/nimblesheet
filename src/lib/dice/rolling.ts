@@ -111,9 +111,9 @@ class NimbleRoller {
     });
     const [count, sides] = term.split("d");
     if (!sides) return 0;
-    console.log(
-      `count = ${count} sides = ${sides} explode = ${explode} vicious = ${vicious} removals = ${removals}`
-    );
+    //console.log(
+    //  `count = ${count} sides = ${sides} explode = ${explode} vicious = ${vicious} removals = ${removals}`
+    //);
     const nsides = parseInt(sides, 10);
     const results = nrolls(nsides, parseInt(count || "1", 10));
     results.sort(sortValueHighPosition);
@@ -141,13 +141,13 @@ class NimbleRoller {
 
   async roll() {
     if (!this.formula) return;
-    console.log(`formula = ${this.formula}`);
+    //console.log(`formula = ${this.formula}`);
     const terms = smoosh(this.formula).split("+");
     const value = terms.reduce(
       (p, c) => p + (isNumeric(c) ? +c : this.parseTerm(c)),
       0
     );
-    console.log(value);
+    //console.log(value);
     this.value = value;
     return value;
   }
@@ -171,7 +171,7 @@ export async function evaluateDiceRoll(
   context: Record<string, number> = {},
   modifier: number = 0
 ) {
-  console.log(`Evaluating = ${expression}`, context, modifier);
+  //console.log(`Evaluating = ${expression}`, context, modifier);
   expression = expression.replace(/\[([^\]]+)\]/g, (_, key) => {
     if (key in context) {
       return context[key].toString();
@@ -182,6 +182,5 @@ export async function evaluateDiceRoll(
   expression = integrateModifier(expression, modifier);
   const roller = new NimbleRoller(expression);
   await roller.roll();
-  console.log(`ROLO`, roller);
   return roller;
 }
