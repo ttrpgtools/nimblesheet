@@ -9,11 +9,13 @@ import {
   type Stat,
 } from "./types";
 
+const SHEET_VERSION = 1.8;
 function serializeCharacter(character: NimbleCharacter) {
   return {
     id: $state.snapshot(character.id),
     created: $state.snapshot(character.created),
     touched: $state.snapshot(character.touched),
+    version: $state.snapshot(character.version),
     name: $state.snapshot(character.name),
     charClass: $state.snapshot(character.charClass),
     ancestry: $state.snapshot(character.ancestry),
@@ -43,13 +45,24 @@ function deserializeCharacter(data: CharacterSave) {
   newChar.id = data.id;
   newChar.created = data.created;
   newChar.touched = data.touched;
+  newChar.version = SHEET_VERSION;
   newChar.name = data.name;
   newChar.charClass = data.charClass;
   newChar.ancestry = data.ancestry;
   newChar.size = data.size;
   newChar.level = data.level;
   newChar.hitdie = data.hitdie;
-  newChar.stats = data.stats;
+  if (!data.version || data.version < 1.8) {
+    newChar.stats = {
+      STR: data.stats.STR,
+      DEX: data.stats.DEX,
+      INT: data.stats.INT,
+      //@ts-ignore
+      WIL: (Math.max(+data.stats["WIS"], +data.stats["CHA"]) || 0).toString(),
+    };
+  } else {
+    newChar.stats = data.stats;
+  }
   newChar.skills = data.skills;
   newChar.armor = data.armor;
   newChar.hp = data.hp;
@@ -71,6 +84,7 @@ export class NimbleCharacter {
   id = id();
   created = new Date().toISOString();
   touched = new Date().toISOString();
+  version = SHEET_VERSION;
   name: string = $state("");
   charClass: string = $state("");
   ancestry: string = $state("");
@@ -81,8 +95,7 @@ export class NimbleCharacter {
     STR: "0",
     DEX: "0",
     INT: "0",
-    WIS: "0",
-    CHA: "0",
+    WIL: "0",
   });
   skills: Skill[] = $state(structuredClone(allSkills));
   armor: string = $state("0");

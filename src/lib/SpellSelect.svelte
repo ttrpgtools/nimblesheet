@@ -9,7 +9,7 @@
   import * as Popover from "$lib/components/ui/popover";
   import { fireSpells, iceSpells, necroticSpells, radiantSpells, lightningSpells, windSpells, utilitySpells } from './magic';
   import SpellSchool from './SpellSchool.svelte';
-  import type { MagicSchool, NimbleClass, Spell } from "./types";
+  import type { MagicSchool, Spell } from "./types";
   import Checkbox from "./components/ui/checkbox/checkbox.svelte";
 
   type Props = {

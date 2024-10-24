@@ -49,7 +49,7 @@
   let invCount = $derived(character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0));
 
   let skillPoints = $derived(character.skills.reduce((p, c) => p + c.extra, 0));
-  let maxSkillPoints = $derived(+(character.level ?? '0') + 4)
+  let maxSkillPoints = $derived(+(character.level ?? '0') + 2)
 
   function onroll(roll: string, label?: string, addMod = 0) {
     const context = {
@@ -57,10 +57,9 @@
       STR: +character.stats.STR,
       DEX: +character.stats.DEX,
       INT: +character.stats.INT,
-      WIS: +character.stats.WIS,
-      CHA: +character.stats.CHA,
-      WIL: Math.max(+character.stats.INT, +character.stats.WIS, +character.stats.CHA),
-      INIT: Math.max(+character.stats.WIS, +character.initiative),
+      WIL: +character.stats.WIL,
+      WIT: Math.max(+character.stats.INT, +character.stats.WIL),
+      INIT: Math.max(+character.stats.DEX, +character.initiative),
       KEY: (currentClass?.key ?? []).reduce((p, c) => Math.max(+character.stats[c], p), Number.NEGATIVE_INFINITY),
     }
     //toast(`Rolling ${roll}${label ? ` (${label})` : ``} = ${result}`);
@@ -114,7 +113,7 @@
     </Card.Content>
   </Card.Root>
   <Card.Root>
-    <Card.Content class="grid grid-cols-5 gap-2 relative">
+    <Card.Content class="grid grid-cols-4 gap-2 relative">
       <Popover.Root>
         <Popover.Trigger class=" absolute top-1.5 right-1.5">
           <Question class="size-4" />
@@ -122,9 +121,9 @@
         <Popover.Content>
           <p>You can start out with one of the following allocations. Typically you would put the higher numbers in your <strong>KEY</strong> stats (starred).</p>
           <ul class="pl-4 list-disc">
-            <li>Standard: +2, +2, +1, +0, -1</li>
-            <li>Balanced: +2, +1, +1, +1, +0</li>
-            <li>Min-Max: +3, +1, +1, +0, -2</li>
+            <li>Standard: +2, +2, +0, -1</li>
+            <li>Balanced: +2, +1, +1, +0</li>
+            <li>Min-Max: +3, +1, +0, -2</li>
           </ul>
         </Popover.Content>
       </Popover.Root>
@@ -216,10 +215,11 @@
   <Card.Root>
     <Card.Content class="flex gap-4 items-center flex-wrap">
       <Button variant="secondary" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(character.hitdie, `Hit Die`)}>Roll HD</Button>
+      <Button variant="secondary" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Point Increase`)}>Roll HP</Button>
       <Button variant="secondary" onclick={() => onroll(`d20+[INIT]`, `Initiative`)}>Roll Initiative</Button>
       <Button variant="secondary" onclick={() => onroll(`d20+[STR]`, `STR Save`, currentClass?.saves.STR ?? 0)}>STR Save</Button>
       <Button variant="secondary" onclick={() => onroll(`d20+[DEX]`, `DEX Save`, currentClass?.saves.DEX ?? 0)}>DEX Save</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[WIL]`, `WIL Save`, currentClass?.saves.WIL ?? 0)}>WIL Save</Button>
+      <Button variant="secondary" onclick={() => onroll(`d20+[WIT]`, `WIT Save`, currentClass?.saves.WIT ?? 0)}>WIT Save</Button>
       
     </Card.Content>
   </Card.Root>
@@ -245,7 +245,7 @@
     title="Inventory"
     buttonLabel="Add Inventory Item"
     emptyLabel="No items."
-    initialRow={{name: 'Dagger', roll: 'd4'}}
+    initialRow={{name: 'Dagger', roll: 'd4!'}}
     {onchange}>
     {#snippet headerExtra()}
     <div class:text-destructive={invCount > (+character.stats.STR + 10)}>({invCount} / {+character.stats.STR + 10})</div>
