@@ -17,19 +17,22 @@
   import Dice from "lucide-svelte/icons/dices";
   import Question from "lucide-svelte/icons/circle-help";
 
-  import { allClasses, stats } from "./nimble";
-  import { type NimbleClass } from "./types";
+  import { allClasses, stats, saves } from "./nimble";
+  import { type Alteration, type NimbleClass, type Save } from "./types";
   import { toast } from "svelte-sonner";
   import SpellSelect from "./SpellSelect.svelte";
   import Textarea from "./components/ui/textarea/textarea.svelte";
   import DiceRoll from './DiceRoll.svelte';
+  import Owlbear from './Owlbear.svelte';
+  import Caret from './Caret.svelte';
 
   type Props = {
     character: NimbleCharacter;
     onchange: () => void;
     rollModifier: number;
+    owlbearRoom?: string;
   };
-  let { character = $bindable(), onchange, rollModifier } : Props = $props();
+  let { character = $bindable(), onchange, rollModifier, owlbearRoom } : Props = $props();
   let currentClass: NimbleClass | undefined = $derived(allClasses.find(c => c.name === character.charClass));
   let currentSelected = $derived({value: currentClass, label: currentClass?.name});
 
@@ -64,17 +67,40 @@
     }
     //toast(`Rolling ${roll}${label ? ` (${label})` : ``} = ${result}`);
     //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier: rollModifier + addMod }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
+    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier: rollModifier + addMod, characterName: character.name }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
   }
   function autoSel(ev: FocusEvent) {
     const el = ev.target as HTMLInputElement;
     el.select();
   }
+
+  function toggleOwlShare() {
+    if (isSharedHere) {
+      character.shared = '';
+      // Unshare... somehow
+    } else {
+      character.shared = `owlbear::${owlbearRoom}`;
+    }
+    onchange();
+  }
+
+  let hasSaveOverrides = $derived(Array.from(Object.values(character.saveOverride)).some(v => v != null));
+  function toggleSave(save: Save, type: Alteration) {
+    const current = character.saveOverride[save] ?? currentClass?.saves[save] ?? 0;
+    const next = type === current ? 0 : type;
+    character.saveOverride[save] = next === (currentClass?.saves[save] ?? 0) ? undefined : next;
+    onchange();
+  }
+
+  let isSharedHere = $derived(character.shared === `owlbear::${owlbearRoom}`);
 </script>
 <div class="flex flex-col gap-4 max-w-lg mx-auto" oninput={onchange}>
-  <div class="flex gap-2">
+  <div class="flex gap-2 items-center">
     <Label for="charname" class="sr-only">Name</Label>
     <Input id="charname" class="text-2xl h-auto font-bold" type="text" placeholder="Character Name" required bind:value={character.name} />
+    {#if owlbearRoom}
+    <button type="button" onclick={toggleOwlShare}><Owlbear size="size-10 {isSharedHere ? `` : `opacity-30`}"/></button>
+    {/if}
   </div>
   <Card.Root class="w-full">
     <Card.Content class="grid gap-4">
@@ -88,7 +114,7 @@
           <Label for="charclass" class="sr-only">Class</Label>
           <Select.Root onSelectedChange={setClass} selected={currentSelected}>
             <Select.Trigger class="w-full">
-              <Select.Value placeholder="Class" />
+              <Select.Value placeholder="Class" class="text-base" />
             </Select.Trigger>
             <Select.Content>
               {#each allClasses as nc}
@@ -113,9 +139,9 @@
     </Card.Content>
   </Card.Root>
   <Card.Root>
-    <Card.Content class="grid grid-cols-4 gap-2 relative">
+    <Card.Content class="grid grid-cols-4 gap-x-2 relative">
       <Popover.Root>
-        <Popover.Trigger class=" absolute top-1.5 right-1.5">
+        <Popover.Trigger class="absolute top-1.5 right-1.5">
           <Question class="size-4" />
         </Popover.Trigger>
         <Popover.Content>
@@ -127,12 +153,25 @@
           </ul>
         </Popover.Content>
       </Popover.Root>
+      {#each saves as save}
+      <button type="button" onclick={() => toggleSave(save, 1)} class="flex justify-center {save === 'WIT' ? `col-span-2` : ``}">
+        <Caret size="size-6" dir='up' save={character.saveOverride[save] ?? currentClass?.saves[save] ?? 0} />
+      </button>
+      {/each}
       {#each stats as stat}
         <div class="flex flex-col items-center gap-2">
           <Input class="text-center" type="number" inputmode="url" min={-10} max={20} onfocus={autoSel} bind:value={character.stats[stat]}/>
           <Label class="{currentClass?.key.includes(stat) ? `font-bold` : ``} ">{stat}{#if currentClass?.key.includes(stat)}*{/if}</Label>
         </div>
       {/each}
+      {#each saves as save}
+      <button type="button" onclick={() => toggleSave(save, -1)} class="flex justify-center {save === 'WIT' ? `col-span-2` : ``}">
+        <Caret size="size-6" dir='down' save={character.saveOverride[save] ?? currentClass?.saves[save] ?? 0} />
+      </button>
+      {/each}
+      {#if hasSaveOverrides}
+      <Button onclick={() => {character.saveOverride = {}; onchange();}} variant="outline" size="icon" class="absolute right-1.5 bottom-1.5 border-foreground rounded-full size-4"><X /></Button>
+      {/if}
     </Card.Content>
   </Card.Root>
   <Card.Root>
@@ -233,10 +272,10 @@
     {onchange}>
   {#snippet row(res)}
     <Input bind:value={res.name} class="w-full" />
-    <Input class="w-12" bind:value={res.current} />
+    <Input class="w-12" type="number" onfocus={autoSel} bind:value={res.current} />
   {/snippet}
   {#snippet deleteAlt(res)}
-    <Input class="w-12" bind:value={res.max} />
+    <Input class="w-12" type="number" onfocus={autoSel} bind:value={res.max} />
   {/snippet}
   </ListManager>
 
@@ -270,7 +309,15 @@
     {/snippet}
   </ListManager>
 
-  <SpellSelect charClass={character.charClass} level={+character.level} allowed={currentClass?.magicSchools ?? []} bind:utilspells={character.utilspells} {onroll} />
+  <SpellSelect
+    charClass={character.charClass}
+    level={character.level}
+    stats={character.stats}
+    allowed={currentClass?.magicSchools ?? []}
+    bind:utilspells={character.utilspells}
+    bind:extraSchool={character.extraSchool}
+    bind:mana={character.mana}
+    {onroll} {onchange} />
 
   <Card.Root>
     <Card.Header>

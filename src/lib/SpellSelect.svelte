@@ -1,5 +1,8 @@
 <script lang="ts">
   import Dice from "lucide-svelte/icons/dices";
+  import Indicator from "lucide-svelte/icons/chevron-right";
+  import X from "lucide-svelte/icons/x";
+  import Mana from "lucide-svelte/icons/wand-sparkles";
   import {
     Button
   } from "$lib/components/ui/button/index.js";
@@ -9,22 +12,31 @@
   import * as Popover from "$lib/components/ui/popover";
   import { fireSpells, iceSpells, necroticSpells, radiantSpells, lightningSpells, windSpells, utilitySpells } from './magic';
   import SpellSchool from './SpellSchool.svelte';
-  import type { MagicSchool, Spell } from "./types";
+  import type { MagicSchool, Spell, Stat } from "./types";
   import Checkbox from "./components/ui/checkbox/checkbox.svelte";
+  import { Input } from "./components/ui/input";
 
   type Props = {
-    allowed?: MagicSchool[];
-    level?: number;
+    allowed: MagicSchool[];
+    level: number;
+    stats: Record<Stat, number>; 
     utilspells?: Record<string, boolean>;
+    extraSchool?: MagicSchool;
+    mana: number;
     onroll?: (roll: string, label?: string) => void;
+    onchange: () => void;
     charClass?: string;
   };
   let {
     allowed = ['Fire', 'Ice', 'Lightning', 'Necrotic', 'Radiant', 'Wind'],
     level = 1,
+    stats,
     utilspells = $bindable({}),
+    extraSchool = $bindable(),
+    mana = $bindable(),
     charClass = '',
-    onroll = () => {}
+    onroll = () => {},
+    onchange,
   } : Props = $props();
 
   let tierCap = $derived(
@@ -44,10 +56,18 @@
     { name: 'Wind', spells: windSpells, },
     { name: 'Utility', spells: utilitySpells },
   ] as const;
-
-  let extraSchool: MagicSchool | undefined = $state();
   
-  let allAllowed = $derived(extraSchool ? [...allowed, extraSchool] : allowed);
+  let additionalSchools: MagicSchool[] = $derived(
+    charClass === 'Songweaver'
+      ? ['Fire', 'Ice', 'Lightning', 'Necrotic', 'Radiant']
+      : (charClass === 'Shadowmancer' && level >= 3
+        ? ['Fire', 'Ice']
+        : (charClass === 'Stormshifter' && level >= 3
+          ? ['Ice', 'Radiant']
+          : []
+        )
+      ));
+  let allAllowed = $derived(additionalSchools.length > 0 && extraSchool ? [...allowed, extraSchool] : allowed);
   const available = $derived(allSchools.reduce<SchoolGroup[]>((p, c) => {
     if (c.name === 'Utility') {
       const av = c.spells.filter(s => s.tier <= tierCap && allAllowed.includes(s.school));
@@ -63,43 +83,64 @@
     return p;
   }, []));
 
-  let additionalSchools: MagicSchool[] = $derived(
-    charClass === 'Songweaver'
-      ? ['Fire', 'Ice', 'Lightning', 'Necrotic', 'Radiant']
-      : (charClass === 'Shadowmancer' && level >= 3
-        ? ['Fire', 'Ice']
-        : (charClass === 'Stormshifter' && level >= 3
-          ? ['Ice', 'Radiant']
-          : []
-        )
-      ));
+  function handleDropout(ev: Event) {
+    ev.stopPropagation();
+    extraSchool = undefined;
+    onchange();
+  }
+  function dropOut(el: HTMLButtonElement) {
+    el.addEventListener('click', handleDropout);
+    () => el.removeEventListener('click', handleDropout);
+  }
+
+  type Recipe = { stat: 'INT' | 'WIL'; level: boolean; double: boolean; };
+  const manaRecipe: Record<string, Recipe> = {
+    Mage: { stat: 'INT', level: true, double: true },
+    Oathsworn: { stat: 'WIL', level: true, double: false },
+    Shadowmancer: { stat: 'INT', level: false, double: false },
+    Shepherd: { stat: 'WIL', level: true, double: true },
+    Songweaver: { stat: 'WIL', level: true, double: true },
+    Stormshifter: { stat: 'WIL', level: true, double: true },
+  }
+  function getMaxMana(recipe: Recipe) {
+    if (!recipe) return 0;
+    return (stats[recipe.stat] + (recipe.level ? level : 0)) * (recipe.double ? 2 : 1);
+  }
+  let maxMana = $derived(getMaxMana(manaRecipe[charClass]));
 </script>
 
 <Card.Root>
   <Card.Header>
     <div class="flex gap-2 items-center">
       <Card.Title class="text-lg flex-grow w-full">Spells</Card.Title>
-      {#if additionalSchools.length}
-        <Select.Root onSelectedChange={(v) => extraSchool = v?.value} selected={{value: extraSchool, label: extraSchool}}>
-          <Select.Trigger>
-            <Select.Value placeholder="Additional school" />
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="">(None)</Select.Item>
-            {#each additionalSchools as asch}
-              <Select.Item value={asch}>{asch}</Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
+      {#if available.length}
+        <Mana />
+        <Input class="text-center w-16" type="number" inputmode="numeric" onfocus={(ev) => ev.currentTarget.select()} bind:value={mana}/>
+        <div class="">/&nbsp;{maxMana}</div>
       {/if}
     </div>
   </Card.Header>
   <Card.Content class="flex flex-col gap-2">
+    {#if additionalSchools.length && extraSchool == null}
+    <Select.Root onSelectedChange={(v) => {extraSchool = v?.value; onchange();}} selected={{value: extraSchool, label: extraSchool}}>
+      <Select.Trigger>
+        <Select.Value placeholder="Additional school" />
+      </Select.Trigger>
+      <Select.Content>
+        <Select.Item value="">(None)</Select.Item>
+        {#each additionalSchools as asch}
+          <Select.Item value={asch}>{asch}</Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
+    {/if}
     {#each available as school}
       <Collapsible.Root>
-        <Collapsible.Trigger class="flex gap-4 items-center">
+        <Collapsible.Trigger class="flex gap-4 items-center w-full group {extraSchool === school.name && additionalSchools.length && !additionalSchools.includes(extraSchool) ? `text-destructive` : ``}">
           <SpellSchool school={school.name} class="size-6" />
-          <div class="text-lg">{school.name}</div>
+          <div class="text-lg text-left flex-grow">{school.name}</div>
+          {#if extraSchool === school.name}<button type="button" class="" use:dropOut><X class="size-5" /></button>{/if}
+          <Indicator class="size-5 transition-transform group-data-[state=open]:rotate-90" />
         </Collapsible.Trigger>
         <Collapsible.Content class="pl-10 py-2">
           {#each school.spells as spell}

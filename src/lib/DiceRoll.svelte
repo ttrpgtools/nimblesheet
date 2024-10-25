@@ -4,17 +4,27 @@
   import { evaluateDiceRoll } from "./dice/rolling";
   import Vicious from "./dice/Vicious.svelte";
   import X from "lucide-svelte/icons/x";
+    import OBR from "@owlbear-rodeo/sdk";
 
   type Props = {
     formula: string;
     label?: string;
     context?: Record<string, number>;
     rollModifier?: number;
+    characterName?: string;
   };
-  let { formula, label = '', context = {}, rollModifier = 0 }: Props = $props();
+  let { formula, label = '', context = {}, rollModifier = 0, characterName }: Props = $props();
 
   const result = evaluateDiceRoll(formula, context, rollModifier);
   const modDisplay = Math.abs(rollModifier) === 1 ? '' : ` ${Math.abs(rollModifier)}`;
+
+  result.then(async res => {
+    if (OBR.isAvailable) {
+      const pname = await OBR.player.getName();
+      const rollMsg = `${characterName || pname} rolled ${res.formula}${label ? ` (${label})` : ``} = ${res.value}`;
+      OBR.broadcast.sendMessage(`tools.ttrpg.obr-dicelog/roll`, { roll: rollMsg, from: pname }, { destination: 'ALL' });
+    }
+  });
 </script>
 <div class="flex flex-col gap-2">
   <div class="">

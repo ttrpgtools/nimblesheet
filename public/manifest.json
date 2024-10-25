@@ -1,0 +1,14 @@
+{
+  "name": "Nimble Sheet",
+  "version": "0.1.1",
+  "manifest_version": 1,
+  "icon": "https://nimblesheet.ttrpg.tools/favicon.svg",
+  "author": "Colin Bate",
+  "action": {
+    "title": "Nimble Sheet",
+    "icon": "/favicon.svg",
+    "popover": "/",
+    "height": 850,
+    "width": 400
+  }
+}

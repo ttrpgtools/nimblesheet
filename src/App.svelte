@@ -27,6 +27,9 @@
   import Trash from "lucide-svelte/icons/trash-2";
   import ConfirmButton from "$lib/ConfirmButton.svelte";
 
+  import OBR from "@owlbear-rodeo/sdk";
+  import type { Player } from "@owlbear-rodeo/sdk/lib/types/Player";
+
 	let mycharacter: NimbleCharacter | undefined = $state(); // = new NimbleCharacter();
 	let characters: CharacterSave[] = $state([]); //[mycharacter];
   let selectedId = $state('');
@@ -50,6 +53,14 @@
 
   async function saveCharacter() {
     if (!isReady || !mycharacter) return;
+    if (mycharacter.shared === `owlbear::${owlbearRoom}`) {
+      // handle various integrations? Owlbear for now
+      OBR.player.setMetadata({
+        'tools.ttrpg.nimblesheet/sheets': {
+          [mycharacter.id]: mycharacter.toJSON()
+        }
+      });
+    }
     await persistToIndexedDB(mycharacter);
     await loadList();
   }
@@ -57,13 +68,14 @@
   let rollModifier = $state(0);
   function simpleRoll(sides: number) {
     //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: `d${sides}`, rollModifier }, class: '![--initial-height:7rem] !bg-gray-200 dark:!bg-gray-800'});
+    toast(DiceRoll, {componentProps: { formula: `d${sides}`, rollModifier, characterName: mycharacter?.name }, class: '![--initial-height:7rem] !bg-gray-200 dark:!bg-gray-800'});
   }
 
   async function newCharacter() {
     await saveCharacter();
     mycharacter = new NimbleCharacter();
     selectedId = mycharacter.id;
+    isReady = true;
   }
 
   let sheetOpen = $state(false);
@@ -77,6 +89,15 @@
     }
     isReady = true;
     saveCharacter();
+  }
+
+  async function switchToRemote(char: CharacterSave) {
+    if (selectedId === char.id) return;
+    isReady = false;
+    if (char) {
+      selectedId = char.id;
+      mycharacter = NimbleCharacter.load(char);
+    }
   }
 
   const MAX_ROLL_MOD = 9;
@@ -166,19 +187,62 @@
       selectedCharacterIds = characters.map(c => c.id);
     }
   }
+  let owlbearRoom = $state('');
+  let owlbearRole: '' | 'GM' | 'PLAYER' = $state('');
+  let partyCharacters: CharacterSave[] = $state([]);
+  let partyPlayers: Record<string, Player> = $state({});
+  function extractPlayerSheets(party: Player[]) {
+    partyCharacters = [];
+    if (owlbearRole === 'GM') {
+      for (const player of party) {
+        const sheets = player.metadata['tools.ttrpg.nimblesheet/sheets'] as Record<string, CharacterSave> | undefined;
+        if (sheets) {
+          for (const sheet of Object.values(sheets)) {
+            partyCharacters.push(sheet);
+            partyPlayers[sheet.id] = player;
+          }
+        }
+      }
+    }
+  }
+
+  async function loadOwlbear() {
+    OBR.onReady(async () => {
+      owlbearRoom = OBR.room.id;
+      owlbearRole = await OBR.player.getRole();
+      if (owlbearRole === 'GM') {
+        const party = await OBR.party.getPlayers();
+        extractPlayerSheets(party);
+      }
+      OBR.player.onChange(async (player) => {
+        owlbearRole = player.role;
+      });
+      OBR.party.onChange(async (party) => {
+        extractPlayerSheets(party);
+      });
+    });
+  }
+
+  $effect(() => {
+    if (OBR.isAvailable) loadOwlbear()
+  });
 
   $effect(() => {
     loadCharacter();
     loadList();
   });
+
+  let topPos = $state(0);
+  let pageTitle = $derived(mycharacter != null && topPos > 75 ? mycharacter.name : `Nimble CC`);
 </script>
+<svelte:window bind:scrollY={topPos} />
 <Toaster richColors duration={10000} closeButton/>
 <div class="flex min-h-screen w-full flex-col">
   <header class="bg-background/30 backdrop-blur-md sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6 z-50">
     <nav class="flex-grow gap-5 text-lg font-medium flex flex-row items-center lg:gap-6 w-full">
       <h1 class="flex items-center gap-2 text-lg font-semibold md:text-base">
         <SheetLogo class="h-6 w-6" />
-        <span class=" whitespace-nowrap">Nimble CC</span>
+        <span class=" whitespace-nowrap">{pageTitle}</span>
 			</h1>
     </nav>
 		<div class="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
@@ -252,7 +316,7 @@
         <nav class="flex-grow -mx-2">
           <label class="text-muted-foreground p-3 -mt-3 flex items-center gap-4">
             <input type="checkbox" class="size-4" checked={selectedCharacterIds.length === characters.length} indeterminate={selectedCharacterIds.length > 0 && selectedCharacterIds.length < characters.length} onchange={toggleAll} />
-            Select All
+            <span class="text-sm">Select All</span>
           </label>
           <ul>
             {#each characters as char}
@@ -267,6 +331,20 @@
             </li>
             {/each}
           </ul>
+          {#if partyCharacters.length}
+          <ul class="border-t pt-3 mt-3">
+            {#if owlbearRole === 'GM'}
+            <li class="px-3 py-1 font-bold">Owlbear Rodeo Characters</li>
+            {/if}
+            {#each partyCharacters as char}
+						<li>
+              <Button variant={selectedId === char.id ? `outline` : `ghost`} class="w-full px-3 gap-1 justify-start border-gray-500" onclick={() => { switchToRemote(char); sheetOpen = false}}>
+                {char.name || 'Unnamed Character'} ({partyPlayers[char.id].name})
+              </Button>
+            </li>
+            {/each}
+          </ul>
+          {/if}
         </nav>
         {:else}
         <div class="flex-grow">
@@ -310,7 +388,7 @@
   </header>
   <main class="flex flex-col gap-4 p-4 md:gap-8 md:p-10">
     {#if mycharacter}
-    <CharacterSheet bind:character={mycharacter} onchange={saveCharacter} {rollModifier} />
+    <CharacterSheet bind:character={mycharacter} onchange={saveCharacter} {rollModifier} {owlbearRoom} />
     {:else}
     <div class="min-h-[300px] flex items-center justify-center">
       <Loader class="size-12 animate-spin" />
