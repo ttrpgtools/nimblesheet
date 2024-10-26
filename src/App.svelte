@@ -22,13 +22,13 @@
   import { Die } from "$lib/dice";
   import { toast } from "svelte-sonner";
   import { deleteCharacters, loadAllFromDb, loadSingle, persistList, persistToIndexedDB } from "$lib/persist";
-  import DiceRoll from "$lib/DiceRoll.svelte";
   import { download } from "$lib/download";
   import Trash from "lucide-svelte/icons/trash-2";
   import ConfirmButton from "$lib/ConfirmButton.svelte";
 
   import OBR from "@owlbear-rodeo/sdk";
   import type { Player } from "@owlbear-rodeo/sdk/lib/types/Player";
+  import { rollDice } from "$lib/dice/integration";
 
 	let mycharacter: NimbleCharacter | undefined = $state(); // = new NimbleCharacter();
 	let characters: CharacterSave[] = $state([]); //[mycharacter];
@@ -66,9 +66,8 @@
   }
 
   let rollModifier = $state(0);
-  function simpleRoll(sides: number) {
-    //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: `d${sides}`, rollModifier, characterName: mycharacter?.name }, class: '![--initial-height:7rem] !bg-gray-200 dark:!bg-gray-800'});
+  async function simpleRoll(sides: number) {
+    return await rollDice(`d${sides}`, { rollModifier, characterName: mycharacter?.name });
   }
 
   async function newCharacter() {

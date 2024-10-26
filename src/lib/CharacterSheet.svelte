@@ -15,16 +15,17 @@
   import CirclePlus from "lucide-svelte/icons/circle-plus";
   import CircleMinus from "lucide-svelte/icons/circle-minus";
   import Dice from "lucide-svelte/icons/dices";
+  import Die5 from "lucide-svelte/icons/dice-5";
   import Question from "lucide-svelte/icons/circle-help";
 
   import { allClasses, stats, saves } from "./nimble";
   import { type Alteration, type NimbleClass, type Save } from "./types";
-  import { toast } from "svelte-sonner";
   import SpellSelect from "./SpellSelect.svelte";
   import Textarea from "./components/ui/textarea/textarea.svelte";
-  import DiceRoll from './DiceRoll.svelte';
   import Owlbear from './Owlbear.svelte';
   import Caret from './Caret.svelte';
+  import Coin from './Coin.svelte';
+  import { rollDice } from './dice/integration';
 
   type Props = {
     character: NimbleCharacter;
@@ -38,23 +39,22 @@
 
   function setClass(ev?: { value: NimbleClass | undefined }) {
     if (ev?.value) {
-      if (!character.hitdie || character.hitdie === currentClass?.die) {
-        character.hitdie = ev.value.die;
-      }
-      if (+(character.level) === 1 && (!character.hp || character.hp === '0' || +(character.hp) === currentClass?.startHp)) {
-        character.hp = ev.value.startHp.toString();
+      character.hitdie = ev.value.die;
+      if (+(character.level) === 1 && (!character.hp || +(character.hp) === currentClass?.startHp)) {
+        character.hp = ev.value.startHp;
+        character.maxHp = ev.value.startHp;
       }
     }
     character.charClass = ev?.value?.name ?? '';
     onchange();
   }
 
-  let invCount = $derived(character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0));
+  let invCount = $derived(character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0) + Math.ceil((character.gp + character.sp) / 500));
 
   let skillPoints = $derived(character.skills.reduce((p, c) => p + c.extra, 0));
   let maxSkillPoints = $derived(+(character.level ?? '0') + 2)
 
-  function onroll(roll: string, label?: string, addMod = 0) {
+  async function onroll(roll: string, label?: string, addMod = 0) {
     const context = {
       LVL: +character.level,
       STR: +character.stats.STR,
@@ -65,9 +65,7 @@
       INIT: Math.max(+character.stats.DEX, +character.initiative),
       KEY: (currentClass?.key ?? []).reduce((p, c) => Math.max(+character.stats[c], p), Number.NEGATIVE_INFINITY),
     }
-    //toast(`Rolling ${roll}${label ? ` (${label})` : ``} = ${result}`);
-    //@ts-ignore
-    toast(DiceRoll, {componentProps: { formula: roll, label, context, rollModifier: rollModifier + addMod, characterName: character.name }, class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'})
+    return await rollDice(roll, { label, context, rollModifier: rollModifier + addMod, characterName: character.name });
   }
   function autoSel(ev: FocusEvent) {
     const el = ev.target as HTMLInputElement;
@@ -93,48 +91,53 @@
   }
 
   let isSharedHere = $derived(character.shared === `owlbear::${owlbearRoom}`);
+  let actions = $state(0);
+
+  async function rollInitiative() {
+    const result = await onroll(`d20+[INIT]`, `Initiative`);
+    if (result.value < 10) {
+      actions = 1;
+    } else if (result.value >= 20 || result.dice[0].isMax()) {
+      actions = 3;
+    } else {
+      actions = 2;
+    }
+  }
 </script>
-<div class="flex flex-col gap-4 max-w-lg mx-auto" oninput={onchange}>
-  <div class="flex gap-2 items-center">
+<div class="flex flex-col sm:gap-4 max-w-lg mx-auto" oninput={onchange}>
+  <div class="flex gap-2 items-center mb-4 sm:mb-0">
     <Label for="charname" class="sr-only">Name</Label>
     <Input id="charname" class="text-2xl h-auto font-bold" type="text" placeholder="Character Name" required bind:value={character.name} />
     {#if owlbearRoom}
     <button type="button" onclick={toggleOwlShare}><Owlbear size="size-10 {isSharedHere ? `` : `opacity-30`}"/></button>
     {/if}
   </div>
-  <Card.Root class="w-full">
-    <Card.Content class="grid gap-4">
-      
-      <div class="flex gap-2">
+  <Card.Root>
+    <Card.Content class="grid gap-x-2 gap-y-4 grid-cols-3">
+      <div class="flex gap-2 col-span-2">
         <Label for="ancestry" class="sr-only">Ancestry</Label>
         <Input id="ancestry" type="text" placeholder="Ancestry" bind:value={character.ancestry} />
-      </div>
-      <div class="flex gap-2">
-        <div class="flex gap-2 w-full">
-          <Label for="charclass" class="sr-only">Class</Label>
-          <Select.Root onSelectedChange={setClass} selected={currentSelected}>
-            <Select.Trigger class="w-full">
-              <Select.Value placeholder="Class" class="text-base" />
-            </Select.Trigger>
-            <Select.Content>
-              {#each allClasses as nc}
-              <Select.Item value={nc}>{nc.name}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-        <div class="flex gap-2">
-          <Label for="level" class="sr-only">Level</Label>
-          <Input id="level" placeholder="LVL" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.level} />
-        </div>
       </div>
       <div class="flex gap-2">
         <Label for="sizeinfo" class="sr-only">Size</Label>
         <Input id="sizeinfo" type="text" placeholder="Height + Weight" bind:value={character.size} />
       </div>
+      <div class="flex gap-2 col-span-2">
+        <Label for="charclass" class="sr-only">Class</Label>
+        <Select.Root onSelectedChange={setClass} selected={currentSelected}>
+          <Select.Trigger class="w-full">
+            <Select.Value placeholder="Class" class="text-base" />
+          </Select.Trigger>
+          <Select.Content>
+            {#each allClasses as nc}
+            <Select.Item value={nc}>{nc.name}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
       <div class="flex gap-2">
-        <Label for="hitdie" class="sr-only">Hit Die</Label>
-        <Input id="hitdie" type="text" placeholder="Hit Die" bind:value={character.hitdie}/>
+        <Label for="level" class="sr-only">Level</Label>
+        <Input id="level" placeholder="LVL" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.level} />
       </div>
     </Card.Content>
   </Card.Root>
@@ -177,72 +180,73 @@
   <Card.Root>
     <Card.Content class="grid gap-2 grid-cols-4">
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.armor}/>
-        <Label>Armor</Label>
+        <Input id="sstat-armor" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.armor}/>
+        <Label for="sstat-armor">Armor</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hp}/>
-        <Label>HP</Label>
+        <Input id="sstat-hp" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hp}/>
+        <div class="flex gap-3 items-center">
+          <Label for="sstat-hp">HP</Label>
+          <button type="button" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Point Increase`)}><Dice class="size-4"/></button>
+        </div>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hd}/>
-        <Label>HD</Label>
+        <Input id="sstat-hd" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.hd}/>
+        <div class="flex gap-3 items-center">
+          <Label for="sstat-hd">HD</Label>
+          <button type="button" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(character.hitdie, `Hit Die`)}><Dice class="size-4"/></button>
+        </div>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.initiative}/>
-        <Label>Init</Label>
+        <Input id="sstat-init" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.initiative}/>
+        <div class="flex gap-3 items-center">
+          <Label for="sstat-init">Init</Label>
+          <button type="button" onclick={rollInitiative}><Dice class="size-4"/></button>
+        </div>
       </div>
 
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.tempHp}/>
-        <Label>Temp</Label>
+        <Input id="sstat-temp" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.tempHp}/>
+        <Label for="sstat-temp">Temp</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHp}/>
-        <Label>Max HP</Label>
+        <Input id="sstat-maxhp" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHp}/>
+        <Label for="sstat-maxhp">Max HP</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHd}/>
-        <Label>Max HD</Label>
+        <Input id="sstat-maxhd" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.maxHd}/>
+        <Label for="sstat-maxhd">Max HD</Label>
       </div>
       <div class="flex flex-col items-center gap-2">
-        <Input class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.speed}/>
-        <Label>Speed</Label>
+        <Input id="sstat-speed" class="text-center" type="number" inputmode="numeric" onfocus={autoSel} bind:value={character.speed}/>
+        <Label for="sstat-speed">Speed</Label>
       </div>
     </Card.Content>
   </Card.Root>
-  <div class="flex gap-4">
-    <Card.Root class="w-full">
-      <Card.Content class="grid">
-        {#each character.skills as skill}
-        {@const score = +(character.stats[skill.type] ?? '0') + skill.extra}
-        <div class="flex gap-2 items-center">
-          <div class="w-full">
-            {skill.name} <span class="text-muted-foreground">({skill.type})</span>
-          </div>
-          <div class="flex items-center">
-            <span class="px-4">{score}</span>
-            <Button variant="ghost" size="icon" class="rounded-full" onclick={() => {skill.extra += 1; onchange();}}>
-              <CirclePlus class="size-5" />
-            </Button>
-            <Button variant="ghost" size="icon" class="rounded-full" disabled={skill.extra === 0} onclick={() => {skill.extra = Math.max(0, skill.extra - 1); onchange();}}>
-              <CircleMinus class="size-5" />
-            </Button>
-            <Button size="icon" variant="ghost">
-              <Dice class="size-5" onclick={() => onroll(`d20+${score}`, skill.name)} />
-            </Button>
-          </div>
-        </div>
-        {/each}
-        <div class="border-t pt-3 mt-1 text-sm {skillPoints > maxSkillPoints ? `text-destructive` : `text-muted-foreground`}">
-          Skill Points allocated: {skillPoints} / {maxSkillPoints}
-        </div>
-      </Card.Content>
-    </Card.Root>
 
-  </div>
+  
   <Card.Root>
-    <Card.Content class="flex gap-3">
+    <Card.Content class="flex gap-3 items-center">
+      <h4 class="font-bold text-lg flex-grow">Save</h4>
+      {#each saves as save}
+      <Button variant="secondary" size="sm" onclick={() => onroll(`d20+[${save}]`, `${save} Save`, character.saveOverride[save] ?? currentClass?.saves[save] ?? 0)}><Dice class="mr-1 size-4" />{save}</Button>
+      {/each}
+    </Card.Content>
+  </Card.Root>
+  
+  <Card.Root>
+    <Card.Content class="flex gap-4 items-center">
+      <h4 class=" font-bold text-lg flex-grow">Actions</h4>
+      <X class="size-6 {actions === 0 ? `text-gray-500` : ``}" onclick={() => {actions = 0;}}/>
+      {#each [1, 2, 3] as action}
+      <button type="button" onclick={() => {actions = action; }} class="size-8 {actions >= action ? `bg-primary text-primary-foreground` : ``} border-2 border-primary rounded-full flex items-center justify-center">{action}</button>
+      {/each}
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root>
+    <Card.Content class="flex gap-3 items-center">
+      <h4 class="font-bold text-lg flex-grow">Wounds</h4>
       <X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" onclick={() => {character.wounds = 0; onchange();}}/>
       {#each [1,2,3,4,5] as wnd}
         <Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" onclick={() => {character.wounds = wnd; onchange();}}/>
@@ -252,37 +256,51 @@
   </Card.Root>
 
   <Card.Root>
-    <Card.Content class="flex gap-4 items-center flex-wrap">
-      <Button variant="secondary" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(character.hitdie, `Hit Die`)}>Roll HD</Button>
-      <Button variant="secondary" disabled={!character.hitdie} onclick={() => character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Point Increase`)}>Roll HP</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[INIT]`, `Initiative`)}>Roll Initiative</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[STR]`, `STR Save`, currentClass?.saves.STR ?? 0)}>STR Save</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[DEX]`, `DEX Save`, currentClass?.saves.DEX ?? 0)}>DEX Save</Button>
-      <Button variant="secondary" onclick={() => onroll(`d20+[WIT]`, `WIT Save`, currentClass?.saves.WIT ?? 0)}>WIT Save</Button>
-      
+    <Card.Content class="grid">
+      {#each character.skills as skill}
+      {@const score = +(character.stats[skill.type] ?? '0') + skill.extra}
+      <div class="flex gap-2 items-center">
+        <div class="w-full">
+          {skill.name} <span class="text-muted-foreground">({skill.type})</span>
+        </div>
+        <div class="flex items-center">
+          <span class="px-4">{score}</span>
+          <Button variant="ghost" size="icon" class="rounded-full" onclick={() => {skill.extra += 1; onchange();}}>
+            <CirclePlus class="size-5" />
+          </Button>
+          <Button variant="ghost" size="icon" class="rounded-full" disabled={skill.extra === 0} onclick={() => {skill.extra = Math.max(0, skill.extra - 1); onchange();}}>
+            <CircleMinus class="size-5" />
+          </Button>
+          <Button size="icon" variant="ghost">
+            <Dice class="size-5" onclick={() => onroll(`d20+${score}`, skill.name)} />
+          </Button>
+        </div>
+      </div>
+      {/each}
+      <div class="border-t pt-3 mt-1 text-sm {skillPoints > maxSkillPoints ? `text-destructive` : `text-muted-foreground`}">
+        Skill Points allocated: {skillPoints} / {maxSkillPoints}
+      </div>
     </Card.Content>
   </Card.Root>
 
   <ListManager
     bind:list={character.resources}
     title="Resources"
-    buttonLabel="Add Resource"
     emptyLabel="No resources."
     initialRow={{name: 'Resource', current: 0, max: 0}}
     {onchange}>
   {#snippet row(res)}
     <Input bind:value={res.name} class="w-full" />
-    <Input class="w-12" type="number" onfocus={autoSel} bind:value={res.current} />
+    <Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />
   {/snippet}
   {#snippet deleteAlt(res)}
-    <Input class="w-12" type="number" onfocus={autoSel} bind:value={res.max} />
+    <Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />
   {/snippet}
   </ListManager>
 
   <ListManager
     bind:list={character.inventory}
     title="Inventory"
-    buttonLabel="Add Inventory Item"
     emptyLabel="No items."
     initialRow={{name: 'Dagger', roll: 'd4!'}}
     {onchange}>
@@ -296,7 +314,7 @@
         </Button>
         <Input bind:value={item.name} class="w-full pr-10 {item.bulky ? `font-black underline` : ``}" />
       </div>
-      <Input class="w-20 mx-auto" bind:value={item.roll} />
+      <Input class="w-20 md:w-24" bind:value={item.roll} />
     {/snippet}
     {#snippet deleteAlt(item)}
       {#if item.roll}
@@ -306,6 +324,14 @@
       {:else}
         <div class="size-10"></div>
       {/if}
+    {/snippet}
+    {#snippet footerExtra()}
+    <div class="flex items-center gap-2">
+      <label for="coin-gp"><Coin type="gp" size="size-5" /></label>
+      <Input id="coin-gp" class="w-20 md:w-24" type="number" onfocus={autoSel} bind:value={character.gp} />
+      <label for="coin-sp"><Coin type="sp" size="size-5"/></label>
+      <Input id="coin-sp" class="w-20 md:w-24" type="number" onfocus={autoSel} bind:value={character.sp} />
+    </div>
     {/snippet}
   </ListManager>
 

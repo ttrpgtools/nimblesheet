@@ -2,13 +2,14 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import Trash from "lucide-svelte/icons/trash-2";
+  import Add from "lucide-svelte/icons/plus";
   import type { Snippet } from "svelte";
 
   type Props = {
     list: T[];
     title: string;
     headerExtra?: Snippet;
-    buttonLabel: string;
+    footerExtra?: Snippet;
     emptyLabel: string;
     onchange: () => void;
     initialRow: T;
@@ -19,7 +20,7 @@
     list = $bindable(),
     title,
     headerExtra,
-    buttonLabel,
+    footerExtra,
     emptyLabel,
     initialRow,
     onchange,
@@ -68,7 +69,10 @@
           {/each}
     </Card.Content>
     <Card.Footer>
-      <Button variant="secondary" class="" onclick={addRow}>{buttonLabel}</Button>
+      <div class="flex gap-2 w-full items-center justify-between">
+        <Button variant="secondary" class="rounded-full border-primary/50 hover:border" size="icon" onclick={addRow}><Add class="size-5" /></Button>
+        {#if footerExtra}{@render footerExtra()}{/if}
+      </div>
     </Card.Footer>
   </Card.Root>
 
