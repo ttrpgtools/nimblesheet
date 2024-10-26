@@ -120,7 +120,7 @@
       </div>
       <div class="flex gap-2">
         <Label for="sizeinfo" class="sr-only">Size</Label>
-        <Input id="sizeinfo" type="text" placeholder="Height + Weight" bind:value={character.size} />
+        <Input id="sizeinfo" type="text" placeholder="Size" bind:value={character.size} />
       </div>
       <div class="flex gap-2 col-span-2">
         <Label for="charclass" class="sr-only">Class</Label>
