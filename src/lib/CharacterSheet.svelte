@@ -52,7 +52,7 @@
   let invCount = $derived(character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0) + Math.ceil((character.gp + character.sp) / 500));
 
   let skillPoints = $derived(character.skills.reduce((p, c) => p + c.extra, 0));
-  let maxSkillPoints = $derived(+(character.level ?? '0') + 2)
+  let maxSkillPoints = $derived(+(character.level ?? '0') + 3)
 
   async function onroll(roll: string, label?: string, addMod = 0) {
     const context = {
