@@ -246,10 +246,9 @@
     </nav>
 		<div class="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild let:builder>
+        <DropdownMenu.Trigger>
           <div class="relative">
             <Button
-              builders={[builder]}
               variant="secondary"
               size="icon"
               class="rounded-full"
@@ -284,12 +283,11 @@
 			
     </div>
     <Sheet.Root bind:open={sheetOpen}>
-      <Sheet.Trigger asChild let:builder>
+      <Sheet.Trigger>
         <Button
           variant="outline"
           size="icon"
           class="shrink-0"
-          builders={[builder]}
         >
           <Menu class="h-5 w-5" />
           <span class="sr-only">Toggle navigation menu</span>

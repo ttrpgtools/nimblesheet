@@ -35,17 +35,15 @@
   };
   let { character = $bindable(), onchange, rollModifier, owlbearRoom } : Props = $props();
   let currentClass: NimbleClass | undefined = $derived(allClasses.find(c => c.name === character.charClass));
-  let currentSelected = $derived({value: currentClass, label: currentClass?.name});
 
-  function setClass(ev?: { value: NimbleClass | undefined }) {
-    if (ev?.value) {
-      character.hitdie = ev.value.die;
-      if (+(character.level) === 1 && (!character.hp || +(character.hp) === currentClass?.startHp)) {
-        character.hp = ev.value.startHp;
-        character.maxHp = ev.value.startHp;
+  function setClass() {
+    if (currentClass) {
+      character.hitdie = currentClass.die;
+      if (+(character.level) === 1 && !character.hp) {
+        character.hp = currentClass.startHp;
+        character.maxHp = currentClass.startHp;
       }
     }
-    character.charClass = ev?.value?.name ?? '';
     onchange();
   }
 
@@ -124,13 +122,13 @@
       </div>
       <div class="flex gap-2 col-span-2">
         <Label for="charclass" class="sr-only">Class</Label>
-        <Select.Root onSelectedChange={setClass} selected={currentSelected}>
+        <Select.Root type="single" bind:value={character.charClass} onValueChange={setClass}>
           <Select.Trigger class="w-full">
-            <Select.Value placeholder="Class" class="text-base" />
+            {character.charClass || `Class`}
           </Select.Trigger>
           <Select.Content>
             {#each allClasses as nc}
-            <Select.Item value={nc}>{nc.name}</Select.Item>
+            <Select.Item value={nc.name}>{nc.name}</Select.Item>
             {/each}
           </Select.Content>
         </Select.Root>

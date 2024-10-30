@@ -122,9 +122,9 @@
   </Card.Header>
   <Card.Content class="flex flex-col gap-2">
     {#if additionalSchools.length && extraSchool == null}
-    <Select.Root onSelectedChange={(v) => {extraSchool = v?.value; onchange();}} selected={{value: extraSchool, label: extraSchool}}>
+    <Select.Root type="single" bind:value={extraSchool} onValueChange={onchange}>
       <Select.Trigger>
-        <Select.Value placeholder="Additional school" />
+        {extraSchool || `Additional school`}
       </Select.Trigger>
       <Select.Content>
         <Select.Item value="">(None)</Select.Item>
