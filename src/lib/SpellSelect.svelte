@@ -13,8 +13,8 @@
   import { fireSpells, iceSpells, necroticSpells, radiantSpells, lightningSpells, windSpells, utilitySpells } from './magic';
   import SpellSchool from './SpellSchool.svelte';
   import type { MagicSchool, Spell, Stat } from "./types";
-  import Checkbox from "./components/ui/checkbox/checkbox.svelte";
-  import { Input } from "./components/ui/input";
+  import Checkbox from "$lib/components/ui/checkbox/checkbox.svelte";
+  import { Input } from "$lib/components/ui/input";
 
   type Props = {
     allowed: MagicSchool[];

@@ -15,7 +15,6 @@
   import CirclePlus from "lucide-svelte/icons/circle-plus";
   import CircleMinus from "lucide-svelte/icons/circle-minus";
   import Dice from "lucide-svelte/icons/dices";
-  import Die5 from "lucide-svelte/icons/dice-5";
   import Question from "lucide-svelte/icons/circle-help";
 
   import { allClasses, stats, saves } from "./nimble";

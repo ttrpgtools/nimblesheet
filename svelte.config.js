@@ -1,11 +1,13 @@
-import sveltePreprocess from "svelte-preprocess";
+import adapter from '@sveltejs/adapter-static';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-export default {
-  // Consult https://github.com/sveltejs/svelte-preprocess
-  // for more information about preprocessors
-  preprocess: [
-    sveltePreprocess({
-      postcss: true,
-    }),
-  ],
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	preprocess: vitePreprocess(),
+
+	kit: {
+		adapter: adapter()
+	}
 };
+
+export default config;
