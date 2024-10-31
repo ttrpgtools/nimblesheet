@@ -6,6 +6,7 @@
 	import Loader from 'lucide-svelte/icons/loader-circle';
 	import Advantage from 'lucide-svelte/icons/smile';
 	import Disadvantage from 'lucide-svelte/icons/frown';
+  import Duplicate from 'lucide-svelte/icons/copy';
 	import X from 'lucide-svelte/icons/x';
 	import Export from 'lucide-svelte/icons/download';
 	import Import from 'lucide-svelte/icons/upload';
@@ -121,6 +122,15 @@
 			`Exported ${selectedCharacterIds.length ? selectedCharacterIds.length : `all`} character${selectedCharacterIds.length === 1 ? `` : `s`}!`
 		);
 	}
+  
+  async function duplicate() {
+    if (!mycharacter) return;
+    await saveCharacter();
+    const clone = mycharacter.clone();
+    selectedId = clone.id;
+    mycharacter = clone;
+    saveCharacter();
+  }
 
 	async function deleteSelected() {
 		const reselect = selectedCharacterIds.includes(selectedId);
@@ -413,6 +423,12 @@
 							confirmText={`Click again to confirm deleting ${selectedCharacterIds.length} character${selectedCharacterIds.length === 1 ? `` : `s`}.`}
 							><Trash class="mr-2 size-4" />Delete Selected</ConfirmButton
 						>
+          {/if}
+          {#if selectedId}
+            <Button variant="secondary" onclick={duplicate}>
+              <Duplicate class="mr-2 size-4" />
+              Duplicate Current
+            </Button>
 					{/if}
 					{#if characters.length > 0}
 						<Button variant="secondary" onclick={exportCharacters}

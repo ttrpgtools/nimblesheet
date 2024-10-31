@@ -145,6 +145,13 @@ export class NimbleCharacter {
 	touch() {
 		this.touched = new Date().toISOString();
 	}
+  
+  clone() {
+    const copy = structuredClone(serializeCharacter(this));
+    copy.id = id();
+    copy.name += ' Copy';
+    return deserializeCharacter(copy);
+  }
 }
 
 export type CharacterSave = ReturnType<typeof serializeCharacter>;
