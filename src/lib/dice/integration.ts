@@ -15,7 +15,7 @@ async function sendToOwlbear(
 	label?: string,
 	characterName?: string
 ) {
-	if (OBR.isAvailable) {
+	if (OBR.isAvailable && OBR.isReady) {
 		const pname = await OBR.player.getName();
 		const rollMsg = `${characterName || pname} rolled ${result.formula}${
 			label ? ` (${label})` : ``
@@ -33,6 +33,7 @@ export async function rollDice(
 	{ label, context, rollModifier, characterName }: RollOptions = {}
 ) {
 	const result = await evaluateDiceRoll(formula, context, rollModifier);
+	//@ts-expect-error DiceRoll is Svelte 5 and doesn't match the expected Svelte 4 type
 	toast(DiceRoll, {
 		componentProps: { formula, label, rollModifier, result },
 		class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800'

@@ -12,6 +12,16 @@
 				(mode == null && window.matchMedia('(prefers-color-scheme: dark)').matches))) {
 					document.documentElement.classList.add('dark');
 			}
+			if (window) {
+				window.nimbleIsReadyToo = () => {};
+				window.addEventListener('message', handleReadyEvent);
+			}
+			function handleReadyEvent(event) {
+				window.nimbleIsReadyToo = () => {
+					window.removeEventListener('message', handleReadyEvent);
+					window.dispatchEvent(event);
+				}
+			}
 		</script>
 	</head>
 	<body data-sveltekit-preload-data="hover">
