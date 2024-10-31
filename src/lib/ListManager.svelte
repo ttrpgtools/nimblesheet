@@ -65,8 +65,8 @@
 		{#each list as item, index}
 			{@render row(item)}
 			{#if deleteMode}
-				<Button size="icon" variant="outline">
-					<Trash onclick={() => deleteRow(index)} class="size-5 text-destructive" />
+				<Button size="icon" variant="outline" onclick={() => deleteRow(index)}>
+					<Trash class="size-5 text-destructive" />
 				</Button>
 			{:else}
 				{@render deleteAlt(item)}
