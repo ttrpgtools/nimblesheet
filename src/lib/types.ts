@@ -5,6 +5,7 @@ export type Die = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20';
 export type Skill = { name: string; type: Stat; extra: number };
 export type Resource = { name: string; max: number; current: number };
 export type Inventory = { name: string; roll: string; bulky?: boolean };
+export type Ancestry = { name: string; size: string };
 
 export type MagicSchool = 'Fire' | 'Ice' | 'Lightning' | 'Wind' | 'Necrotic' | 'Radiant';
 export type Spell = {
