@@ -161,7 +161,7 @@ export const ancestries: Ancestry[] = [
 
 export const meleeWeapons: Inventory[] = [
 	{ name: 'Dagger', roll: '1d4!+[DEX]' },
-	{ name: 'Hand Scythe', roll: '1d4!v+[DEX]' },
+	{ name: 'Sickle', roll: '1d4!v+[DEX]' },
 	{ name: 'Club/Mace', roll: '1d6!+[STR]' },
 	{ name: 'Hand Axe', roll: '1d6!+[STR]' },
 	{ name: 'Short Sword', roll: '1d6!+[STR]' },
@@ -169,9 +169,9 @@ export const meleeWeapons: Inventory[] = [
 	{ name: 'Staff', roll: '1d8!+[STR]' },
 	{ name: 'Longsword', roll: '1d8!+[STR]' },
 	{ name: 'Battleaxe', roll: '1d10!+[STR]', bulky: true },
-	{ name: 'Lucerne Hammer', roll: '1d10!+[STR]' },
+	{ name: 'Pole Hammer', roll: '1d10!+[STR]' },
 	{ name: 'Glaive', roll: '1d10!+[STR]' },
-	{ name: 'Spear', roll: '1d4!+1d6+[STR]' },
+	{ name: 'Spear', roll: '1d10!+[STR]' },
 	{ name: 'Greatmaul', roll: '1d12!+[STR]', bulky: true },
 	{ name: 'Greataxe', roll: '2d6!+[STR]', bulky: true },
 	{ name: 'Greatsword', roll: '3d4!+[STR]', bulky: true }
