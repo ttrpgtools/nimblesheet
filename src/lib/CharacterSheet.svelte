@@ -236,7 +236,7 @@
 					<ul class="list-disc pl-4">
 						<li>Standard: +2, +2, +0, -1</li>
 						<li>Balanced: +2, +1, +1, +0</li>
-						<li>Min-Max: +3, +1, +0, -2</li>
+						<li>Min-Max: +3, +1, -1, -1</li>
 					</ul>
 				</Popover.Content>
 			</Popover.Root>
