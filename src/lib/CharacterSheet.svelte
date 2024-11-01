@@ -16,15 +16,23 @@
 	import CircleMinus from 'lucide-svelte/icons/circle-minus';
 	import Dice from 'lucide-svelte/icons/dices';
 	import Question from 'lucide-svelte/icons/circle-help';
+	import Add from 'lucide-svelte/icons/plus';
 
-	import { allClasses, stats, saves } from './nimble';
-	import { type Alteration, type NimbleClass, type Save } from './types';
+	import { allClasses, stats, saves, ancestries, meleeWeapons, rangedWeapons } from './nimble';
+	import {
+		type Alteration,
+		type Ancestry,
+		type Inventory,
+		type NimbleClass,
+		type Save
+	} from './types';
 	import SpellSelect from './SpellSelect.svelte';
 	import Textarea from './components/ui/textarea/textarea.svelte';
 	import Owlbear from './Owlbear.svelte';
 	import Caret from './Caret.svelte';
 	import Coin from './Coin.svelte';
 	import { rollDice } from './dice/integration';
+	import SceneItemsApi from '@owlbear-rodeo/sdk/lib/api/scene/SceneItemsApi';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -49,7 +57,7 @@
 	}
 
 	let invCount = $derived(
-		character.inventory.reduce((p, c) => p + (c.bulky ? 2 : 1), 0) +
+		character.inventory.reduce((p, c) => p + (c.bulky ? 2 : c.name.startsWith('-') ? 0 : 1), 0) +
 			Math.ceil((character.gp + character.sp) / 500)
 	);
 
@@ -115,6 +123,22 @@
 			actions = 2;
 		}
 	}
+
+	async function setRace(race: Ancestry) {
+		character.ancestry = race.name;
+		character.size = race.size;
+	}
+
+	const itemPop: [string, Inventory[]][] = [
+		['Melee Weapons', meleeWeapons],
+		['Ranged Weapons', rangedWeapons]
+	];
+
+	async function setItem(orig: Inventory, item: Inventory) {
+		orig.name = item.name;
+		orig.roll = item.roll;
+		orig.bulky = item.bulky;
+	}
 </script>
 
 <div class="mx-auto flex max-w-lg flex-col sm:gap-4" oninput={onchange}>
@@ -136,9 +160,37 @@
 	</div>
 	<Card.Root>
 		<Card.Content class="grid grid-cols-3 gap-x-2 gap-y-4">
-			<div class="col-span-2 flex gap-2">
+			<div class="relative col-span-2 flex gap-2">
 				<Label for="ancestry" class="sr-only">Ancestry</Label>
-				<Input id="ancestry" type="text" placeholder="Ancestry" bind:value={character.ancestry} />
+				<Input
+					id="ancestry"
+					type="text"
+					placeholder="Ancestry"
+					class="pr-7"
+					bind:value={character.ancestry}
+				/>
+				<Popover.Root>
+					<Popover.Trigger class="absolute right-2 top-1/2 -translate-y-1/2">
+						<Question class="size-4" />
+					</Popover.Trigger>
+					<Popover.Content>
+						<div class="">
+							{#each ancestries as race}
+								<button
+									type="button"
+									onclick={() => setRace(race)}
+									class="block w-full text-left text-sm hover:bg-secondary"
+									>{race.name} ({race.size})</button
+								>
+							{/each}
+							<a
+								href="https://nimblecc.ttrpg.tools/#ancestries"
+								target="_blank"
+								class="text-blue-500 underline">Click for more details</a
+							>
+						</div>
+					</Popover.Content>
+				</Popover.Root>
 			</div>
 			<div class="flex gap-2">
 				<Label for="sizeinfo" class="sr-only">Size</Label>
@@ -244,7 +296,21 @@
 		</Card.Content>
 	</Card.Root>
 	<Card.Root>
-		<Card.Content class="grid grid-cols-4 gap-2">
+		<Card.Content class="relative grid grid-cols-4 gap-2">
+			<Popover.Root>
+				<Popover.Trigger class="absolute right-1.5 top-1.5">
+					<Question class="size-4" />
+				</Popover.Trigger>
+				<Popover.Content>
+					<p>You can set these as defaults, but your ancestry may affect values.</p>
+					<ul class="list-disc pl-4">
+						<li>Armor = DEX</li>
+						<li>Init = DEX</li>
+						<li>Max HP at Lvl 1 is based on class</li>
+						<li>Max HD is your level</li>
+					</ul>
+				</Popover.Content>
+			</Popover.Root>
 			<div class="flex flex-col items-center gap-2">
 				<Input
 					id="sstat-armor"
@@ -475,30 +541,25 @@
 				</div>
 			{/each}
 			<div
-				class="mt-1 border-t pt-3 text-sm {skillPoints > maxSkillPoints
+				class="relative mt-1 border-t pt-3 text-sm {skillPoints > maxSkillPoints
 					? `text-destructive`
 					: `text-muted-foreground`}"
 			>
 				Skill Points allocated: {skillPoints} / {maxSkillPoints}
+				<Popover.Root>
+					<Popover.Trigger class="absolute bottom-1 right-1.5">
+						<Question class="size-4" />
+					</Popover.Trigger>
+					<Popover.Content>
+						<p>
+							You can assign extra skill points, spreading your initial 4 points over 3 skills. At
+							each level you get one more, and can move one.
+						</p>
+					</Popover.Content>
+				</Popover.Root>
 			</div>
 		</Card.Content>
 	</Card.Root>
-
-	<ListManager
-		bind:list={character.resources}
-		title="Resources"
-		emptyLabel="No resources."
-		initialRow={{ name: 'Resource', current: 0, max: 0 }}
-		{onchange}
-	>
-		{#snippet row(res)}
-			<Input bind:value={res.name} class="w-full" />
-			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />
-		{/snippet}
-		{#snippet deleteAlt(res)}
-			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />
-		{/snippet}
-	</ListManager>
 
 	<ListManager
 		bind:list={character.inventory}
@@ -524,14 +585,49 @@
 				</Button>
 				<Input
 					bind:value={item.name}
-					class="w-full pr-10 {item.bulky ? `font-black underline` : ``}"
+					class="w-full pr-10 {item.name.length === 0 ? 'pl-8' : ''} {item.bulky
+						? `font-black underline`
+						: ``}"
 				/>
+				{#if item.name.length === 0}
+					<Popover.Root>
+						<Popover.Trigger class="absolute left-2 top-1/2 -translate-y-1/2">
+							<Question class="size-4" />
+						</Popover.Trigger>
+						<Popover.Content>
+							<div class="">
+								{#each itemPop as [name, items]}
+									<div class="">
+										<div class="border-b">{name}</div>
+										{#each items as inv}
+											<button
+												type="button"
+												onclick={() => setItem(item, inv)}
+												class="block w-full px-1 text-left text-sm hover:bg-secondary"
+												>{inv.name}</button
+											>
+										{/each}
+									</div>
+								{/each}
+								<a
+									href="https://nimblecc.ttrpg.tools/#melee-weapons"
+									target="_blank"
+									class="text-blue-500 underline">Click for more details</a
+								>
+							</div>
+						</Popover.Content>
+					</Popover.Root>
+				{/if}
 			</div>
 			<Input class="w-20 md:w-24" bind:value={item.roll} />
 		{/snippet}
 		{#snippet deleteAlt(item)}
 			{#if item.roll}
-				<Button size="icon" variant="ghost" onclick={() => onroll(item.roll, item.name)}>
+				<Button
+					size="icon"
+					variant="ghost"
+					onclick={() => onroll(item.roll, item.name.replace(/^-/, ''))}
+				>
 					<Dice class="size-5" />
 				</Button>
 			{:else}
@@ -571,6 +667,22 @@
 		{onroll}
 		{onchange}
 	/>
+
+	<ListManager
+		bind:list={character.resources}
+		title="Resources"
+		emptyLabel="No resources."
+		initialRow={{ name: 'Resource', current: 0, max: 0 }}
+		{onchange}
+	>
+		{#snippet row(res)}
+			<Input bind:value={res.name} class="w-full" />
+			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />
+		{/snippet}
+		{#snippet deleteAlt(res)}
+			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />
+		{/snippet}
+	</ListManager>
 
 	<Card.Root>
 		<Card.Header>

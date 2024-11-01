@@ -1,4 +1,4 @@
-import type { Stat, Save, Skill, NimbleClass } from './types';
+import type { Stat, Save, Skill, NimbleClass, Ancestry, Inventory } from './types';
 
 export const stats: Stat[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const saves: Save[] = ['STR', 'DEX', 'WIT'];
@@ -133,4 +133,56 @@ export const allClasses: NimbleClass[] = [
 		die: 'd8',
 		startHp: 13
 	}
+];
+
+export const ancestries: Ancestry[] = [
+	{ name: 'Human', size: 'Medium' },
+	{ name: 'Elf', size: 'Medium' },
+	{ name: 'Dwarf', size: 'Medium' },
+	{ name: 'Halfling', size: 'Small' },
+	{ name: 'Gnome', size: 'Small' },
+	{ name: 'Bunbun', size: 'Small' },
+	{ name: 'Dragonborn', size: 'Medium' },
+	{ name: 'Kobold', size: 'Small' },
+	{ name: 'Tiefling', size: 'Medium' },
+	{ name: 'Goblin', size: 'Small' },
+	{ name: 'Orc', size: 'Medium' },
+	{ name: 'Birdfolk', size: 'Small or Medium' },
+	{ name: 'Stoatling', size: 'Small' },
+	{ name: 'Planarbeing', size: 'Medium' },
+	{ name: 'Oozeling/Construct', size: 'Small or Medium' },
+	{ name: 'Half-Giant', size: 'Large' },
+	{ name: 'Changeling', size: 'Medium' },
+	{ name: 'Celestial', size: 'Medium' },
+	{ name: 'Dryad/Shroomlings', size: 'Small or Medium' },
+	{ name: 'Minotaur/Beastfolk', size: 'Medium' },
+	{ name: 'Turtlefolk', size: 'Small or Medium' }
+];
+
+export const meleeWeapons: Inventory[] = [
+	{ name: 'Dagger', roll: '1d4!+[DEX]' },
+	{ name: 'Hand Scythe', roll: '1d4!v+[DEX]' },
+	{ name: 'Club/Mace', roll: '1d6!+[STR]' },
+	{ name: 'Hand Axe', roll: '1d6!+[STR]' },
+	{ name: 'Short Sword', roll: '1d6!+[STR]' },
+	{ name: 'Rapier', roll: '2d4!+[DEX]' },
+	{ name: 'Staff', roll: '1d8!+[STR]' },
+	{ name: 'Longsword', roll: '1d8!+[STR]' },
+	{ name: 'Battleaxe', roll: '1d10!+[STR]', bulky: true },
+	{ name: 'Lucerne Hammer', roll: '1d10!+[STR]' },
+	{ name: 'Glaive', roll: '1d10!+[STR]' },
+	{ name: 'Spear', roll: '1d4!+1d6+[STR]' },
+	{ name: 'Greatmaul', roll: '1d12!+[STR]', bulky: true },
+	{ name: 'Greataxe', roll: '2d6!+[STR]', bulky: true },
+	{ name: 'Greatsword', roll: '3d4!+[STR]', bulky: true }
+];
+
+export const rangedWeapons: Inventory[] = [
+	{ name: 'Sling', roll: '1d4!v+[DEX]' },
+	{ name: 'Javelins', roll: '1d6!+[STR]' },
+	{ name: 'Throwing Hammers', roll: '1d8!+[STR]' },
+	{ name: 'Shortbow', roll: '1d6!+[DEX]' },
+	{ name: 'Longbow', roll: '1d8!+[DEX]' },
+	{ name: 'Crossbow', roll: '4d4!+[DEX]', bulky: true },
+	{ name: 'Handheld Ballista', roll: '1d20!+[DEX]', bulky: true }
 ];

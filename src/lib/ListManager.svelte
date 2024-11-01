@@ -44,7 +44,11 @@
 	}
 </script>
 
-<Card.Root class={deleteMode ? `border-destructive` : ``}>
+<Card.Root
+	class={deleteMode
+		? `border-destructive bg-[repeating-linear-gradient(45deg,var(--tw-gradient-stops))] from-[rgba(255,0,0,0.1)] from-[length:0_20px] to-[transparent] to-[length:20px_40px]`
+		: ``}
+>
 	<Card.Header>
 		<div class="flex items-center gap-2">
 			<Card.Title class="flex-grow text-lg">{title}</Card.Title>
