@@ -366,7 +366,10 @@
 									<Button
 										variant={selectedId === char.id ? `outline` : `ghost`}
 										class="w-full justify-start gap-1 border-gray-500 p-0"
-										onclick={() => {
+										onclick={(ev) => {
+											if (ev.target instanceof Element && ev.target.nodeName === 'INPUT') {
+												return;
+											}
 											switchTo(char);
 											sheetOpen = false;
 										}}
