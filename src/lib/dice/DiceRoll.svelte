@@ -22,7 +22,15 @@
 		{rollModifier === 0 ? `` : `with${modDisplay} ${rollModifier < 0 ? `dis` : ''}advantage`}
 	</div>
 	<div class="flex items-center gap-4">
-		<div class="text-2xl font-bold">{result.value}</div>
+		<div
+			class="text-2xl font-bold {result.isCrit()
+				? `text-green-500`
+				: result.isMiss()
+					? `text-red-500`
+					: ``}"
+		>
+			{result.value}
+		</div>
 		<div class="flex gap-2 rounded-md border border-gray-400 p-2">
 			{#each result.dice as die}
 				<div class="flex flex-col items-center gap-1">

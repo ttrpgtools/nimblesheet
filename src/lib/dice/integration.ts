@@ -23,7 +23,11 @@ async function sendToOwlbear(
 		} = ${result.value}`;
 		OBR.broadcast.sendMessage(
 			`tools.ttrpg.obr-dicelog/roll`,
-			{ roll: rollMsg, from: pname },
+			{
+				roll: rollMsg,
+				from: pname,
+				meta: result.isCrit() ? 'crit' : result.isMiss() ? 'miss' : '',
+			},
 			{ destination: 'ALL' }
 		);
 	}

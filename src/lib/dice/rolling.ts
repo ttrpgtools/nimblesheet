@@ -89,6 +89,14 @@ class NimbleRoller {
 		this.formula = formula;
 	}
 
+	isCrit() {
+		return this.dice.find((x) => x.type === 'primary')?.isMax();
+	}
+
+	isMiss() {
+		return this.dice.find((x) => x.type === 'primary')?.isMin();
+	}
+
 	parseTerm(term: string) {
 		if (!term) return 0;
 		const neg = term.at(0) === '-';
