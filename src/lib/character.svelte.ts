@@ -8,13 +8,14 @@ import {
 	type Resource,
 	type Save,
 	type Skill,
-	type Stat
+	type Stat,
 } from './types';
 
 const SHEET_VERSION = 1.8;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
+		type: character.type,
 		created: $state.snapshot(character.created),
 		touched: $state.snapshot(character.touched),
 		version: $state.snapshot(character.version),
@@ -44,13 +45,14 @@ function serializeCharacter(character: NimbleCharacter) {
 		inventory: $state.snapshot(character.inventory),
 		utilspells: $state.snapshot(character.utilspells),
 		resources: $state.snapshot(character.resources),
-		notes: $state.snapshot(character.notes)
+		notes: $state.snapshot(character.notes),
 	};
 }
 
 function deserializeCharacter(data: CharacterSave) {
 	const newChar = new NimbleCharacter();
-	newChar.id = data.id;
+	if (data.id) newChar.id = data.id;
+	newChar.type = data.type || 'char';
 	newChar.created = data.created;
 	newChar.touched = data.touched;
 	newChar.version = SHEET_VERSION;
@@ -67,7 +69,7 @@ function deserializeCharacter(data: CharacterSave) {
 			DEX: +data.stats.DEX,
 			INT: +data.stats.INT,
 			//@ts-expect-error Migrate from old structure to new one.
-			WIL: Math.max(+data.stats['WIS'], +data.stats['CHA']) || 0
+			WIL: Math.max(+data.stats['WIS'], +data.stats['CHA']) || 0,
 		};
 	} else {
 		newChar.stats = data.stats;
@@ -96,6 +98,7 @@ function deserializeCharacter(data: CharacterSave) {
 
 export class NimbleCharacter {
 	id = id();
+	type = 'char';
 	created = new Date().toISOString();
 	touched = new Date().toISOString();
 	version = SHEET_VERSION;
@@ -110,7 +113,7 @@ export class NimbleCharacter {
 		STR: 0,
 		DEX: 0,
 		INT: 0,
-		WIL: 0
+		WIL: 0,
 	});
 	saveOverride: Partial<Record<Save, Alteration | 0>> = $state({});
 	skills: Skill[] = $state(structuredClone(allSkills));
@@ -141,17 +144,6 @@ export class NimbleCharacter {
 	static load(save: CharacterSave) {
 		return deserializeCharacter(save);
 	}
-
-	touch() {
-		this.touched = new Date().toISOString();
-	}
-  
-  clone() {
-    const copy = structuredClone(serializeCharacter(this));
-    copy.id = id();
-    copy.name += ' Copy';
-    return deserializeCharacter(copy);
-  }
 }
 
 export type CharacterSave = ReturnType<typeof serializeCharacter>;

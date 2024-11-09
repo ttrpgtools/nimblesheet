@@ -16,7 +16,6 @@
 	import CircleMinus from 'lucide-svelte/icons/circle-minus';
 	import Dice from 'lucide-svelte/icons/dices';
 	import Question from 'lucide-svelte/icons/circle-help';
-	import Add from 'lucide-svelte/icons/plus';
 
 	import { allClasses, stats, saves, ancestries, meleeWeapons, rangedWeapons } from './nimble';
 	import {
@@ -24,23 +23,21 @@
 		type Ancestry,
 		type Inventory,
 		type NimbleClass,
-		type Save
+		type Save,
 	} from './types';
 	import SpellSelect from './SpellSelect.svelte';
-	import Textarea from './components/ui/textarea/textarea.svelte';
-	import Owlbear from './Owlbear.svelte';
-	import Caret from './Caret.svelte';
-	import Coin from './Coin.svelte';
+	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
+	import Owlbear from '$lib/icons/OwlbearIcon.svelte';
+	import Caret from '$lib/icons/Caret.svelte';
+	import Coin from '$lib/icons/Coin.svelte';
 	import { rollDice } from './dice/integration';
-	import SceneItemsApi from '@owlbear-rodeo/sdk/lib/api/scene/SceneItemsApi';
+	import { owlbear } from './owlbear.svelte';
 
 	type Props = {
 		character: NimbleCharacter;
 		onchange: () => void;
-		rollModifier: number;
-		owlbearRoom?: string;
 	};
-	let { character = $bindable(), onchange, rollModifier, owlbearRoom }: Props = $props();
+	let { character = $bindable(), onchange }: Props = $props();
 	let currentClass: NimbleClass | undefined = $derived(
 		allClasses.find((c) => c.name === character.charClass)
 	);
@@ -76,13 +73,13 @@
 			KEY: (currentClass?.key ?? []).reduce(
 				(p, c) => Math.max(+character.stats[c], p),
 				Number.NEGATIVE_INFINITY
-			)
+			),
 		};
 		return await rollDice(roll, {
 			label,
 			context,
-			rollModifier: rollModifier + addMod,
-			characterName: character.name
+			rollModifier: addMod,
+			characterName: character.name,
 		});
 	}
 	function autoSel(ev: FocusEvent) {
@@ -95,7 +92,7 @@
 			character.shared = '';
 			// Unshare... somehow
 		} else {
-			character.shared = `owlbear::${owlbearRoom}`;
+			character.shared = `owlbear::${owlbear.room}`;
 		}
 		onchange();
 	}
@@ -110,7 +107,7 @@
 		onchange();
 	}
 
-	let isSharedHere = $derived(character.shared === `owlbear::${owlbearRoom}`);
+	let isSharedHere = $derived(character.shared === `owlbear::${owlbear.room}`);
 	let actions = $state(0);
 
 	async function rollInitiative() {
@@ -131,7 +128,7 @@
 
 	const itemPop: [string, Inventory[]][] = [
 		['Melee Weapons', meleeWeapons],
-		['Ranged Weapons', rangedWeapons]
+		['Ranged Weapons', rangedWeapons],
 	];
 
 	async function setItem(orig: Inventory, item: Inventory) {
@@ -152,7 +149,7 @@
 			required
 			bind:value={character.name}
 		/>
-		{#if owlbearRoom}
+		{#if owlbear.room}
 			<button type="button" onclick={toggleOwlShare}
 				><Owlbear size="size-10 {isSharedHere ? `` : `opacity-30`}" /></button
 			>
@@ -573,7 +570,7 @@
 				({invCount} / {+character.stats.STR + 10})
 			</div>
 		{/snippet}
-		{#snippet row(item)}
+		{#snippet row(item, delBtn)}
 			<div class="relative">
 				<Button
 					size="icon"
@@ -620,6 +617,7 @@
 				{/if}
 			</div>
 			<Input class="w-20 md:w-24" bind:value={item.roll} />
+			{@render delBtn()}
 		{/snippet}
 		{#snippet deleteAlt(item)}
 			{#if item.roll}
@@ -675,9 +673,10 @@
 		initialRow={{ name: 'Resource', current: 0, max: 0 }}
 		{onchange}
 	>
-		{#snippet row(res)}
+		{#snippet row(res, delBtn)}
 			<Input bind:value={res.name} class="w-full" />
 			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />
+			{@render delBtn()}
 		{/snippet}
 		{#snippet deleteAlt(res)}
 			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />

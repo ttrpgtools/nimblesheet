@@ -1,3 +1,5 @@
+import type { Component, ComponentType, SvelteComponent } from 'svelte';
+
 export type Stat = 'STR' | 'DEX' | 'INT' | 'WIL';
 export type Save = 'STR' | 'DEX' | 'WIT';
 export type Alteration = 1 | -1;
@@ -26,3 +28,16 @@ export interface NimbleClass {
 	startHp: number;
 	magicSchools?: MagicSchool[];
 }
+
+export type Identifiable = { id: string };
+export type Named = { name: string };
+export type Touchable = { touched: string };
+export type Typed = { type: string };
+export type Serializable<TOut = unknown> = { toJSON: () => TOut };
+export type Persistable = Identifiable & Typed & Touchable;
+
+export type NavItem = {
+	label: string;
+	icon: Component | ComponentType<SvelteComponent>;
+	id: string;
+};
