@@ -158,7 +158,7 @@
 		bind:list={character.actions}
 		title="Actions"
 		emptyLabel="No actions."
-		initialRow={{ name: 'Dagger', desc: 'Stabby stab.', roll: 'd4!' }}
+		initialRow={{ name: 'Bite', desc: '', roll: 'd4!' }}
 		{onchange}
 	>
 		{#snippet row(item, delBtn)}
@@ -167,7 +167,7 @@
 			</div>
 			<Input class="w-20 md:w-24" bind:value={item.roll} />
 			{@render delBtn()}
-			<Input class="col-span-3" bind:value={item.desc} />
+			<Input class="col-span-3 mb-3" bind:value={item.desc} />
 		{/snippet}
 		{#snippet deleteAlt(item)}
 			{#if item.roll}

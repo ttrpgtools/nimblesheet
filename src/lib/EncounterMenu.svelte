@@ -23,7 +23,7 @@
 					{#each manager.npcs as char}
 						<li>
 							<Button
-								variant="outline"
+								variant="ghost"
 								class="w-full justify-start gap-1 border-gray-500"
 								onclick={() => {
 									manager.addToEncounter(char);

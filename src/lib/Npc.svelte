@@ -6,6 +6,7 @@
 	import Heart from './icons/Heart.svelte';
 	import Movement from './icons/Movement.svelte';
 	import Dices from 'lucide-svelte/icons/dices';
+	import Dot from 'lucide-svelte/icons/dot';
 	import Trash_2 from 'lucide-svelte/icons/trash-2';
 	import { Button } from './components/ui/button';
 	import { rollDice } from './dice/integration';
@@ -114,14 +115,18 @@
 		{/if}
 		{#if npc.actionOptions}<div>{npc.actionOptions}</div>{/if}
 		{#if npc.actions.length}
-			<ul>
+			<ul class="flex flex-col gap-2">
 				{#each npc.actions as action}
-					<li class="flex flex-wrap items-center gap-1">
-						<button
-							type="button"
-							class="inline-block p-1"
-							onclick={() => onroll(action.roll, action.name)}><Dices class="size-4" /></button
-						>
+					<li class="flex flex-wrap items-center gap-1 border-r-4">
+						{#if action.roll}
+							<button
+								type="button"
+								class="inline-block"
+								onclick={() => onroll(action.roll, action.name)}><Dices class="size-6" /></button
+							>
+						{:else}
+							<Dot class="size-6" />
+						{/if}
 						<span class="font-bold">{action.name}{ENDS_LETTER.test(action.name) ? `.` : ``}</span>
 						<span>{action.desc}</span>
 					</li>

@@ -1,10 +1,8 @@
 import type { Npc } from './npc';
 import { clone, loadAllFromDb } from './persist';
 
-class EncounterManager {
-	npcs: Npc[] = $state([]);
-	encounter: Npc[] = $state([
-		{
+/* SAMPLE
+{
 			id: 'rando',
 			type: 'npc',
 			name: 'Spiny Fiend',
@@ -24,7 +22,10 @@ class EncounterManager {
 			],
 			actionOptions: 'Choose twice:',
 		},
-	]);
+*/
+class EncounterManager {
+	npcs: Npc[] = $state([]);
+	encounter: Npc[] = $state([]);
 	#instanceCounts = new Map<string, number>();
 
 	addToEncounter = (npc: Npc) => {
