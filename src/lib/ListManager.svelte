@@ -13,7 +13,8 @@
 		emptyLabel: string;
 		onchange: () => void;
 		initialRow: T;
-		row: Snippet<[T]>;
+		grid?: string;
+		row: Snippet<[T, Snippet]>;
 		deleteAlt: Snippet<[T]>;
 	};
 	let {
@@ -23,9 +24,10 @@
 		footerExtra,
 		emptyLabel,
 		initialRow,
+		grid,
 		onchange,
 		row,
-		deleteAlt
+		deleteAlt,
 	}: Props = $props();
 
 	let deleteMode = $state(false);
@@ -65,16 +67,18 @@
 			>
 		</div>
 	</Card.Header>
-	<Card.Content class="grid grid-cols-[minmax(0,_1fr)_auto_auto] gap-2">
+	<Card.Content class="grid {grid ? grid : `grid-cols-[minmax(0,_1fr)_auto_auto]`} gap-2">
 		{#each list as item, index}
-			{@render row(item)}
-			{#if deleteMode}
-				<Button size="icon" variant="outline" onclick={() => deleteRow(index)}>
-					<Trash class="size-5 text-destructive" />
-				</Button>
-			{:else}
-				{@render deleteAlt(item)}
-			{/if}
+			{#snippet delBtn()}
+				{#if deleteMode}
+					<Button size="icon" variant="outline" onclick={() => deleteRow(index)}>
+						<Trash class="size-5 text-destructive" />
+					</Button>
+				{:else}
+					{@render deleteAlt(item)}
+				{/if}
+			{/snippet}
+			{@render row(item, delBtn)}
 		{:else}
 			<div class="p-2 text-center text-muted-foreground text-sm col-span-3">{emptyLabel}</div>
 		{/each}

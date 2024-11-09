@@ -15,7 +15,7 @@
 		radiantSpells,
 		lightningSpells,
 		windSpells,
-		utilitySpells
+		utilitySpells,
 	} from './magic';
 	import SpellSchool from './SpellSchool.svelte';
 	import type { MagicSchool, Spell, Stat } from './types';
@@ -42,7 +42,7 @@
 		mana = $bindable(),
 		charClass = '',
 		onroll = () => {},
-		onchange
+		onchange,
 	}: Props = $props();
 
 	let tierCap = $derived(
@@ -69,7 +69,7 @@
 		{ name: 'Necrotic', spells: necroticSpells },
 		{ name: 'Radiant', spells: radiantSpells },
 		{ name: 'Wind', spells: windSpells },
-		{ name: 'Utility', spells: utilitySpells }
+		{ name: 'Utility', spells: utilitySpells },
 	] as const;
 
 	let additionalSchools: MagicSchool[] = $derived(
@@ -81,9 +81,12 @@
 					? ['Ice', 'Radiant']
 					: []
 	);
+	$inspect(additionalSchools);
 	let allAllowed = $derived(
 		additionalSchools.length > 0 && extraSchool ? [...allowed, extraSchool] : allowed
 	);
+	$inspect(allAllowed);
+	$inspect(extraSchool);
 	const available = $derived(
 		allSchools.reduce<SchoolGroup[]>((p, c) => {
 			if (c.name === 'Utility') {
@@ -105,12 +108,16 @@
 
 	function handleDropout(ev: Event) {
 		ev.stopPropagation();
+		ev.stopImmediatePropagation();
+		ev.preventDefault();
 		extraSchool = undefined;
 		onchange();
 	}
 	function dropOut(el: HTMLButtonElement) {
 		el.addEventListener('click', handleDropout);
-		() => el.removeEventListener('click', handleDropout);
+		return {
+			destroy: () => el.removeEventListener('click', handleDropout),
+		};
 	}
 
 	type Recipe = { stat: 'INT' | 'WIL'; level: boolean; double: boolean };
@@ -120,7 +127,7 @@
 		Shadowmancer: { stat: 'INT', level: false, double: false },
 		Shepherd: { stat: 'WIL', level: true, double: true },
 		Songweaver: { stat: 'WIL', level: true, double: true },
-		Stormshifter: { stat: 'WIL', level: true, double: true }
+		Stormshifter: { stat: 'WIL', level: true, double: true },
 	};
 	function getMaxMana(recipe: Recipe) {
 		if (!recipe) return 0;
@@ -147,7 +154,7 @@
 		</div>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
-		{#if additionalSchools.length && extraSchool == null}
+		{#if additionalSchools.length && !extraSchool}
 			<Select.Root type="single" bind:value={extraSchool} onValueChange={onchange}>
 				<Select.Trigger>
 					{extraSchool || `Additional school`}
@@ -171,7 +178,7 @@
 				>
 					<SpellSchool school={school.name} class="size-6" />
 					<div class="flex-grow text-left text-lg">{school.name}</div>
-					{#if extraSchool === school.name}<button type="button" class="" use:dropOut
+					{#if extraSchool === school.name}<button type="button" class="" onclick={handleDropout}
 							><X class="size-5" /></button
 						>{/if}
 					<Indicator class="size-5 transition-transform group-data-[state=open]:rotate-90" />
