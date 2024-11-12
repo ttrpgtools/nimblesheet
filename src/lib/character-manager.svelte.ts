@@ -21,13 +21,38 @@ class CharacterManager<
 	#activeRemote = false;
 	#type: 'char' | 'npc' = 'char';
 	#promoter: (base: TList) => TActive = (x) => x as unknown as TActive;
+	#serialize: (item: TActive) => TList = (x) => x as unknown as TList;
 	#factory: () => TActive;
+	#editSync: BroadcastChannel;
 
-	constructor(type: 'char' | 'npc', factory: () => TActive, promoter?: (base: TList) => TActive) {
+	constructor(
+		type: 'char' | 'npc',
+		factory: () => TActive,
+		promoter?: (base: TList) => TActive,
+		serialize?: (item: TActive) => TList
+	) {
 		this.#type = type;
 		this.#factory = factory;
+		this.#editSync = new BroadcastChannel(`tools.ttrpg.nimblesheet/editSync-${type}`);
+		this.#editSync.addEventListener('message', async (ev) => {
+			if (ev.data) {
+				if (ev.data === this.activeId && !this.#activeRemote) {
+					await this.#reload();
+				}
+				await this.load();
+			}
+		});
 		if (promoter) this.#promoter = promoter;
+		if (serialize) this.#serialize = serialize;
 	}
+
+	#reload = async () => {
+		if (!this.activeId) return;
+		const item = await loadSingle<TList>(this.activeId, this.#type);
+		if (item) {
+			this.active = this.#promoter(item);
+		}
+	};
 
 	load = async () => {
 		this.list = await loadAllFromDb<TList>(this.#type);
@@ -61,13 +86,16 @@ class CharacterManager<
 	saveActive = async () => {
 		if (!this.active || this.#activeRemote) return;
 		await persistToIndexedDB($state.snapshot(this.active));
+		this.#editSync.postMessage(this.activeId);
 		await this.load();
 	};
 
 	duplicate = async () => {
 		if (!this.active) return;
 		await this.saveActive();
-		const copy = clone(this.active);
+		const dto = this.#serialize(this.active);
+		const dtocopy = clone(dto);
+		const copy = this.#promoter(dtocopy);
 		this.activeId = copy.id;
 		this.active = copy;
 		await this.saveActive();
@@ -121,6 +149,7 @@ class CharacterManager<
 export const charManager = new CharacterManager<CharacterSave, NimbleCharacter>(
 	'char',
 	() => new NimbleCharacter(),
-	NimbleCharacter.load
+	NimbleCharacter.load,
+	(x) => x.toJSON()
 );
 export const npcManager = new CharacterManager<Npc>('npc', createBlankNpc);

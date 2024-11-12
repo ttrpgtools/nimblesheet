@@ -8,12 +8,14 @@
 	import Export from 'lucide-svelte/icons/download';
 	import Import from 'lucide-svelte/icons/upload';
 	import Trash from 'lucide-svelte/icons/trash-2';
+	import Popout from 'lucide-svelte/icons/picture-in-picture-2';
 
 	import ConfirmButton from './ConfirmButton.svelte';
 	import { exportCharacters } from './export';
 
 	import { charManager, npcManager } from '$lib/character-manager.svelte';
 	import Sidebar from './Sidebar.svelte';
+	import { owlbear } from './owlbear.svelte';
 
 	type Props = {
 		type: 'char' | 'npc';
@@ -39,6 +41,10 @@
 		} else {
 			selectedIds = manager.list.map((c) => c.id);
 		}
+	}
+
+	function popout() {
+		owlbear.popout();
 	}
 </script>
 
@@ -115,6 +121,9 @@
 			><Import class="mr-2 size-4" />Import from file</Button
 		>
 		<input type="file" use:input />
+		{#if owlbear.embedded}
+			<Button variant="secondary" onclick={popout}><Popout class="mr-2 size-4" />Pop out</Button>
+		{/if}
 	{/snippet}
 </Sidebar>
 

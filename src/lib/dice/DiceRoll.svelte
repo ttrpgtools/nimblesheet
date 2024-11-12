@@ -3,13 +3,13 @@
 	import Explode from './Explode.svelte';
 	import Vicious from './Vicious.svelte';
 	import X from 'lucide-svelte/icons/x';
-	import type { evaluateDiceRoll } from './rolling';
+	import type { NimbleRoll } from './rolling';
 
 	type Props = {
 		formula: string;
 		label?: string;
 		rollModifier?: number;
-		result: Awaited<ReturnType<typeof evaluateDiceRoll>>;
+		result: NimbleRoll;
 	};
 	let { formula, label = '', rollModifier = 0, result }: Props = $props();
 
@@ -23,9 +23,9 @@
 	</div>
 	<div class="flex items-center gap-4">
 		<div
-			class="text-2xl font-bold {result.isCrit()
+			class="text-2xl font-bold {result.isCrit
 				? `text-green-500`
-				: result.isMiss()
+				: result.isMiss
 					? `text-red-500`
 					: ``}"
 		>
@@ -43,7 +43,7 @@
 					{:else}
 						<Die which={die.sides} size="size-4" />
 					{/if}
-					<div class="{die.isMax() ? `text-green-500` : ''} {die.isMin() ? `text-red-500` : ``}">
+					<div class="{die.isMax ? `text-green-500` : ''} {die.isMin ? `text-red-500` : ``}">
 						{die.value}
 					</div>
 				</div>

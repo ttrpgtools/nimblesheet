@@ -81,12 +81,11 @@
 					? ['Ice', 'Radiant']
 					: []
 	);
-	$inspect(additionalSchools);
+
 	let allAllowed = $derived(
 		additionalSchools.length > 0 && extraSchool ? [...allowed, extraSchool] : allowed
 	);
-	$inspect(allAllowed);
-	$inspect(extraSchool);
+
 	const available = $derived(
 		allSchools.reduce<SchoolGroup[]>((p, c) => {
 			if (c.name === 'Utility') {

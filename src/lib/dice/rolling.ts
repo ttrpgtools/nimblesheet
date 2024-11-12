@@ -36,16 +36,27 @@ class NimbleDie {
 		this.type = type;
 	}
 
-	isMax() {
+	get isMax() {
 		return this.sides === this.value;
 	}
 
-	isMin() {
+	get isMin() {
 		return this.value === 1;
 	}
 
 	get sortPosition() {
 		return this.position + (this.type === 'dropped' ? 2000 : 0);
+	}
+
+	toJSON() {
+		return {
+			sides: this.sides,
+			value: this.value,
+			position: this.position,
+			type: this.type,
+			isMax: this.isMax,
+			isMin: this.isMin,
+		};
 	}
 }
 
@@ -59,7 +70,7 @@ function nrolls(sides: number, count = 5) {
 }
 
 function blowUp(primary: NimbleDie, explode: boolean, vicious: boolean) {
-	if (!primary.isMax()) return [];
+	if (!primary.isMax) return [];
 	const extra: NimbleDie[] = [];
 	let crit = true;
 	while (crit) {
@@ -70,7 +81,7 @@ function blowUp(primary: NimbleDie, explode: boolean, vicious: boolean) {
 		if (explode) {
 			const eroll = new NimbleDie(primary.sides, 'exploded');
 			extra.push(eroll);
-			crit = eroll.isMax();
+			crit = eroll.isMax;
 		}
 	}
 	return extra;
@@ -89,12 +100,12 @@ class NimbleRoller {
 		this.formula = formula;
 	}
 
-	isCrit() {
-		return this.dice.find((x) => x.type === 'primary')?.isMax();
+	get isCrit() {
+		return this.dice.find((x) => x.type === 'primary')?.isMax;
 	}
 
-	isMiss() {
-		return this.dice.find((x) => x.type === 'primary')?.isMin();
+	get isMiss() {
+		return this.dice.find((x) => x.type === 'primary')?.isMin;
 	}
 
 	parseTerm(term: string) {
@@ -156,6 +167,16 @@ class NimbleRoller {
 		this.value = value;
 		return value;
 	}
+
+	toJSON() {
+		return {
+			formula: this.formula,
+			value: this.value,
+			dice: this.dice.map((x) => x.toJSON()),
+			isCrit: this.isCrit ?? false,
+			isMiss: this.isMiss ?? false,
+		};
+	}
 }
 
 // 2d6+2, 1 -> 3d6rl1+2
@@ -187,5 +208,7 @@ export async function evaluateDiceRoll(
 	expression = integrateModifier(expression, modifier);
 	const roller = new NimbleRoller(expression);
 	await roller.roll();
-	return roller;
+	return roller.toJSON();
 }
+
+export type NimbleRoll = ReturnType<NimbleRoller['toJSON']>;

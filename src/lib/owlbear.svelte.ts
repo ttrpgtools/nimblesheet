@@ -1,7 +1,18 @@
 import OBR, { type Player } from '@owlbear-rodeo/sdk';
 import { NimbleCharacter, type CharacterSave } from './character.svelte';
+import type { NimbleRoll } from './dice/rolling';
+import {
+	sync,
+	type CharacterShareMessage,
+	type IPopoutMessenger,
+	type RollMessage,
+	type RoomAnnounceMessage,
+} from './owlbear-sync';
 
+//const logger = console.log.bind(console);
+const logger = (...args: any) => {};
 const PLAYER_SHEET_KEY = 'tools.ttrpg.nimblesheet/sheets';
+const DICE_ROLL_MESSAGE = `tools.ttrpg.obr-dicelog/roll`;
 class OwlbearIntegration {
 	embedded = OBR.isAvailable;
 	ready = $state(OBR.isReady);
@@ -11,6 +22,18 @@ class OwlbearIntegration {
 	active: NimbleCharacter | undefined = $state();
 	players: Record<string, Player> = $state({});
 	#init = false;
+	#sync: IPopoutMessenger;
+
+	constructor(popMsg: IPopoutMessenger) {
+		this.#sync = popMsg;
+		this.#sync.on('roll', this.#handleRollMessage);
+		this.#sync.on('room', this.#handleRoomMessage);
+		this.#sync.on('hail', this.#handleHailMessage);
+		this.#sync.on('charshare', this.#handleCharacterShareMessage);
+		if (!this.embedded) {
+			this.#sync.send({ type: 'hail' });
+		}
+	}
 
 	#extractPlayerSheets(party: Player[]) {
 		this.characters = [];
@@ -52,13 +75,73 @@ class OwlbearIntegration {
 		this.#init = true;
 	}
 
-	async saveCharacterToOwlbear(character: NimbleCharacter) {
-		if (this.ready && character.shared === `owlbear::${this.room}`) {
+	#handleHailMessage = () => {
+		if (this.embedded && this.room) {
+			this.#sync.send({ type: 'room', room: this.room });
+		}
+	};
+
+	#handleRoomMessage = ({ room }: RoomAnnounceMessage) => {
+		if (!this.embedded) {
+			this.room = room;
+		}
+	};
+
+	#handleRollMessage = async ({ roll, label, character }: RollMessage) => {
+		if (this.embedded && this.ready) {
+			logger(`[OWLBEAR:handleRollMessage] Received roll`, roll);
+			const pname = await OBR.player.getName();
+			const rollMsg = `${character || pname} rolled ${roll.formula}${
+				label ? ` (${label})` : ``
+			} = ${roll.value}`;
+			OBR.broadcast.sendMessage(
+				DICE_ROLL_MESSAGE,
+				{
+					roll: rollMsg,
+					from: pname,
+					meta: roll.isCrit ? 'crit' : roll.isMiss ? 'miss' : '',
+				},
+				{ destination: 'ALL' }
+			);
+		}
+	};
+
+	async sendDiceRoll(roll: NimbleRoll, label?: string, character?: string) {
+		const msg = { type: 'roll' as const, roll, label, character };
+		logger(`[OWLBEAR:sendDiceRoll] Received roll`, msg);
+		if (this.embedded && this.ready) {
+			await this.#handleRollMessage(msg);
+		} else {
+			this.#sync.send(msg);
+		}
+	}
+
+	async popout() {
+		try {
+			await this.#sync.popout();
+			//this.#sync.send({ type: 'room', room: this.room });
+		} catch {
+			console.warn('[NIMBLESHEET] Popout took too long');
+		}
+	}
+
+	#handleCharacterShareMessage = async ({ character }: CharacterShareMessage) => {
+		if (this.embedded && this.ready && character.shared === `owlbear::${this.room}`) {
 			OBR.player.setMetadata({
 				[PLAYER_SHEET_KEY]: {
-					[character.id]: character.toJSON(),
+					[character.id]: character,
 				},
 			});
+		}
+	};
+
+	async saveCharacterToOwlbear(character: NimbleCharacter) {
+		if (!this.room || character.shared !== `owlbear::${this.room}`) return;
+		const msg = { type: 'charshare' as const, character: character.toJSON() };
+		if (this.embedded && this.ready) {
+			await this.#handleCharacterShareMessage(msg);
+		} else {
+			this.#sync.send(msg);
 		}
 	}
 
@@ -68,4 +151,4 @@ class OwlbearIntegration {
 	};
 }
 
-export const owlbear = new OwlbearIntegration();
+export const owlbear = new OwlbearIntegration(sync);

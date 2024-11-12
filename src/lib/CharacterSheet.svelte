@@ -114,7 +114,7 @@
 		const result = await onroll(`d20+[INIT]`, `Initiative`);
 		if (result.value < 10) {
 			actions = 1;
-		} else if (result.value >= 20 || result.dice[0].isMax()) {
+		} else if (result.value >= 20 || result.isCrit) {
 			actions = 3;
 		} else {
 			actions = 2;
