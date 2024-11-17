@@ -207,6 +207,10 @@
 									</Popover.Trigger>
 									<Popover.Content>
 										<div>
+											{#if spell.actions !== 1}<span class="font-bold"
+													>[{spell.actions} Actions]</span
+												>
+											{/if}
 											{spell.desc}
 										</div>
 									</Popover.Content>
