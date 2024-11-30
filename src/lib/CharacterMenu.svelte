@@ -1,14 +1,17 @@
 <script lang="ts">
-	import { Button } from './components/ui/button';
+	import { Button, buttonVariants } from './components/ui/button';
 	import Warning from '$lib/WarningOverwrite.svelte';
 
 	import SheetLogo from 'lucide-svelte/icons/square-user-round';
 	import NpcLogo from 'lucide-svelte/icons/squirrel';
 	import Duplicate from 'lucide-svelte/icons/copy';
+	import Send from 'lucide-svelte/icons/send';
 	import Export from 'lucide-svelte/icons/download';
 	import Import from 'lucide-svelte/icons/upload';
 	import Trash from 'lucide-svelte/icons/trash-2';
 	import Popout from 'lucide-svelte/icons/picture-in-picture-2';
+
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	import ConfirmButton from './ConfirmButton.svelte';
 	import { exportCharacters } from './export';
@@ -46,6 +49,16 @@
 	function popout() {
 		owlbear.popout();
 	}
+
+	function sendToPlayer(id: string) {
+		if (type !== 'char') return;
+		const sheet = charManager.list.find((c) => c.id === selectedIds[0]);
+		if (!sheet) return;
+		console.log(`Send to player`, id, $state.snapshot(sheet));
+		owlbear.sendSheetToPlayer($state.snapshot(sheet), id);
+	}
+
+	$effect(() => (type === 'char' ? owlbear.onSentSheet(charManager.receive) : () => {}));
 </script>
 
 <Sidebar
@@ -113,9 +126,30 @@
 			</Button>
 		{/if}
 		{#if manager.list.length > 0}
-			<Button variant="secondary" onclick={() => exportCharacters(selectedIds, type)}
-				><Export class="mr-2 size-4" />Export {selectedIds.length ? `Selected` : `All`}</Button
-			>
+			<div class="flex items-center gap-2">
+				<Button
+					variant="secondary"
+					class="flex-grow"
+					onclick={() => exportCharacters(selectedIds, type)}
+					><Export class="mr-2 size-4" />Export {selectedIds.length ? `Selected` : `All`}</Button
+				>
+				{#if selectedIds.length === 1 && owlbear.role === 'GM'}
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline' })}
+							><Send class="size-4" /></DropdownMenu.Trigger
+						>
+						<DropdownMenu.Content>
+							{#each owlbear.party as player}
+								<DropdownMenu.Item onclick={() => sendToPlayer(player.id)}
+									>{player.name}</DropdownMenu.Item
+								>
+							{:else}
+								<DropdownMenu.Item>No players available</DropdownMenu.Item>
+							{/each}
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				{/if}
+			</div>
 		{/if}
 		<Button variant="secondary" onclick={startImport}
 			><Import class="mr-2 size-4" />Import from file</Button

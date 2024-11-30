@@ -26,8 +26,15 @@ export type RollMessage = {
 export type HailMessage = { type: 'hail' };
 export type RoomAnnounceMessage = { type: 'room'; room: string };
 export type CharacterShareMessage = { type: 'charshare'; character: CharacterSave };
+export type SheetSendMessage = { type: 'sheetsend'; playerId: string; sheet: CharacterSave };
 
-export type SyncMessages = RollMessage | HailMessage | RoomAnnounceMessage | CharacterShareMessage;
+export type SyncMessages =
+	| RollMessage
+	| HailMessage
+	| RoomAnnounceMessage
+	| CharacterShareMessage
+	| SheetSendMessage;
+
 type SyncMessageHandlerMap = {
 	[K in SyncMessages['type']]: ((message: Extract<SyncMessages, { type: K }>) => void)[];
 };

@@ -7,12 +7,15 @@ import {
 	type IPopoutMessenger,
 	type RollMessage,
 	type RoomAnnounceMessage,
+	type SheetSendMessage,
 } from './owlbear-sync';
+import { id } from './random';
 
 //const logger = console.log.bind(console);
 const logger = (...args: any) => {};
 const PLAYER_SHEET_KEY = 'tools.ttrpg.nimblesheet/sheets';
 const DICE_ROLL_MESSAGE = `tools.ttrpg.obr-dicelog/roll`;
+const getShareSheetMessage = (id: string) => `tools.ttrpg.nimblesheet/share-sheet/${id}`;
 class OwlbearIntegration {
 	embedded = OBR.isAvailable;
 	ready = $state(OBR.isReady);
@@ -21,8 +24,10 @@ class OwlbearIntegration {
 	characters: CharacterSave[] = $state([]);
 	active: NimbleCharacter | undefined = $state();
 	players: Record<string, Player> = $state({});
+	party: Player[] = $state([]);
 	#init = false;
 	#sync: IPopoutMessenger;
+	#sheetListeners: ((data: CharacterSave) => void)[] = [];
 
 	constructor(popMsg: IPopoutMessenger) {
 		this.#sync = popMsg;
@@ -35,9 +40,17 @@ class OwlbearIntegration {
 		}
 	}
 
+	onSentSheet(fn: (data: CharacterSave) => void) {
+		this.#sheetListeners.push(fn);
+		return () => {
+			this.#sheetListeners = this.#sheetListeners.filter((x) => x !== fn);
+		};
+	}
+
 	#extractPlayerSheets(party: Player[]) {
 		this.characters = [];
 		if (this.role === 'GM') {
+			this.party = party;
 			for (const player of party) {
 				const sheets = player.metadata[PLAYER_SHEET_KEY] as
 					| Record<string, CharacterSave>
@@ -70,6 +83,11 @@ class OwlbearIntegration {
 			});
 			OBR.party.onChange(async (party) => {
 				this.#extractPlayerSheets(party);
+			});
+			OBR.broadcast.onMessage(getShareSheetMessage(OBR.player.id), ({ data }) => {
+				if (data && typeof data === 'object' && 'id' in data) {
+					this.#sheetListeners.forEach((n) => n(data as CharacterSave));
+				}
 			});
 		});
 		this.#init = true;
@@ -122,6 +140,23 @@ class OwlbearIntegration {
 			//this.#sync.send({ type: 'room', room: this.room });
 		} catch {
 			console.warn('[NIMBLESHEET] Popout took too long');
+		}
+	}
+
+	#handleSendingSheet = async ({ playerId, sheet }: SheetSendMessage) => {
+		if (this.embedded && this.ready) {
+			OBR.broadcast.sendMessage(getShareSheetMessage(playerId), sheet);
+		}
+	};
+
+	async sendSheetToPlayer(character: CharacterSave, playerId: string) {
+		const sheet = structuredClone(character);
+		sheet.id = id();
+		const msg = { type: 'sheetsend' as const, playerId, sheet };
+		if (this.embedded && this.ready) {
+			await this.#handleSendingSheet(msg);
+		} else {
+			this.#sync.send(msg);
 		}
 	}
 

@@ -69,11 +69,11 @@ class CharacterManager<
 		}
 	};
 
-	remote = async (data: TList) => {
+	receive = async (data: TList) => {
 		if (!data || this.activeId === data.id) return;
 		this.activeId = data.id;
 		this.active = this.#promoter(data);
-		this.#activeRemote = true;
+		await this.saveActive();
 	};
 
 	create = async () => {
