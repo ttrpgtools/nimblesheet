@@ -10,6 +10,7 @@ import {
 } from './persist';
 import type { Named, Persistable } from './types';
 import { createImporter } from './import';
+import { id } from './random';
 
 class CharacterManager<
 	TList extends Persistable & Named,
@@ -119,6 +120,11 @@ class CharacterManager<
 		incoming: TList[],
 		confirm?: (list: TList[]) => boolean | PromiseLike<boolean>
 	) => {
+		incoming.forEach((inc) => {
+			if (!inc.id) {
+				inc.id = id();
+			}
+		});
 		const currentIds = new Set(this.list.map((x) => x.id));
 		const toOverwrite = incoming.filter((inc) => currentIds.has(inc.id));
 		if (toOverwrite.length > 0) {
