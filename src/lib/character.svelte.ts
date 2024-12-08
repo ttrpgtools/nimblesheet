@@ -53,8 +53,8 @@ function deserializeCharacter(data: CharacterSave) {
 	const newChar = new NimbleCharacter();
 	if (data.id) newChar.id = data.id;
 	newChar.type = data.type || 'char';
-	newChar.created = data.created;
-	newChar.touched = data.touched;
+	newChar.created = data.created ?? new Date().toISOString();
+	newChar.touched = data.touched ?? new Date().toISOString();
 	newChar.version = SHEET_VERSION;
 	newChar.shared = data.shared;
 	newChar.name = data.name;
@@ -72,10 +72,15 @@ function deserializeCharacter(data: CharacterSave) {
 			WIL: Math.max(+data.stats['WIS'], +data.stats['CHA']) || 0,
 		};
 	} else {
-		newChar.stats = data.stats;
+		newChar.stats = data.stats ?? {
+			STR: 0,
+			DEX: 0,
+			INT: 0,
+			WIL: 0,
+		};
 	}
 	newChar.saveOverride = data.saveOverride ?? {};
-	newChar.skills = data.skills;
+	newChar.skills = data.skills ?? structuredClone(allSkills);
 	newChar.armor = +data.armor;
 	newChar.hp = +data.hp;
 	newChar.maxHp = +data.maxHp;
@@ -84,15 +89,15 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.maxHd = +data.maxHd;
 	newChar.initiative = +data.initiative;
 	newChar.speed = +data.speed;
-	newChar.wounds = data.wounds;
+	newChar.wounds = data.wounds ?? 0;
 	newChar.gp = data.gp ?? 0;
 	newChar.sp = data.sp ?? 0;
 	newChar.mana = data.mana ?? 0;
 	newChar.extraSchool = data.extraSchool;
-	newChar.inventory = data.inventory;
-	newChar.utilspells = data.utilspells;
-	newChar.resources = data.resources;
-	newChar.notes = data.notes;
+	newChar.inventory = data.inventory ?? [];
+	newChar.utilspells = data.utilspells ?? {};
+	newChar.resources = data.resources ?? [];
+	newChar.notes = data.notes ?? '';
 	return newChar;
 }
 
