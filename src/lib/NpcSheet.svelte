@@ -182,7 +182,7 @@
 			<Input
 				bind:value={character.actionOptions}
 				placeholder="Action Options"
-				class="w-auto flex-grow"
+				class="w-auto grow"
 			/>
 		{/snippet}
 	</ListManager>

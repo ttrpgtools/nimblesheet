@@ -422,7 +422,7 @@
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-3">
-			<h4 class="flex-grow text-lg font-bold">Save</h4>
+			<h4 class="grow text-lg font-bold">Save</h4>
 			{#each saves as save}
 				<Button
 					variant="secondary"
@@ -440,7 +440,7 @@
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-4">
-			<h4 class=" flex-grow text-lg font-bold">Actions</h4>
+			<h4 class=" grow text-lg font-bold">Actions</h4>
 			<button
 				onclick={() => {
 					actions = 0;
@@ -465,7 +465,7 @@
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-3">
-			<h4 class="flex-grow text-lg font-bold">Wounds</h4>
+			<h4 class="grow text-lg font-bold">Wounds</h4>
 			<button
 				type="button"
 				onclick={() => {

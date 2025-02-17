@@ -33,7 +33,7 @@
 				</ul>
 			</nav>
 		{:else}
-			<div class="flex-grow">
+			<div class="grow">
 				<div class="rounded-lg border-4 border-dashed p-8 text-center italic text-muted-foreground">
 					No characters available. Make sure players enable sharing on their sheets.
 				</div>

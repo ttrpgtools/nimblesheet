@@ -32,7 +32,7 @@
 
 <div class="mx-auto flex w-full max-w-lg flex-col gap-2 sm:gap-4">
 	<div class="flex items-center gap-2">
-		<h2 class="flex-grow text-left text-xl font-bold">Encounter</h2>
+		<h2 class="grow text-left text-xl font-bold">Encounter</h2>
 		{#if delMode}
 			<Button variant="destructive" onclick={clear}>All</Button>
 			<Button variant="destructive" onclick={clearDead}>Dead</Button>

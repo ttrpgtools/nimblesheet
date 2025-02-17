@@ -53,7 +53,7 @@
 >
 	<Card.Header>
 		<div class="flex items-center gap-2">
-			<Card.Title class="flex-grow text-lg">{title}</Card.Title>
+			<Card.Title class="grow text-lg">{title}</Card.Title>
 			{#if headerExtra}
 				{@render headerExtra()}
 			{/if}
@@ -67,7 +67,7 @@
 			>
 		</div>
 	</Card.Header>
-	<Card.Content class="grid {grid ? grid : `grid-cols-[minmax(0,_1fr)_auto_auto]`} gap-2">
+	<Card.Content class="grid {grid ? grid : `grid-cols-[minmax(0,1fr)_auto_auto]`} gap-2">
 		{#each list as item, index}
 			{#snippet delBtn()}
 				{#if deleteMode}

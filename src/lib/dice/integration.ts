@@ -20,7 +20,7 @@ export async function rollDice(
 	//@ts-expect-error DiceRoll is Svelte 5 and doesn't match the expected Svelte 4 type
 	toast(DiceRoll, {
 		componentProps: { formula, label, rollModifier, result },
-		class: '![--initial-height:7.5rem] !bg-gray-200 dark:!bg-gray-800',
+		class: '[--initial-height:7.5rem]! bg-gray-200! dark:bg-gray-800!',
 	});
 	await owlbear.sendDiceRoll(result, label, characterName);
 	return result;

@@ -68,7 +68,7 @@
 >
 	{#snippet children(done)}
 		{#if manager.list.length}
-			<nav class="-mx-2 flex-grow">
+			<nav class="-mx-2 grow">
 				<label class="-mt-3 flex items-center gap-4 p-3 text-muted-foreground">
 					<input
 						type="checkbox"
@@ -104,7 +104,7 @@
 				</ul>
 			</nav>
 		{:else}
-			<div class="flex-grow">
+			<div class="grow">
 				<div class="rounded-lg border-4 border-dashed p-8 text-center italic text-muted-foreground">
 					No characters created. Close this and start editing, or import from a saved file below.
 				</div>
@@ -129,7 +129,7 @@
 			<div class="flex items-center gap-2">
 				<Button
 					variant="secondary"
-					class="flex-grow"
+					class="grow"
 					onclick={() => exportCharacters(selectedIds, type)}
 					><Export class="mr-2 size-4" />Export {selectedIds.length ? `Selected` : `All`}</Button
 				>

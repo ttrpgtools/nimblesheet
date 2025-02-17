@@ -138,7 +138,7 @@
 <Card.Root>
 	<Card.Header>
 		<div class="flex items-center gap-2">
-			<Card.Title class="w-full flex-grow text-lg">Spells</Card.Title>
+			<Card.Title class="w-full grow text-lg">Spells</Card.Title>
 			{#if available.length}
 				<Mana />
 				<Input
@@ -176,7 +176,7 @@
 						: ``}"
 				>
 					<SpellSchool school={school.name} class="size-6" />
-					<div class="flex-grow text-left text-lg">{school.name}</div>
+					<div class="grow text-left text-lg">{school.name}</div>
 					{#if extraSchool === school.name}<button type="button" class="" onclick={handleDropout}
 							><X class="size-5" /></button
 						>{/if}
@@ -195,7 +195,7 @@
 								/>
 								<SpellSchool school={spell.school} />
 							{/if}
-							<div class="flex w-full flex-grow items-center gap-2 py-2">
+							<div class="flex w-full grow items-center gap-2 py-2">
 								<Popover.Root>
 									<Popover.Trigger>
 										<div

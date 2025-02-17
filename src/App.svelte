@@ -65,7 +65,7 @@
 	<header
 		class="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/30 px-4 backdrop-blur-md md:px-6"
 	>
-		<nav class="flex w-full flex-grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
+		<nav class="flex w-full grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
 			<h1 class="flex items-center gap-2 text-lg font-semibold md:text-base">
 				<NavMenu items={nav} current={currentNav} {onnav} disabled={disableNav} />
 				<span class="whitespace-nowrap">{pageTitle}</span>

@@ -18,7 +18,7 @@
 <Sidebar title={`Encounter (${manager.encounter.length})`} icon={Swords}>
 	{#snippet children(done)}
 		{#if manager.npcs.length}
-			<nav class="-mx-2 flex-grow">
+			<nav class="-mx-2 grow">
 				<ul>
 					{#each manager.npcs as char}
 						<li>
@@ -36,7 +36,7 @@
 				</ul>
 			</nav>
 		{:else}
-			<div class="flex-grow">
+			<div class="grow">
 				<div class="rounded-lg border-4 border-dashed p-8 text-center italic text-muted-foreground">
 					No NPCs created. Switch to the NPC menu to add some.
 				</div>
