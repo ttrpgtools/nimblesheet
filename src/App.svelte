@@ -19,6 +19,7 @@
 	import OwlbearIcon from '$lib/icons/OwlbearIcon.svelte';
 	import PageOwlbear from './page-owlbear.svelte';
 	import OwlbearMenu from '$lib/OwlbearMenu.svelte';
+	import ModeSwitcher from '$lib/ModeSwitcher.svelte';
 
 	$effect(() => {
 		owlbear.loadOwlbear();
@@ -63,7 +64,7 @@
 <Toaster richColors duration={10000} closeButton />
 <div class="flex min-h-screen w-full flex-col">
 	<header
-		class="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/30 px-4 backdrop-blur-md md:px-6"
+		class="bg-background/30 sticky top-0 z-50 flex h-16 items-center gap-4 border-b px-4 backdrop-blur-md md:px-6"
 	>
 		<nav class="flex w-full grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
 			<h1 class="flex items-center gap-2 text-lg font-semibold md:text-base">
@@ -80,4 +81,15 @@
 	<main class="flex flex-col gap-4 p-4 md:gap-8 md:p-10">
 		<route.page />
 	</main>
+	<footer
+		class="mx-auto flex w-full max-w-lg flex-row gap-2 border-t p-4 text-sm text-gray-500 sm:gap-4 md:mb-8"
+	>
+		<p>
+			<a href="https://nimblesheet.ttrpg.tools" class="text-blue-600 dark:text-blue-300"
+				>NimbleSheet</a
+			> is an independent product published under the Nimble 3rd Party Creator License and is not affiliated
+			with Nimble Co. Nimble © 2025 Nimble Co.
+		</p>
+		<ModeSwitcher inline />
+	</footer>
 </div>

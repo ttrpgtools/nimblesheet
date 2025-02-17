@@ -1,4 +1,6 @@
 <script lang="ts">
+	let { inline = false }: { inline?: boolean } = $props();
+
 	let darkMode = $state(false);
 	const THEME_KEY = 'themePreference';
 
@@ -17,7 +19,7 @@
 	});
 </script>
 
-<button class="absolute right-0 top-0 h-8 w-8 p-2" onclick={toggleMode}>
+<button class={['size-8 flex-none p-2', !inline && 'absolute top-0 right-0']} onclick={toggleMode}>
 	{#if darkMode}
 		<svg
 			aria-hidden="true"

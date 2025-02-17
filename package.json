@@ -12,7 +12,6 @@
 		"lint": "prettier --check ."
 	},
 	"devDependencies": {
-		"@mateothegreat/svelte5-router": "^0.1.38",
 		"@owlbear-rodeo/sdk": "^3.1.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@tailwindcss/vite": "^4.0.6",
