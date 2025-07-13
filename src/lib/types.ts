@@ -1,7 +1,7 @@
 import type { Component, ComponentType, SvelteComponent } from 'svelte';
 
 export type Stat = 'STR' | 'DEX' | 'INT' | 'WIL';
-export type Save = 'STR' | 'DEX' | 'WIT';
+export type Save = 'STR' | 'DEX' | 'INT' | 'WIL';
 export type Alteration = 1 | -1;
 export type Die = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20';
 export type Skill = { name: string; type: Stat; extra: number };

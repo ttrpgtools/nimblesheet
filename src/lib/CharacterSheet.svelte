@@ -167,7 +167,7 @@
 					bind:value={character.ancestry}
 				/>
 				<Popover.Root>
-					<Popover.Trigger class="absolute right-2 top-1/2 -translate-y-1/2">
+					<Popover.Trigger class="absolute top-1/2 right-2 -translate-y-1/2">
 						<Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
@@ -176,7 +176,7 @@
 								<button
 									type="button"
 									onclick={() => setRace(race)}
-									class="block w-full text-left text-sm hover:bg-secondary"
+									class="hover:bg-secondary block w-full text-left text-sm"
 									>{race.name} ({race.size})</button
 								>
 							{/each}
@@ -222,7 +222,7 @@
 	<Card.Root>
 		<Card.Content class="relative grid grid-cols-4 gap-x-2">
 			<Popover.Root>
-				<Popover.Trigger class="absolute right-1.5 top-1.5">
+				<Popover.Trigger class="absolute top-1.5 right-1.5">
 					<Question class="size-4" />
 				</Popover.Trigger>
 				<Popover.Content>
@@ -238,11 +238,7 @@
 				</Popover.Content>
 			</Popover.Root>
 			{#each saves as save}
-				<button
-					type="button"
-					onclick={() => toggleSave(save, 1)}
-					class="flex justify-center {save === 'WIT' ? `col-span-2` : ``}"
-				>
+				<button type="button" onclick={() => toggleSave(save, 1)} class="flex justify-center">
 					<Caret
 						size="size-6"
 						dir="up"
@@ -267,11 +263,7 @@
 				</div>
 			{/each}
 			{#each saves as save}
-				<button
-					type="button"
-					onclick={() => toggleSave(save, -1)}
-					class="flex justify-center {save === 'WIT' ? `col-span-2` : ``}"
-				>
+				<button type="button" onclick={() => toggleSave(save, -1)} class="flex justify-center">
 					<Caret
 						size="size-6"
 						dir="down"
@@ -287,7 +279,7 @@
 					}}
 					variant="outline"
 					size="icon"
-					class="absolute bottom-1.5 right-1.5 size-4 rounded-full border-foreground"><X /></Button
+					class="border-foreground absolute right-1.5 bottom-1.5 size-4 rounded-full"><X /></Button
 				>
 			{/if}
 		</Card.Content>
@@ -295,7 +287,7 @@
 	<Card.Root>
 		<Card.Content class="relative grid grid-cols-4 gap-2">
 			<Popover.Root>
-				<Popover.Trigger class="absolute right-1.5 top-1.5">
+				<Popover.Trigger class="absolute top-1.5 right-1.5">
 					<Question class="size-4" />
 				</Popover.Trigger>
 				<Popover.Content>
@@ -305,6 +297,7 @@
 						<li>Init = DEX</li>
 						<li>Max HP at Lvl 1 is based on class</li>
 						<li>Max HD is your level</li>
+						<li>Speed is 6</li>
 					</ul>
 				</Popover.Content>
 			</Popover.Root>
@@ -456,7 +449,7 @@
 					}}
 					class="size-8 {actions >= action
 						? `bg-primary text-primary-foreground`
-						: ``} flex items-center justify-center rounded-full border-2 border-primary"
+						: ``} border-primary flex items-center justify-center rounded-full border-2"
 					>{action}</button
 				>
 			{/each}
@@ -512,6 +505,7 @@
 							variant="ghost"
 							size="icon"
 							class="rounded-full"
+							disabled={score === 12}
 							onclick={() => {
 								skill.extra += 1;
 								onchange();
@@ -544,7 +538,7 @@
 			>
 				Skill Points allocated: {skillPoints} / {maxSkillPoints}
 				<Popover.Root>
-					<Popover.Trigger class="absolute bottom-1 right-1.5">
+					<Popover.Trigger class="absolute right-1.5 bottom-1">
 						<Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
@@ -565,6 +559,25 @@
 		initialRow={{ name: 'Dagger', roll: 'd4!' }}
 		{onchange}
 	>
+		{#snippet helpText()}
+			<p>
+				Track the things you are carrying. Up to 500 coins count as one item. If you want to be able
+				to roll damage (or whatever else) for an item, you can add a roll formula to the second box.
+				The formula works like this: <code>XdYM+Z</code> where <code>X</code> is the number of dice,
+				<code>Y</code>
+				is the number of sides, <code>M</code> is <code>!</code> (exploding) and/or <code>v</code>
+				(vicious) and
+				<code>Z</code>
+				is a constant. If you want to reference a stat, you can add it in square brackets (like
+				<code>[STR]</code>). Most damage rolls are exploding, so don't forget to add the
+				<code>!</code>
+				symbol.
+			</p>
+			<p class="mt-2">
+				So <code>1d4!v+[DEX]</code> rolls a d4 with exploding crits and vicious damage, adding your Dexterity
+				modifier.
+			</p>
+		{/snippet}
 		{#snippet headerExtra()}
 			<div class:text-destructive={invCount > +character.stats.STR + 10}>
 				({invCount} / {+character.stats.STR + 10})
@@ -576,7 +589,7 @@
 					size="icon"
 					variant="ghost"
 					onclick={() => (item.bulky = !item.bulky)}
-					class="absolute right-0 top-1/2 -translate-y-1/2"
+					class="absolute top-1/2 right-0 -translate-y-1/2"
 				>
 					<Bulky class=" size-5 {item.bulky ? `` : `text-muted-foreground`}" />
 				</Button>
@@ -588,7 +601,7 @@
 				/>
 				{#if item.name.length === 0}
 					<Popover.Root>
-						<Popover.Trigger class="absolute left-2 top-1/2 -translate-y-1/2">
+						<Popover.Trigger class="absolute top-1/2 left-2 -translate-y-1/2">
 							<Question class="size-4" />
 						</Popover.Trigger>
 						<Popover.Content>
@@ -600,7 +613,7 @@
 											<button
 												type="button"
 												onclick={() => setItem(item, inv)}
-												class="block w-full px-1 text-left text-sm hover:bg-secondary"
+												class="hover:bg-secondary block w-full px-1 text-left text-sm"
 												>{inv.name}</button
 											>
 										{/each}
@@ -673,6 +686,12 @@
 		initialRow={{ name: 'Resource', current: 0, max: 0 }}
 		{onchange}
 	>
+		{#snippet helpText()}
+			<p>
+				This is for anything you want to track a quantity of with a current and maximum value. It
+				could be class feature uses or anything like that.
+			</p>
+		{/snippet}
 		{#snippet row(res, delBtn)}
 			<Input bind:value={res.name} class="w-full" />
 			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />

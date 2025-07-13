@@ -4,12 +4,15 @@
 	import Trash from 'lucide-svelte/icons/trash-2';
 	import Add from 'lucide-svelte/icons/plus';
 	import type { Snippet } from 'svelte';
+	import * as Popover from '$lib/components/ui/popover';
+	import Question from 'lucide-svelte/icons/circle-help';
 
 	type Props = {
 		list: T[];
 		title: string;
 		headerExtra?: Snippet;
 		footerExtra?: Snippet;
+		helpText?: Snippet;
 		emptyLabel: string;
 		onchange: () => void;
 		initialRow: T;
@@ -22,6 +25,7 @@
 		title,
 		headerExtra,
 		footerExtra,
+		helpText,
 		emptyLabel,
 		initialRow,
 		grid,
@@ -53,7 +57,19 @@
 >
 	<Card.Header>
 		<div class="flex items-center gap-2">
-			<Card.Title class="grow text-lg">{title}</Card.Title>
+			<Card.Title class="flex grow flex-row items-center gap-2 text-lg">
+				<span>{title}</span>
+				{#if helpText}
+					<Popover.Root>
+						<Popover.Trigger class="">
+							<Question class="size-4" />
+						</Popover.Trigger>
+						<Popover.Content>
+							{@render helpText()}
+						</Popover.Content>
+					</Popover.Root>
+				{/if}
+			</Card.Title>
 			{#if headerExtra}
 				{@render headerExtra()}
 			{/if}
@@ -72,7 +88,7 @@
 			{#snippet delBtn()}
 				{#if deleteMode}
 					<Button size="icon" variant="outline" onclick={() => deleteRow(index)}>
-						<Trash class="size-5 text-destructive" />
+						<Trash class="text-destructive size-5" />
 					</Button>
 				{:else}
 					{@render deleteAlt(item)}
@@ -87,7 +103,7 @@
 		<div class="flex w-full items-center justify-between gap-2">
 			<Button
 				variant="secondary"
-				class="rounded-full border-primary/50 hover:border"
+				class="border-primary/50 rounded-full hover:border"
 				size="icon"
 				onclick={addRow}><Add class="size-5" /></Button
 			>

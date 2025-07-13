@@ -119,18 +119,18 @@
 		};
 	}
 
-	type Recipe = { stat: 'INT' | 'WIL'; level: boolean; double: boolean };
+	type Recipe = { stat: 'INT' | 'WIL' | 'DEX'; level: boolean; triple: boolean };
 	const manaRecipe: Record<string, Recipe> = {
-		Mage: { stat: 'INT', level: true, double: true },
-		Oathsworn: { stat: 'WIL', level: true, double: false },
-		Shadowmancer: { stat: 'INT', level: false, double: false },
-		Shepherd: { stat: 'WIL', level: true, double: true },
-		Songweaver: { stat: 'WIL', level: true, double: true },
-		Stormshifter: { stat: 'WIL', level: true, double: true },
+		Mage: { stat: 'INT', level: true, triple: true },
+		Oathsworn: { stat: 'WIL', level: true, triple: false },
+		Shadowmancer: { stat: 'DEX', level: false, triple: false },
+		Shepherd: { stat: 'WIL', level: true, triple: true },
+		Songweaver: { stat: 'INT', level: true, triple: true },
+		Stormshifter: { stat: 'WIL', level: true, triple: true },
 	};
 	function getMaxMana(recipe: Recipe) {
 		if (!recipe) return 0;
-		return (stats[recipe.stat] + (recipe.level ? level : 0)) * (recipe.double ? 2 : 1);
+		return Math.max(stats[recipe.stat] * (recipe.triple ? 3 : 1) + (recipe.level ? level : 0), 0);
 	}
 	let maxMana = $derived(getMaxMana(manaRecipe[charClass]));
 </script>
@@ -215,7 +215,7 @@
 										</div>
 									</Popover.Content>
 								</Popover.Root>
-								{#if school.name !== 'Utility'}<span class=" text-sm text-muted-foreground"
+								{#if school.name !== 'Utility'}<span class=" text-muted-foreground text-sm"
 										>({spell.tier <= 0 ? `Cantrip` : `Tier ${spell.tier}`})</span
 									>{/if}
 							</div>

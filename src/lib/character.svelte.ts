@@ -129,7 +129,7 @@ export class NimbleCharacter {
 	hd: number = $state(1);
 	maxHd: number = $state(1);
 	initiative: number = $state(0);
-	speed: number = $state(30);
+	speed: number = $state(6);
 	wounds: number = $state(0);
 	gp: number = $state(0);
 	sp: number = $state(0);

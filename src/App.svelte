@@ -82,14 +82,29 @@
 		<route.page />
 	</main>
 	<footer
-		class="mx-auto flex w-full max-w-lg flex-row gap-2 border-t p-4 text-sm text-gray-500 sm:gap-4 md:mb-8"
+		class="text-muted-foreground mx-auto flex w-full max-w-lg flex-col gap-2 border-t p-4 text-sm sm:gap-4 md:mb-8"
 	>
+		<div class="flex items-center justify-start gap-2">
+			<span>Crafted with</span>
+			<span title="love" class="relative -top-px text-rose-500"
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 512 512"
+					fill="currentColor"
+					class="m-0 mt-0! inline-block size-4"
+					><path
+						d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"
+					/></svg
+				></span
+			>
+			<span>by Colin in Bermuda</span>
+			<ModeSwitcher inline class="ml-auto" />
+		</div>
 		<p>
 			<a href="https://nimblesheet.ttrpg.tools" class="text-blue-600 dark:text-blue-300"
-				>NimbleSheet</a
+				>NimbleSheet v{__VERSION__}</a
 			> is an independent product published under the Nimble 3rd Party Creator License and is not affiliated
 			with Nimble Co. Nimble © 2025 Nimble Co.
 		</p>
-		<ModeSwitcher inline />
 	</footer>
 </div>

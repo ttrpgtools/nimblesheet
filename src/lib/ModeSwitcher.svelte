@@ -1,5 +1,7 @@
 <script lang="ts">
-	let { inline = false }: { inline?: boolean } = $props();
+	import type { ClassValue } from 'svelte/elements';
+
+	let { inline = false, class: className }: { inline?: boolean; class?: ClassValue } = $props();
 
 	let darkMode = $state(false);
 	const THEME_KEY = 'themePreference';
@@ -19,7 +21,10 @@
 	});
 </script>
 
-<button class={['size-8 flex-none p-2', !inline && 'absolute top-0 right-0']} onclick={toggleMode}>
+<button
+	class={['size-8 flex-none p-2', !inline && 'absolute top-0 right-0', className]}
+	onclick={toggleMode}
+>
 	{#if darkMode}
 		<svg
 			aria-hidden="true"

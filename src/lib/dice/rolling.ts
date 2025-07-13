@@ -107,9 +107,15 @@ class NimbleRoller {
 	get isMiss() {
 		return this.dice.find((x) => x.type === 'primary')?.isMin;
 	}
-
-	parseTerm(term: string) {
+	// Handle 3D6rl1
+	parseTerm(term: string): number {
 		if (!term) return 0;
+		if (term.includes('*')) {
+			const product = term
+				.split('*')
+				.reduce((p, c) => p * (isNumeric(c) ? +c : this.parseTerm(c)), 1);
+			return product;
+		}
 		const neg = term.at(0) === '-';
 		//console.log(`term = ${term}`);
 		if (neg) term = term.substring(1);
@@ -133,8 +139,21 @@ class NimbleRoller {
 		//console.log(
 		//  `count = ${count} sides = ${sides} explode = ${explode} vicious = ${vicious} removals = ${removals}`
 		//);
-		const nsides = parseInt(sides, 10);
-		const results = nrolls(nsides, parseInt(count || '1', 10));
+		let results: NimbleDie[] = [];
+		let placeValues = false;
+		if (sides.includes(',')) {
+			if (count && count !== '1') {
+				console.warn(
+					'Invalid dice formula. If you use the dX,X,X syntax, you cannot have a multiplier in front of it.'
+				);
+				return 0;
+			}
+			placeValues = true;
+			results = sides.split(',').map((side) => new NimbleDie(parseInt(side, 10)));
+		} else {
+			const nsides = parseInt(sides, 10);
+			results = nrolls(nsides, parseInt(count || '1', 10));
+		}
 		results.sort(sortValueHighPosition);
 		for (let highs = 0; highs < removals.h; highs += 1) {
 			results[highs].type = 'dropped';
@@ -144,9 +163,20 @@ class NimbleRoller {
 			results[lows].type = 'dropped';
 		}
 		results.sort((a, b) => a.sortPosition - b.sortPosition);
-		results[0].type = 'primary';
 
-		const extra = blowUp(results[0], explode, vicious);
+		let extra: NimbleDie[] = [];
+		if (placeValues) {
+			let place = 0;
+			for (let index = results.length - 1; index >= 0; index -= 1) {
+				if (results[index].type !== 'dropped') {
+					results[index].value = results[index].value * 10 ** place;
+					place += 1;
+				}
+			}
+		} else {
+			results[0].type = 'primary';
+			extra = blowUp(results[0], explode, vicious);
+		}
 		const value =
 			results
 				.concat(extra)
