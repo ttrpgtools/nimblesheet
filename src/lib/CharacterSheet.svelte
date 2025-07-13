@@ -16,6 +16,8 @@
 	import CircleMinus from 'lucide-svelte/icons/circle-minus';
 	import Dice from 'lucide-svelte/icons/dices';
 	import Question from 'lucide-svelte/icons/circle-help';
+	import Pencil from 'lucide-svelte/icons/pencil';
+	import Add from 'lucide-svelte/icons/plus';
 
 	import { allClasses, stats, saves, ancestries, meleeWeapons, rangedWeapons } from './nimble';
 	import {
@@ -32,6 +34,9 @@
 	import Coin from '$lib/icons/Coin.svelte';
 	import { rollDice } from './dice/integration';
 	import { owlbear } from './owlbear.svelte';
+	import ConfirmButton from './ConfirmButton.svelte';
+	import Trash from 'lucide-svelte/icons/trash-2';
+	import Note from './Note.svelte';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -135,6 +140,14 @@
 		orig.name = item.name;
 		orig.roll = item.roll;
 		orig.bulky = item.bulky;
+	}
+
+	function addNote() {
+		character.notes.push({ name: `Note ${character.notes.length + 1}`, content: '' });
+	}
+
+	function deleteNote(index: number) {
+		character.notes.splice(index, 1);
 	}
 </script>
 
@@ -702,12 +715,15 @@
 		{/snippet}
 	</ListManager>
 
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="text-lg">Notes</Card.Title>
-		</Card.Header>
-		<Card.Content>
-			<Textarea rows={5} bind:value={character.notes} />
-		</Card.Content>
-	</Card.Root>
+	{#each character.notes as _, index}
+		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} />
+	{/each}
+	<div class="flex justify-center">
+		<Button
+			variant="secondary"
+			class="border-primary/50 rounded-full pr-5 hover:border"
+			size="sm"
+			onclick={addNote}><Add class="size-5" /> Note</Button
+		>
+	</div>
 </div>

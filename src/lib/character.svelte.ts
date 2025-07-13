@@ -5,13 +5,14 @@ import {
 	type Die,
 	type Inventory,
 	type MagicSchool,
+	type Note,
 	type Resource,
 	type Save,
 	type Skill,
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 1.8;
+const SHEET_VERSION = 2;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -97,7 +98,10 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.inventory = data.inventory ?? [];
 	newChar.utilspells = data.utilspells ?? {};
 	newChar.resources = data.resources ?? [];
-	newChar.notes = data.notes ?? '';
+	newChar.notes =
+		typeof data.notes === 'string'
+			? [{ name: 'Notes', content: data.notes ?? '' }]
+			: (data.notes ?? []);
 	return newChar;
 }
 
@@ -138,7 +142,10 @@ export class NimbleCharacter {
 	inventory: Inventory[] = $state([]);
 	utilspells: Record<string, boolean> = $state({});
 	resources: Resource[] = $state([]);
-	notes: string = $state('');
+	notes: Note[] = $state([
+		{ name: 'Ancestry', content: '' },
+		{ name: 'Background', content: '' },
+	]);
 
 	constructor() {}
 
