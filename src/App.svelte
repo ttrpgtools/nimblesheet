@@ -97,7 +97,13 @@
 					/></svg
 				></span
 			>
-			<span>by Colin in Bermuda</span>
+			<span
+				>by <a
+					href="https://ttrpg.tools"
+					class="text-emerald-500 hover:text-emerald-600 hover:underline dark:hover:text-emerald-400"
+					target="_blank">Colin</a
+				> in Bermuda</span
+			>
 			<ModeSwitcher inline class="ml-auto" />
 		</div>
 		<p>

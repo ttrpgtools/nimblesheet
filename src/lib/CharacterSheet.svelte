@@ -34,8 +34,6 @@
 	import Coin from '$lib/icons/Coin.svelte';
 	import { rollDice } from './dice/integration';
 	import { owlbear } from './owlbear.svelte';
-	import ConfirmButton from './ConfirmButton.svelte';
-	import Trash from 'lucide-svelte/icons/trash-2';
 	import Note from './Note.svelte';
 
 	type Props = {
@@ -429,18 +427,21 @@
 	<Card.Root>
 		<Card.Content class="flex items-center gap-3">
 			<h4 class="grow text-lg font-bold">Save</h4>
-			{#each saves as save}
-				<Button
-					variant="secondary"
-					size="sm"
-					onclick={() =>
-						onroll(
-							`d20+[${save}]`,
-							`${save} Save`,
-							character.saveOverride[save] ?? currentClass?.saves[save] ?? 0
-						)}><Dice class="mr-1 size-4" />{save}</Button
-				>
-			{/each}
+			<div class="flex flex-wrap items-center justify-end gap-2">
+				{#each saves as save}
+					<Button
+						variant="secondary"
+						size="sm"
+						class="w-20"
+						onclick={() =>
+							onroll(
+								`d20+[${save}]`,
+								`${save} Save`,
+								character.saveOverride[save] ?? currentClass?.saves[save] ?? 0
+							)}><Dice class="mr-1 size-4" />{save}</Button
+					>
+				{/each}
+			</div>
 		</Card.Content>
 	</Card.Root>
 
