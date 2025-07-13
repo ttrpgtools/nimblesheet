@@ -1,14 +1,14 @@
 {
-  "name": "Nimble Sheet",
-  "version": "0.2.0",
-  "manifest_version": 1,
-  "icon": "https://nimblesheet.ttrpg.tools/favicon.svg?1",
-  "author": "Colin Bate",
-  "action": {
-    "title": "Nimble Sheet",
-    "icon": "/favicon.svg",
-    "popover": "/",
-    "height": 850,
-    "width": 400
-  }
+	"name": "Nimble Sheet",
+	"version": "1.4.1",
+	"manifest_version": 1,
+	"icon": "https://nimblesheet.ttrpg.tools/favicon.svg?1",
+	"author": "Colin Bate",
+	"action": {
+		"title": "Nimble Sheet",
+		"icon": "/favicon.svg",
+		"popover": "/",
+		"height": 850,
+		"width": 400
+	}
 }
