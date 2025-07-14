@@ -11,6 +11,7 @@
 	import Droplet from 'lucide-svelte/icons/droplet';
 	import Skull from 'lucide-svelte/icons/skull';
 	import Bulky from 'lucide-svelte/icons/weight';
+	import Weapon from 'lucide-svelte/icons/sword';
 	import X from 'lucide-svelte/icons/x';
 	import CirclePlus from 'lucide-svelte/icons/circle-plus';
 	import CircleMinus from 'lucide-svelte/icons/circle-minus';
@@ -575,9 +576,15 @@
 	>
 		{#snippet helpText()}
 			<p>
-				Track the things you are carrying. Up to 500 coins count as one item. If you want to be able
-				to roll damage (or whatever else) for an item, you can add a roll formula to the second box.
-				The formula works like this: <code>XdYM+Z</code> where <code>X</code> is the number of dice,
+				Track the things you are carrying. Up to 500 coins count as one item. Toggling the weight
+				icon makes the item bulky. If you prefix the name of the item with a <code>-</code> sign, the
+				item will not add to your inventory count.
+			</p>
+			<p class="mt-2">
+				If you want to be able to roll damage (or whatever else) for an item, you can add a roll
+				formula to the second box. The formula works like this: <code>XdYM+Z</code> where
+				<code>X</code>
+				is the number of dice,
 				<code>Y</code>
 				is the number of sides, <code>M</code> is <code>!</code> (exploding) and/or <code>v</code>
 				(vicious) and
@@ -616,7 +623,7 @@
 				{#if item.name.length === 0}
 					<Popover.Root>
 						<Popover.Trigger class="absolute top-1/2 left-2 -translate-y-1/2">
-							<Question class="size-4" />
+							<Weapon class="size-4" />
 						</Popover.Trigger>
 						<Popover.Content>
 							<div class="">

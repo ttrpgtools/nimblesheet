@@ -53,6 +53,7 @@
 			class="w-10"
 			onconfirm={ondelete}
 			variant="outline"
+			side="left"
 			size="icon"><Trash class="size-5" /></ConfirmButton
 		>
 	</Card.Header>

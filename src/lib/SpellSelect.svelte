@@ -3,6 +3,7 @@
 	import Indicator from 'lucide-svelte/icons/chevron-right';
 	import X from 'lucide-svelte/icons/x';
 	import Mana from 'lucide-svelte/icons/wand-sparkles';
+	import Question from 'lucide-svelte/icons/circle-help';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card';
 	import * as Select from '$lib/components/ui/select';
@@ -138,7 +139,23 @@
 <Card.Root>
 	<Card.Header>
 		<div class="flex items-center gap-2">
-			<Card.Title class="w-full grow text-lg">Spells</Card.Title>
+			<Card.Title class="flex grow flex-row items-center gap-2 text-lg">
+				<span>Spells</span>
+
+				<Popover.Root>
+					<Popover.Trigger class="">
+						<Question class="size-4" />
+					</Popover.Trigger>
+					<Popover.Content>
+						Spells appear based on your class and level. The utility spells are listed with
+						checkboxes to indicate which one you have chosen as they are elective. In cases where
+						the class can select an additional spell school, that option is provided.
+						<br />
+						<br />
+						Max mana is calculated for you, but the current mana needs to be manually adjusted.
+					</Popover.Content>
+				</Popover.Root>
+			</Card.Title>
 			{#if available.length}
 				<Mana />
 				<Input
