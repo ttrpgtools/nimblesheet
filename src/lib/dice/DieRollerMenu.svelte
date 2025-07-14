@@ -5,19 +5,56 @@
 	import Advantage from 'lucide-svelte/icons/smile';
 	import Dice from 'lucide-svelte/icons/dices';
 	import Disadvantage from 'lucide-svelte/icons/frown';
+	import Multi from 'lucide-svelte/icons/square-stack';
 	import X from 'lucide-svelte/icons/x';
 	import { rollInfluence } from './influence.svelte';
 	import Die from './Die.svelte';
 	import { rollDice } from './integration';
+	import { SvelteMap } from 'svelte/reactivity';
+	import Vicious from './Vicious.svelte';
+	import Explode from './Explode.svelte';
 
 	let { characterName }: { characterName?: string | undefined } = $props();
+
+	let mode: 'single' | 'multi' = $state('single');
+	let dieStack = new SvelteMap<number, number>();
+	let exploding = $state(false);
+	let vicious = $state(false);
+	let formula = $derived(
+		Array.from(dieStack.entries())
+			.map(([sides, count]) => `${count}d${sides}${exploding ? '!' : ''}${vicious ? 'v' : ''}`)
+			.join(' + ')
+	);
+	let open = $state(false);
 
 	async function simpleRoll(sides: number) {
 		return await rollDice(`d${sides}`, { characterName });
 	}
+
+	async function tapDie(sides: number, event: MouseEvent) {
+		if (mode === 'single') {
+			await simpleRoll(sides);
+		} else if (mode === 'multi') {
+			event.preventDefault();
+			dieStack.set(sides, (dieStack.get(sides) || 0) + 1);
+		}
+	}
+
+	async function actionBtn() {
+		if (mode === 'single') {
+			mode = 'multi';
+		} else if (mode === 'multi') {
+			await rollDice(formula, { characterName });
+			open = false;
+			dieStack.clear();
+			vicious = false;
+			exploding = false;
+			mode = 'single';
+		}
+	}
 </script>
 
-<DropdownMenu.Root>
+<DropdownMenu.Root bind:open>
 	<DropdownMenu.Trigger>
 		<div class="relative">
 			<Button variant="secondary" size="icon" class="rounded-full">
@@ -26,7 +63,7 @@
 			</Button>
 			{#if rollInfluence.value !== 0}<Badge
 					variant={rollInfluence.value < 0 ? `destructive` : `default`}
-					class="absolute -right-2 -top-1">{Math.abs(rollInfluence.value)}</Badge
+					class="absolute -top-1 -right-2">{Math.abs(rollInfluence.value)}</Badge
 				>{/if}
 		</div>
 	</DropdownMenu.Trigger>
@@ -40,7 +77,7 @@
 					onclick={() => rollInfluence.positive()}
 					><Advantage class="pointer-events-none size-6" /></Button
 				>
-				{#if rollInfluence.value > 0}<Badge variant="destructive" class="absolute -right-2 -top-1"
+				{#if rollInfluence.value > 0}<Badge variant="destructive" class="absolute -top-1 -right-2"
 						>{rollInfluence.value}</Badge
 					>{/if}
 			</div>
@@ -58,17 +95,57 @@
 					onclick={() => rollInfluence.negative()}
 					><Disadvantage class="pointer-events-none size-6" /></Button
 				>
-				{#if rollInfluence.value < 0}<Badge variant="destructive" class="absolute -right-2 -top-1"
+				{#if rollInfluence.value < 0}<Badge variant="destructive" class="absolute -top-1 -right-2"
 						>{Math.abs(rollInfluence.value)}</Badge
 					>{/if}
 			</div>
 		</DropdownMenu.Label>
 		{#each [4, 6, 8, 10, 12, 20, 100] as d}
-			<DropdownMenu.Item onclick={() => simpleRoll(d)}>
-				<div class="flex items-center gap-3 text-lg">
+			<DropdownMenu.Item onclick={(e) => tapDie(d, e)} class="cursor-pointer">
+				<div class="flex w-full items-center gap-3 text-lg">
 					<Die which={d} size="size-6" /> d{d}
+					{#if mode === 'multi'}
+						{#if (dieStack.get(d) ?? 0) > 0}
+							<Badge variant="destructive" class="ml-auto">{dieStack.get(d)}</Badge>
+						{/if}
+					{/if}
 				</div>
 			</DropdownMenu.Item>
 		{/each}
+		{#if mode === 'multi'}
+			<DropdownMenu.Label class="flex gap-2">
+				<Button
+					variant="outline"
+					class={[exploding && 'bg-muted border-primary']}
+					size="sm"
+					title="Exploding Crits"
+					onclick={() => (exploding = !exploding)}><Explode /></Button
+				>
+				<Button
+					variant="outline"
+					class={[vicious && 'bg-muted border-primary']}
+					size="sm"
+					title="Vicious"
+					onclick={() => (vicious = !vicious)}><Vicious /></Button
+				>
+			</DropdownMenu.Label>
+		{/if}
+		<DropdownMenu.Label>
+			<Button
+				variant="outline"
+				size="sm"
+				class="w-full"
+				onclick={actionBtn}
+				disabled={mode === 'multi' && formula === ''}
+			>
+				{#if mode === 'single'}
+					<Multi class="" />
+					Multi Roll
+				{:else}
+					<Dice class="" />
+					Roll
+				{/if}
+			</Button>
+		</DropdownMenu.Label>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
