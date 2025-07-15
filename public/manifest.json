@@ -3,6 +3,7 @@
 	"version": "1.4.3",
 	"manifest_version": 1,
 	"icon": "https://nimblesheet.ttrpg.tools/favicon.svg?1",
+	"homepage_url": "https://nimblesheet.ttrpg.tools/",
 	"author": "Colin Bate",
 	"action": {
 		"title": "Nimble Sheet",
