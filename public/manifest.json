@@ -3,7 +3,8 @@
 	"version": "1.4.3",
 	"manifest_version": 1,
 	"icon": "https://nimblesheet.ttrpg.tools/favicon.svg?1",
-	"homepage_url": "https://nimblesheet.ttrpg.tools/",
+	"homepage_url": "https://ttrpg.tools/project/nimblesheets/",
+	"description": "A character sheet / encounter manager for the tabletop role-playing game system, Nimble 2",
 	"author": "Colin Bate",
 	"action": {
 		"title": "Nimble Sheet",
