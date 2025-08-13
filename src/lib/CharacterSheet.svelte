@@ -192,11 +192,6 @@
 									>{race.name} ({race.size})</button
 								>
 							{/each}
-							<a
-								href="https://nimblecc.ttrpg.tools/#ancestries"
-								target="_blank"
-								class="text-blue-500 underline">Click for more details</a
-							>
 						</div>
 					</Popover.Content>
 				</Popover.Root>
@@ -640,11 +635,6 @@
 										{/each}
 									</div>
 								{/each}
-								<a
-									href="https://nimblecc.ttrpg.tools/#melee-weapons"
-									target="_blank"
-									class="text-blue-500 underline">Click for more details</a
-								>
 							</div>
 						</Popover.Content>
 					</Popover.Root>
