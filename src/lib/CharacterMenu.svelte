@@ -2,14 +2,7 @@
 	import { Button, buttonVariants } from './components/ui/button';
 	import Warning from '$lib/WarningOverwrite.svelte';
 
-	import SheetLogo from 'lucide-svelte/icons/square-user-round';
-	import NpcLogo from 'lucide-svelte/icons/squirrel';
-	import Duplicate from 'lucide-svelte/icons/copy';
-	import Send from 'lucide-svelte/icons/send';
-	import Export from 'lucide-svelte/icons/download';
-	import Import from 'lucide-svelte/icons/upload';
-	import Trash from 'lucide-svelte/icons/trash-2';
-	import Popout from 'lucide-svelte/icons/picture-in-picture-2';
+	import { Icons } from '$lib/icons';
 
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
@@ -64,12 +57,12 @@
 <Sidebar
 	title={type === 'char' ? 'Characters' : 'NPCs'}
 	onnew={manager.create}
-	icon={type === 'char' ? SheetLogo : NpcLogo}
+	icon={type === 'char' ? Icons.SheetLogo : Icons.NpcLogo}
 >
 	{#snippet children(done)}
 		{#if manager.list.length}
-			<nav class="-mx-2 grow">
-				<label class="-mt-3 flex items-center gap-4 p-3 text-muted-foreground">
+			<nav class="grow">
+				<label class="text-muted-foreground -mt-3 flex items-center gap-4 p-3">
 					<input
 						type="checkbox"
 						class="size-4"
@@ -104,8 +97,8 @@
 				</ul>
 			</nav>
 		{:else}
-			<div class="grow">
-				<div class="rounded-lg border-4 border-dashed p-8 text-center italic text-muted-foreground">
+			<div class="grow px-2">
+				<div class="text-muted-foreground rounded-lg border-4 border-dashed p-8 text-center italic">
 					No characters created. Close this and start editing, or import from a saved file below.
 				</div>
 			</div>
@@ -116,27 +109,26 @@
 			<ConfirmButton
 				onconfirm={handleDelete}
 				confirmText={`Click again to confirm deleting ${selectedIds.length} character${selectedIds.length === 1 ? `` : `s`}.`}
-				><Trash class="mr-2 size-4" />Delete Selected</ConfirmButton
+				><Icons.Trash class="mr-2 size-4" />Delete Selected</ConfirmButton
 			>
 		{/if}
 		{#if manager.activeId}
 			<Button variant="secondary" onclick={manager.duplicate}>
-				<Duplicate class="mr-2 size-4" />
+				<Icons.Duplicate class="size-4" />
 				Duplicate Current
 			</Button>
 		{/if}
 		{#if manager.list.length > 0}
 			<div class="flex items-center gap-2">
-				<Button
-					variant="secondary"
-					class="grow"
-					onclick={() => exportCharacters(selectedIds, type)}
-					><Export class="mr-2 size-4" />Export {selectedIds.length ? `Selected` : `All`}</Button
+				<Button variant="secondary" class="grow" onclick={() => exportCharacters(selectedIds, type)}
+					><Icons.Export class="mr-2 size-4" />Export {selectedIds.length
+						? `Selected`
+						: `All`}</Button
 				>
 				{#if selectedIds.length === 1 && owlbear.role === 'GM'}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline' })}
-							><Send class="size-4" /></DropdownMenu.Trigger
+							><Icons.Send class="size-4" /></DropdownMenu.Trigger
 						>
 						<DropdownMenu.Content>
 							{#each owlbear.party as player}
@@ -152,11 +144,13 @@
 			</div>
 		{/if}
 		<Button variant="secondary" onclick={startImport}
-			><Import class="mr-2 size-4" />Import from file</Button
+			><Icons.Import class="mr-2 size-4" />Import from file</Button
 		>
 		<input type="file" use:input />
 		{#if owlbear.embedded}
-			<Button variant="secondary" onclick={popout}><Popout class="mr-2 size-4" />Pop out</Button>
+			<Button variant="secondary" onclick={popout}
+				><Icons.Popout class="mr-2 size-4" />Pop out</Button
+			>
 		{/if}
 	{/snippet}
 </Sidebar>

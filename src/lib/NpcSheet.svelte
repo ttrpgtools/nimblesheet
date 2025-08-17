@@ -5,7 +5,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import Dice from 'lucide-svelte/icons/dices';
+	import { Icons } from '$lib/icons';
 
 	import { saves } from './nimble';
 	import { type Alteration, type Save } from './types';
@@ -172,7 +172,7 @@
 		{#snippet deleteAlt(item)}
 			{#if item.roll}
 				<Button size="icon" variant="ghost" onclick={() => onroll(item.roll, item.name)}>
-					<Dice class="size-5" />
+					<Icons.Dice class="size-5" />
 				</Button>
 			{:else}
 				<div class="size-10"></div>

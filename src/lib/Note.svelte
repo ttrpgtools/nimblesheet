@@ -1,9 +1,7 @@
 <script lang="ts">
 	import * as Card from './components/ui/card';
 	import { Textarea } from './components/ui/textarea';
-	import Trash from 'lucide-svelte/icons/trash-2';
-	import Pencil from 'lucide-svelte/icons/pencil';
-	import Check from 'lucide-svelte/icons/check';
+	import { Icons } from '$lib/icons';
 	import { Button } from './components/ui/button';
 	import { Input } from './components/ui/input';
 	import ConfirmButton from './ConfirmButton.svelte';
@@ -40,21 +38,22 @@
 					}}
 				/>
 				<Button size="icon" variant="ghost" class="shrink-0" onclick={() => (editing = false)}
-					><Check class="size-4" /></Button
+					><Icons.Check class="size-4" /></Button
 				>
 			{:else}
 				<span>{note.name}</span>
-				<Button size="icon" variant="ghost" onclick={startEditing}><Pencil class="size-4" /></Button
+				<Button size="icon" variant="ghost" onclick={startEditing}
+					><Icons.Pencil class="size-4" /></Button
 				>
 			{/if}
 		</Card.Title>
 		<ConfirmButton
-			confirmText="Delete?"
+			confirmText={`Delete ${note.name} section?`}
 			class="w-10"
 			onconfirm={ondelete}
 			variant="outline"
 			side="left"
-			size="icon"><Trash class="size-5" /></ConfirmButton
+			size="icon"><Icons.Trash class="size-5" /></ConfirmButton
 		>
 	</Card.Header>
 	<Card.Content>

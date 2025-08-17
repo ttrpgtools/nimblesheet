@@ -2,8 +2,7 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from './components/ui/button';
 
-	import UserPlus from 'lucide-svelte/icons/plus';
-	import Menu from 'lucide-svelte/icons/menu';
+	import { Icons } from '$lib/icons';
 
 	import type { Component, SvelteComponent, Snippet, ComponentType } from 'svelte';
 
@@ -27,7 +26,7 @@
 <Sheet.Root bind:open={sheetOpen}>
 	<Sheet.Trigger>
 		<Button variant="outline" size="icon" class="shrink-0">
-			<Menu class="h-5 w-5" />
+			<Icons.Menu class="h-5 w-5" />
 			<span class="sr-only">Toggle menu</span>
 		</Button>
 	</Sheet.Trigger>
@@ -47,7 +46,7 @@
 						ondone();
 					}}
 				>
-					<UserPlus class="pointer-events-none" />
+					<Icons.Add class="pointer-events-none" />
 					<span class="sr-only">Add new {title}</span>
 				</Button>
 			{/if}

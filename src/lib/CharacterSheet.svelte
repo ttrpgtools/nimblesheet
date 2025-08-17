@@ -8,17 +8,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Select from '$lib/components/ui/select';
 	import type { NimbleCharacter } from './character.svelte';
-	import Droplet from 'lucide-svelte/icons/droplet';
-	import Skull from 'lucide-svelte/icons/skull';
-	import Bulky from 'lucide-svelte/icons/weight';
-	import Weapon from 'lucide-svelte/icons/sword';
-	import X from 'lucide-svelte/icons/x';
-	import CirclePlus from 'lucide-svelte/icons/circle-plus';
-	import CircleMinus from 'lucide-svelte/icons/circle-minus';
-	import Dice from 'lucide-svelte/icons/dices';
-	import Question from 'lucide-svelte/icons/circle-help';
-	import Pencil from 'lucide-svelte/icons/pencil';
-	import Add from 'lucide-svelte/icons/plus';
+	import { Icons } from '$lib/icons';
 
 	import { allClasses, stats, saves, ancestries, meleeWeapons, rangedWeapons } from './nimble';
 	import {
@@ -180,7 +170,7 @@
 				/>
 				<Popover.Root>
 					<Popover.Trigger class="absolute top-1/2 right-2 -translate-y-1/2">
-						<Question class="size-4" />
+						<Icons.Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
 						<div class="">
@@ -230,7 +220,7 @@
 		<Card.Content class="relative grid grid-cols-4 gap-x-2">
 			<Popover.Root>
 				<Popover.Trigger class="absolute top-1.5 right-1.5">
-					<Question class="size-4" />
+					<Icons.Question class="size-4" />
 				</Popover.Trigger>
 				<Popover.Content>
 					<p>
@@ -286,7 +276,8 @@
 					}}
 					variant="outline"
 					size="icon"
-					class="border-foreground absolute right-1.5 bottom-1.5 size-4 rounded-full"><X /></Button
+					class="border-foreground absolute right-1.5 bottom-1.5 size-4 rounded-full"
+					><Icons.X /></Button
 				>
 			{/if}
 		</Card.Content>
@@ -295,7 +286,7 @@
 		<Card.Content class="relative grid grid-cols-4 gap-2">
 			<Popover.Root>
 				<Popover.Trigger class="absolute top-1.5 right-1.5">
-					<Question class="size-4" />
+					<Icons.Question class="size-4" />
 				</Popover.Trigger>
 				<Popover.Content>
 					<p>You can set these as defaults, but your ancestry may affect values.</p>
@@ -335,7 +326,7 @@
 						disabled={!character.hitdie}
 						onclick={() =>
 							character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Point Increase`)}
-						><Dice class="size-4" /></button
+						><Icons.Dice class="size-4" /></button
 					>
 				</div>
 			</div>
@@ -354,7 +345,7 @@
 						type="button"
 						disabled={!character.hitdie}
 						onclick={() => character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Die`)}
-						><Dice class="size-4" /></button
+						><Icons.Dice class="size-4" /></button
 					>
 				</div>
 			</div>
@@ -369,7 +360,7 @@
 				/>
 				<div class="flex items-center gap-3">
 					<Label for="sstat-init">Init</Label>
-					<button type="button" onclick={rollInitiative}><Dice class="size-4" /></button>
+					<button type="button" onclick={rollInitiative}><Icons.Dice class="size-4" /></button>
 				</div>
 			</div>
 
@@ -434,7 +425,7 @@
 								`d20+[${save}]`,
 								`${save} Save`,
 								character.saveOverride[save] ?? currentClass?.saves[save] ?? 0
-							)}><Dice class="mr-1 size-4" />{save}</Button
+							)}><Icons.Dice class="mr-1 size-4" />{save}</Button
 					>
 				{/each}
 			</div>
@@ -449,7 +440,7 @@
 					actions = 0;
 				}}
 			>
-				<X class="size-6 {actions === 0 ? `text-gray-500` : ``}" />
+				<Icons.X class="size-6 {actions === 0 ? `text-gray-500` : ``}" />
 			</button>
 			{#each [1, 2, 3] as action}
 				<button
@@ -476,7 +467,7 @@
 					onchange();
 				}}
 			>
-				<X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" />
+				<Icons.X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" />
 			</button>
 			{#each [1, 2, 3, 4, 5] as wnd}
 				<button
@@ -486,7 +477,7 @@
 						onchange();
 					}}
 				>
-					<Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" />
+					<Icons.Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" />
 				</button>
 			{/each}
 			<button
@@ -496,7 +487,7 @@
 					onchange();
 				}}
 			>
-				<Skull class="size-5 {character.wounds >= 6 ? `text-red-500` : ``}" />
+				<Icons.Skull class="size-5 {character.wounds >= 6 ? `text-red-500` : ``}" />
 			</button>
 		</Card.Content>
 	</Card.Root>
@@ -521,7 +512,7 @@
 								onchange();
 							}}
 						>
-							<CirclePlus class="size-5" />
+							<Icons.CirclePlus class="size-4" />
 						</Button>
 						<Button
 							variant="ghost"
@@ -533,10 +524,10 @@
 								onchange();
 							}}
 						>
-							<CircleMinus class="size-5" />
+							<Icons.CircleMinus class="size-4" />
 						</Button>
 						<Button size="icon" variant="ghost" onclick={() => onroll(`d20+${score}`, skill.name)}>
-							<Dice class="size-5" />
+							<Icons.Dice class="size-5" />
 						</Button>
 					</div>
 				</div>
@@ -549,7 +540,7 @@
 				Skill Points allocated: {skillPoints} / {maxSkillPoints}
 				<Popover.Root>
 					<Popover.Trigger class="absolute right-1.5 bottom-1">
-						<Question class="size-4" />
+						<Icons.Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
 						<p>
@@ -607,7 +598,7 @@
 					onclick={() => (item.bulky = !item.bulky)}
 					class="absolute top-1/2 right-0 -translate-y-1/2"
 				>
-					<Bulky class=" size-5 {item.bulky ? `` : `text-muted-foreground`}" />
+					<Icons.Bulky class=" size-5 {item.bulky ? `` : `text-muted-foreground`}" />
 				</Button>
 				<Input
 					bind:value={item.name}
@@ -618,7 +609,7 @@
 				{#if item.name.length === 0}
 					<Popover.Root>
 						<Popover.Trigger class="absolute top-1/2 left-2 -translate-y-1/2">
-							<Weapon class="size-4" />
+							<Icons.Weapon class="mr-2 size-4" />
 						</Popover.Trigger>
 						<Popover.Content>
 							<div class="">
@@ -650,7 +641,7 @@
 					variant="ghost"
 					onclick={() => onroll(item.roll, item.name.replace(/^-/, ''))}
 				>
-					<Dice class="size-5" />
+					<Icons.Dice class="size-5" />
 				</Button>
 			{:else}
 				<div class="size-10"></div>
@@ -716,12 +707,14 @@
 	{#each character.notes as _, index}
 		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} />
 	{/each}
-	<div class="flex justify-center">
-		<Button
-			variant="secondary"
-			class="border-primary/50 rounded-full pr-5 hover:border"
-			size="sm"
-			onclick={addNote}><Add class="size-5" /> Note</Button
-		>
-	</div>
+	<Card.Root>
+		<Card.Content class="flex justify-center">
+			<Button
+				variant="secondary"
+				class="border-primary/50 rounded-full pr-5 hover:border"
+				size="sm"
+				onclick={addNote}><Icons.Add class="size-5" /> Note Section</Button
+			>
+		</Card.Content>
+	</Card.Root>
 </div>

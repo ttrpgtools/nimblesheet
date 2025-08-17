@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Button } from './components/ui/button';
 
-	import Swords from 'lucide-svelte/icons/swords';
-	import Trash from 'lucide-svelte/icons/trash-2';
+	import { Icons } from '$lib/icons';
 
 	import ConfirmButton from './ConfirmButton.svelte';
 
@@ -15,10 +14,10 @@
 	let { type }: Props = $props();
 </script>
 
-<Sidebar title={`Encounter (${manager.encounter.length})`} icon={Swords}>
+<Sidebar title={`Encounter (${manager.encounter.length})`} icon={Icons.Swords}>
 	{#snippet children(done)}
 		{#if manager.npcs.length}
-			<nav class="-mx-2 grow">
+			<nav class="grow">
 				<ul>
 					{#each manager.npcs as char}
 						<li>
@@ -36,8 +35,8 @@
 				</ul>
 			</nav>
 		{:else}
-			<div class="grow">
-				<div class="rounded-lg border-4 border-dashed p-8 text-center italic text-muted-foreground">
+			<div class="grow px-2">
+				<div class="text-muted-foreground rounded-lg border-4 border-dashed p-8 text-center italic">
 					No NPCs created. Switch to the NPC menu to add some.
 				</div>
 			</div>
@@ -48,7 +47,7 @@
 			<ConfirmButton
 				onconfirm={manager.clear}
 				confirmText={`Click again to clear ${manager.encounter.length} npcs${manager.encounter.length === 1 ? `` : `s`} from encounter.`}
-				><Trash class="mr-2 size-4" />Clear Encounter</ConfirmButton
+				><Icons.Trash class="mr-2 size-4" />Clear Encounter</ConfirmButton
 			>
 		{/if}
 	{/snippet}

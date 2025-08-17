@@ -2,11 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import Advantage from 'lucide-svelte/icons/smile';
-	import Dice from 'lucide-svelte/icons/dices';
-	import Disadvantage from 'lucide-svelte/icons/frown';
-	import Multi from 'lucide-svelte/icons/square-stack';
-	import X from 'lucide-svelte/icons/x';
+	import { Icons } from '$lib/icons';
 	import { rollInfluence } from './influence.svelte';
 	import Die from './Die.svelte';
 	import { rollDice } from './integration';
@@ -58,7 +54,7 @@
 	<DropdownMenu.Trigger>
 		<div class="relative">
 			<Button variant="secondary" size="icon" class="rounded-full">
-				<Dice class="h-5 w-5" />
+				<Icons.Dice class="h-5 w-5" />
 				<span class="sr-only">Roll dice</span>
 			</Button>
 			{#if rollInfluence.value !== 0}<Badge
@@ -75,7 +71,7 @@
 					size="icon"
 					class="rounded-full"
 					onclick={() => rollInfluence.positive()}
-					><Advantage class="pointer-events-none size-6" /></Button
+					><Icons.Advantage class="pointer-events-none size-6" /></Button
 				>
 				{#if rollInfluence.value > 0}<Badge variant="destructive" class="absolute -top-1 -right-2"
 						>{rollInfluence.value}</Badge
@@ -85,7 +81,7 @@
 				variant="outline"
 				size="icon"
 				class="rounded-full"
-				onclick={() => rollInfluence.reset()}><X class="pointer-events-none size-6" /></Button
+				onclick={() => rollInfluence.reset()}><Icons.X class="pointer-events-none size-6" /></Button
 			>
 			<div class="relative">
 				<Button
@@ -93,7 +89,7 @@
 					size="icon"
 					class="rounded-full"
 					onclick={() => rollInfluence.negative()}
-					><Disadvantage class="pointer-events-none size-6" /></Button
+					><Icons.Disadvantage class="pointer-events-none size-6" /></Button
 				>
 				{#if rollInfluence.value < 0}<Badge variant="destructive" class="absolute -top-1 -right-2"
 						>{Math.abs(rollInfluence.value)}</Badge
@@ -139,10 +135,10 @@
 				disabled={mode === 'multi' && formula === ''}
 			>
 				{#if mode === 'single'}
-					<Multi class="" />
+					<Icons.Multi class="" />
 					Multi Roll
 				{:else}
-					<Dice class="" />
+					<Icons.Dice class="" />
 					Roll
 				{/if}
 			</Button>

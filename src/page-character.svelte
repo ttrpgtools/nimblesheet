@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Loader from 'lucide-svelte/icons/loader-circle';
+	import { Icons } from '$lib/icons';
 	import CharacterSheet from '$lib/CharacterSheet.svelte';
 	import { charManager } from '$lib/character-manager.svelte';
 	import { page } from '$lib/page.svelte';
@@ -23,6 +23,6 @@
 	<CharacterSheet bind:character={charManager.active} onchange={save} />
 {:else}
 	<div class="flex min-h-[300px] items-center justify-center">
-		<Loader class="size-12 animate-spin" />
+		<Icons.Loader class="size-12 animate-spin" />
 	</div>
 {/if}

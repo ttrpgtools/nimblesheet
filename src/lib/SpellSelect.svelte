@@ -1,9 +1,5 @@
 <script lang="ts">
-	import Dice from 'lucide-svelte/icons/dices';
-	import Indicator from 'lucide-svelte/icons/chevron-right';
-	import X from 'lucide-svelte/icons/x';
-	import Mana from 'lucide-svelte/icons/wand-sparkles';
-	import Question from 'lucide-svelte/icons/circle-help';
+	import { Icons } from '$lib/icons';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card';
 	import * as Select from '$lib/components/ui/select';
@@ -144,7 +140,7 @@
 
 				<Popover.Root>
 					<Popover.Trigger class="">
-						<Question class="size-4" />
+						<Icons.Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
 						Spells appear based on your class and level. The utility spells are listed with
@@ -157,7 +153,7 @@
 				</Popover.Root>
 			</Card.Title>
 			{#if available.length}
-				<Mana />
+				<Icons.Mana />
 				<Input
 					class="w-16 text-center"
 					type="number"
@@ -195,9 +191,11 @@
 					<SpellSchool school={school.name} class="size-6" />
 					<div class="grow text-left text-lg">{school.name}</div>
 					{#if extraSchool === school.name}<button type="button" class="" onclick={handleDropout}
-							><X class="size-5" /></button
+							><Icons.X class="size-5" /></button
 						>{/if}
-					<Indicator class="size-5 transition-transform group-data-[state=open]:rotate-90" />
+					<Icons.ChevronRight
+						class="size-5 transition-transform group-data-[state=open]:rotate-90"
+					/>
 				</Collapsible.Trigger>
 				<Collapsible.Content class="py-2 pl-10">
 					{#each school.spells as spell}
@@ -238,7 +236,7 @@
 							</div>
 							{#if spell.roll}
 								<Button variant="ghost" size="icon" onclick={() => onroll(spell.roll, spell.name)}
-									><Dice class="size-5" /></Button
+									><Icons.Dice class="size-5" /></Button
 								>
 							{/if}
 						</div>

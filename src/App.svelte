@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './app.css';
-	import SheetLogo from 'lucide-svelte/icons/square-user-round';
+	import { Icons } from '$lib/icons';
 	import { Toaster } from '$lib/components/ui/sonner';
 
 	import PageCharacter from './page-character.svelte';
@@ -10,8 +10,6 @@
 	import { owlbear } from '$lib/owlbear.svelte';
 	import { page } from '$lib/page.svelte';
 	import type { NavItem } from '$lib/types';
-	import Squirrel from 'lucide-svelte/icons/squirrel';
-	import Swords from 'lucide-svelte/icons/swords';
 	import NavMenu from '$lib/NavMenu.svelte';
 	import type { Component } from 'svelte';
 	import PageEncounter from './page-encounter.svelte';
@@ -28,9 +26,9 @@
 	let topPos = $state(0);
 	let pageTitle = $derived(page.title && topPos > 75 ? page.title : `Nimble CC`);
 	const nav: NavItem[] = [
-		{ id: 'char', label: 'Characters', icon: SheetLogo },
-		{ id: 'npc', label: 'NPCs', icon: Squirrel },
-		{ id: 'encounter', label: 'Encounter', icon: Swords },
+		{ id: 'char', label: 'Characters', icon: Icons.SheetLogo },
+		{ id: 'npc', label: 'NPCs', icon: Icons.NpcLogo },
+		{ id: 'encounter', label: 'Encounter', icon: Icons.Swords },
 	];
 
 	$effect(() => {

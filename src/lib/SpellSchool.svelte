@@ -1,21 +1,15 @@
 <script lang="ts">
-	import Fire from 'lucide-svelte/icons/flame';
-	import Ice from 'lucide-svelte/icons/snowflake';
-	import Lightning from 'lucide-svelte/icons/zap';
-	import Necrotic from 'lucide-svelte/icons/skull';
-	import Radiant from 'lucide-svelte/icons/sun';
-	import Wind from 'lucide-svelte/icons/wind';
-	import Utility from 'lucide-svelte/icons/pencil-ruler';
+	import { Icons } from '$lib/icons';
 	import type { MagicSchool } from './types';
 
 	const schoolMap = {
-		Fire: Fire,
-		Ice: Ice,
-		Lightning: Lightning,
-		Necrotic: Necrotic,
-		Radiant: Radiant,
-		Wind: Wind,
-		Utility: Utility
+		Fire: Icons.Fire,
+		Ice: Icons.Ice,
+		Lightning: Icons.Lightning,
+		Necrotic: Icons.Necrotic,
+		Radiant: Icons.Radiant,
+		Wind: Icons.Wind,
+		Utility: Icons.Utility,
 	} as const;
 	let {
 		school,

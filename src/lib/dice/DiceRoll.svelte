@@ -2,7 +2,7 @@
 	import { Die } from '.';
 	import Explode from './Explode.svelte';
 	import Vicious from './Vicious.svelte';
-	import X from 'lucide-svelte/icons/x';
+	import { Icons } from '$lib/icons';
 	import type { NimbleRoll } from './rolling';
 
 	type Props = {
@@ -39,7 +39,7 @@
 					{:else if die.type === 'exploded'}
 						<Explode size="size-4" />
 					{:else if die.type === 'dropped'}
-						<X class="size-4" />
+						<Icons.X class="size-4" />
 					{:else}
 						<Die which={die.sides} size="size-4" />
 					{/if}

@@ -8,7 +8,7 @@ export type Skill = { name: string; type: Stat; extra: number };
 export type Resource = { name: string; max: number; current: number };
 export type Inventory = { name: string; roll: string; bulky?: boolean };
 export type Ancestry = { name: string; size: string };
-export type Note = { name: string; content: string };
+export type Note = { name: string; content: string; rolls?: { name: string; roll: string }[] };
 
 export type MagicSchool = 'Fire' | 'Ice' | 'Lightning' | 'Wind' | 'Necrotic' | 'Radiant';
 export type Spell = {

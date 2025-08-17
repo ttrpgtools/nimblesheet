@@ -3,7 +3,7 @@
 	import { encounterManager } from '$lib/encounter-manager.svelte';
 	import Npc from '$lib/Npc.svelte';
 	import { page } from '$lib/page.svelte';
-	import Trash_2 from 'lucide-svelte/icons/trash-2';
+	import { Icons } from '$lib/icons';
 
 	page.title = 'Encounter';
 	$effect(() => {
@@ -38,7 +38,7 @@
 			<Button variant="destructive" onclick={clearDead}>Dead</Button>
 		{/if}
 		<Button size="icon" variant="outline" onclick={() => (delMode = !delMode)}>
-			<Trash_2 class="size-5 text-destructive" />
+			<Icons.Trash class="text-destructive size-5" />
 		</Button>
 	</div>
 	{#each encounterManager.encounter as npc, index (npc.id)}

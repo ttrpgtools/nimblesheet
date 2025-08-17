@@ -5,13 +5,9 @@
 	import Shield from '$lib/icons/Shield.svelte';
 	import Heart from './icons/Heart.svelte';
 	import Movement from './icons/Movement.svelte';
-	import Dices from 'lucide-svelte/icons/dices';
-	import Dot from 'lucide-svelte/icons/dot';
-	import Trash_2 from 'lucide-svelte/icons/trash-2';
+	import { Icons } from '$lib/icons';
 	import { Button } from './components/ui/button';
 	import { rollDice } from './dice/integration';
-	import CirclePlus from 'lucide-svelte/icons/circle-plus';
-	import CircleMinus from 'lucide-svelte/icons/circle-minus';
 
 	let {
 		npc,
@@ -57,8 +53,8 @@
 			<Button
 				size="icon"
 				variant="destructive"
-				class="absolute right-4 top-2 rounded-full"
-				onclick={ondelete}><Trash_2 class="text-destructive-foreground" /></Button
+				class="absolute top-2 right-4 rounded-full"
+				onclick={ondelete}><Icons.Trash class="text-destructive-foreground" /></Button
 			>
 		{/if}
 		<div class="flex items-center gap-3">
@@ -93,14 +89,14 @@
 			<div class="relative">
 				<Button
 					variant="ghost"
-					class="absolute left-0 top-1/2 -translate-y-1/2 p-2"
-					onclick={() => adjustHp(1)}><CirclePlus class="size-4" /></Button
+					class="absolute top-1/2 left-0 -translate-y-1/2 p-2"
+					onclick={() => adjustHp(1)}><Icons.CirclePlus class="size-4" /></Button
 				>
 				<Input type="text" class="px-7 text-center" bind:value={hpdelta} />
 				<Button
 					variant="ghost"
-					class="absolute right-0 top-1/2 -translate-y-1/2 p-2"
-					onclick={() => adjustHp(-1)}><CircleMinus class="size-4" /></Button
+					class="absolute top-1/2 right-0 -translate-y-1/2 p-2"
+					onclick={() => adjustHp(-1)}><Icons.CircleMinus class="size-4" /></Button
 				>
 			</div>
 			<Input placeholder="Notes" />
@@ -122,10 +118,11 @@
 							<button
 								type="button"
 								class="inline-block"
-								onclick={() => onroll(action.roll, action.name)}><Dices class="size-6" /></button
+								onclick={() => onroll(action.roll, action.name)}
+								><Icons.Dice class="size-6" /></button
 							>
 						{:else}
-							<Dot class="size-6" />
+							<Icons.Dot class="size-6" />
 						{/if}
 						<span class="font-bold">{action.name}{ENDS_LETTER.test(action.name) ? `.` : ``}</span>
 						<span>{action.desc}</span>

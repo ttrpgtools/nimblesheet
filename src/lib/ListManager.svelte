@@ -1,11 +1,9 @@
 <script lang="ts" generics="T">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import Trash from 'lucide-svelte/icons/trash-2';
-	import Add from 'lucide-svelte/icons/plus';
+	import { Icons } from '$lib/icons';
 	import type { Snippet } from 'svelte';
 	import * as Popover from '$lib/components/ui/popover';
-	import Question from 'lucide-svelte/icons/circle-help';
 
 	type Props = {
 		list: T[];
@@ -62,7 +60,7 @@
 				{#if helpText}
 					<Popover.Root>
 						<Popover.Trigger class="">
-							<Question class="size-4" />
+							<Icons.Question class="size-4" />
 						</Popover.Trigger>
 						<Popover.Content>
 							{@render helpText()}
@@ -77,7 +75,7 @@
 				size="icon"
 				variant={deleteMode ? `destructive` : `outline`}
 				onclick={() => (deleteMode = !deleteMode)}
-				><Trash
+				><Icons.Trash
 					class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
 				/></Button
 			>
@@ -88,7 +86,7 @@
 			{#snippet delBtn()}
 				{#if deleteMode}
 					<Button size="icon" variant="outline" onclick={() => deleteRow(index)}>
-						<Trash class="text-destructive size-5" />
+						<Icons.Trash class="text-destructive size-5" />
 					</Button>
 				{:else}
 					{@render deleteAlt(item)}
@@ -105,7 +103,7 @@
 				variant="secondary"
 				class="border-primary/50 rounded-full hover:border"
 				size="icon"
-				onclick={addRow}><Add class="size-5" /></Button
+				onclick={addRow}><Icons.Add class="size-5" /></Button
 			>
 			{#if footerExtra}{@render footerExtra()}{/if}
 		</div>
