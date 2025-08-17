@@ -100,8 +100,9 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.resources = data.resources ?? [];
 	newChar.notes =
 		typeof data.notes === 'string'
-			? [{ name: 'Notes', content: data.notes ?? '' }]
-			: (data.notes ?? []);
+			? [{ name: 'Notes', content: data.notes ?? '', rolls: [] }]
+			: // @ts-expect-error It doesn't know that rolls might be undefined.
+				(data.notes?.map((n) => ({ rolls: [], ...n })) ?? []);
 	return newChar;
 }
 
@@ -143,8 +144,8 @@ export class NimbleCharacter {
 	utilspells: Record<string, boolean> = $state({});
 	resources: Resource[] = $state([]);
 	notes: Note[] = $state([
-		{ name: 'Ancestry', content: '' },
-		{ name: 'Background', content: '' },
+		{ name: 'Ancestry', content: '', rolls: [] },
+		{ name: 'Background', content: '', rolls: [] },
 	]);
 
 	constructor() {}

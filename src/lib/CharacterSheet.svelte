@@ -132,7 +132,7 @@
 	}
 
 	function addNote() {
-		character.notes.push({ name: `Note ${character.notes.length + 1}`, content: '' });
+		character.notes.push({ name: `Note ${character.notes.length + 1}`, content: '', rolls: [] });
 	}
 
 	function deleteNote(index: number) {
@@ -705,7 +705,7 @@
 	</ListManager>
 
 	{#each character.notes as _, index}
-		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} />
+		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} {onroll} />
 	{/each}
 	<Card.Root>
 		<Card.Content class="flex justify-center">

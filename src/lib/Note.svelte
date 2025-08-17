@@ -10,9 +10,11 @@
 	type Props = {
 		note: Note;
 		ondelete: () => void;
+		onroll: (roll: string, label?: string, addMod?: number) => void;
 	};
-	let { note = $bindable(), ondelete }: Props = $props();
+	let { note = $bindable(), ondelete, onroll }: Props = $props();
 	let editing = $state(false);
+	let deleteMode = $state(false);
 	// svelte-ignore non_reactive_update - It doesn't need to be reactive
 	let inputElement: HTMLInputElement | null = null;
 
@@ -23,9 +25,23 @@
 			inputElement?.select();
 		}, 0);
 	}
+
+	function addRoll() {
+		note.rolls.push({
+			name: `${note.name} feature`,
+			roll: 'd6',
+		});
+	}
+
+	function deleteRoll(index: number) {
+		note.rolls.splice(index, 1);
+		if (!note.rolls.length) {
+			deleteMode = false;
+		}
+	}
 </script>
 
-<Card.Root>
+<Card.Root class={deleteMode ? `border-destructive bg-destructive/20` : ``}>
 	<Card.Header class="flex flex-row items-center justify-between gap-3">
 		<Card.Title class="flex flex-row items-center gap-3 text-lg">
 			{#if editing}
@@ -47,16 +63,62 @@
 				>
 			{/if}
 		</Card.Title>
-		<ConfirmButton
-			confirmText={`Delete ${note.name} section?`}
-			class="w-10"
-			onconfirm={ondelete}
-			variant="outline"
-			side="left"
-			size="icon"><Icons.Trash class="size-5" /></ConfirmButton
-		>
+		<div class="flex items-center gap-2">
+			<Button
+				size="icon"
+				variant={deleteMode ? `destructive` : `outline`}
+				onclick={() => (deleteMode = !deleteMode)}
+			>
+				<Icons.Trash
+					class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
+				/>
+			</Button>
+		</div>
 	</Card.Header>
 	<Card.Content>
 		<Textarea rows={5} bind:value={note.content} />
+		<div class="mt-3 flex flex-col gap-2">
+			{#each note.rolls as _, index}
+				<div class="flex flex-row items-center gap-2">
+					<Input bind:value={note.rolls[index].name} class="w-full" />
+
+					<Input class="w-20 md:w-24" bind:value={note.rolls[index].roll} />
+					{#if deleteMode}
+						<Button size="icon" variant="outline" onclick={() => deleteRoll(index)}>
+							<Icons.Trash class="text-destructive size-5" />
+						</Button>
+					{:else}
+						<Button
+							size="icon"
+							variant="ghost"
+							onclick={() => onroll(note.rolls[index].roll, note.rolls[index].name)}
+						>
+							<Icons.Dice class="size-5" />
+						</Button>
+					{/if}
+				</div>
+			{/each}
+		</div>
 	</Card.Content>
+	<Card.Footer>
+		<div class="flex w-full items-center justify-between gap-2">
+			<Button
+				variant="secondary"
+				class="border-primary/50 rounded-full hover:border"
+				size="icon"
+				onclick={addRoll}><Icons.Add class="size-5" /></Button
+			>
+			{#if deleteMode}
+				<ConfirmButton
+					confirmText={`Click again to delete`}
+					onconfirm={ondelete}
+					variant="destructive"
+					size="sm"
+					side="left"
+				>
+					Delete {note.name} section
+				</ConfirmButton>
+			{/if}
+		</div>
+	</Card.Footer>
 </Card.Root>
