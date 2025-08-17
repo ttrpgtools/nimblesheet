@@ -10,7 +10,15 @@
 	import type { NimbleCharacter } from './character.svelte';
 	import { Icons } from '$lib/icons';
 
-	import { allClasses, stats, saves, ancestries, meleeWeapons, rangedWeapons } from './nimble';
+	import {
+		allClasses,
+		stats,
+		saves,
+		ancestries,
+		meleeWeapons,
+		rangedWeapons,
+		hitDice,
+	} from './nimble';
 	import {
 		type Alteration,
 		type Ancestry,
@@ -19,7 +27,6 @@
 		type Save,
 	} from './types';
 	import SpellSelect from './SpellSelect.svelte';
-	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 	import Owlbear from '$lib/icons/OwlbearIcon.svelte';
 	import Caret from '$lib/icons/Caret.svelte';
 	import Coin from '$lib/icons/Coin.svelte';
@@ -199,6 +206,16 @@
 					<Select.Content>
 						{#each allClasses as nc}
 							<Select.Item value={nc.name}>{nc.name}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+				<Select.Root type="single" bind:value={character.hitdie} onValueChange={onchange}>
+					<Select.Trigger class="w-16">
+						{character.hitdie || `Hit Die`}
+					</Select.Trigger>
+					<Select.Content>
+						{#each hitDice as hd}
+							<Select.Item value={hd}>{hd}</Select.Item>
 						{/each}
 					</Select.Content>
 				</Select.Root>

@@ -2,7 +2,7 @@ import type { Stat, Save, Skill, NimbleClass, Ancestry, Inventory } from './type
 
 export const stats: Stat[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const saves: Save[] = ['STR', 'DEX', 'INT', 'WIL'];
-
+export const hitDice = ['d6', 'd8', 'd10', 'd12', 'd20'];
 export const allSkills: Skill[] = [
 	{ name: 'Arcana', type: 'INT', extra: 0 },
 	{ name: 'Examination', type: 'INT', extra: 0 },
