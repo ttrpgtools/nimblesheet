@@ -40,7 +40,7 @@
 				<Button
 					variant="secondary"
 					size="icon"
-					class="rounded-full"
+					class="mr-6 rounded-full"
 					onclick={async () => {
 						await onnew();
 						ondone();

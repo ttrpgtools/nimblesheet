@@ -341,8 +341,7 @@
 					<button
 						type="button"
 						disabled={!character.hitdie}
-						onclick={() =>
-							character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Point Increase`)}
+						onclick={() => character.hitdie && onroll(character.hitdie, `Hit Point Increase`, 1)}
 						><Icons.Dice class="size-4" /></button
 					>
 				</div>
