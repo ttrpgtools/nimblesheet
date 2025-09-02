@@ -534,9 +534,9 @@
 							variant="ghost"
 							size="icon"
 							class="rounded-full"
-							disabled={skill.extra === 0}
+							disabled={score <= 0}
 							onclick={() => {
-								skill.extra = Math.max(0, skill.extra - 1);
+								skill.extra = skill.extra - 1;
 								onchange();
 							}}
 						>
