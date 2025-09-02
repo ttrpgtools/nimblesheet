@@ -1,0 +1,4 @@
+name = "nimblesheets"
+compatibility_date = "2025-09-02"
+[assets]
+directory = "./dist"
