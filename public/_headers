@@ -1,2 +1,5 @@
 /manifest.json
   Access-Control-Allow-Origin: *
+
+/favicon.svg
+  Access-Control-Allow-Origin: *
