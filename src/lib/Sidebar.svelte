@@ -51,9 +51,13 @@
 				</Button>
 			{/if}
 		</Sheet.Header>
-		{@render children?.(ondone)}
-		<Sheet.Footer class="flex flex-col flex-wrap gap-2 sm:flex-col sm:space-x-0">
-			{@render footer?.(ondone)}
-		</Sheet.Footer>
+		<div class="overflow-y-auto">
+			{@render children?.(ondone)}
+		</div>
+		{#if footer}
+			<Sheet.Footer class="flex flex-col flex-wrap gap-2 sm:flex-col sm:space-x-0">
+				{@render footer?.(ondone)}
+			</Sheet.Footer>
+		{/if}
 	</Sheet.Content>
 </Sheet.Root>
