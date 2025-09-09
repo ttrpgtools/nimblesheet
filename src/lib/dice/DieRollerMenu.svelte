@@ -9,17 +9,20 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import Vicious from './Vicious.svelte';
 	import Explode from './Explode.svelte';
+	import { Input } from '$lib/components/ui/input';
 
 	let { characterName }: { characterName?: string | undefined } = $props();
 
 	let mode: 'single' | 'multi' = $state('single');
+	let modifier: number = $state('' as unknown as number);
 	let dieStack = new SvelteMap<number, number>();
 	let exploding = $state(false);
 	let vicious = $state(false);
 	let formula = $derived(
 		Array.from(dieStack.entries())
 			.map(([sides, count]) => `${count}d${sides}${exploding ? '!' : ''}${vicious ? 'v' : ''}`)
-			.join(' + ')
+			.join(' + ') +
+			(modifier > 0 ? ` + ${modifier}` : modifier < 0 ? ` - ${Math.abs(modifier)}` : '')
 	);
 	let open = $state(false);
 
@@ -45,6 +48,7 @@
 			dieStack.clear();
 			vicious = false;
 			exploding = false;
+			modifier = '' as unknown as number;
 			mode = 'single';
 		}
 	}
@@ -63,13 +67,14 @@
 				>{/if}
 		</div>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="center">
+	<DropdownMenu.Content align="center" class="w-64">
 		<DropdownMenu.Label class="flex justify-between gap-2">
 			<div class="relative">
 				<Button
 					variant="outline"
 					size="icon"
 					class="rounded-full"
+					title="Advantage"
 					onclick={() => rollInfluence.positive()}
 					><Icons.Advantage class="pointer-events-none size-6" /></Button
 				>
@@ -81,6 +86,7 @@
 				variant="outline"
 				size="icon"
 				class="rounded-full"
+				title="Clear Adv/Dis"
 				onclick={() => rollInfluence.reset()}><Icons.X class="pointer-events-none size-6" /></Button
 			>
 			<div class="relative">
@@ -88,6 +94,7 @@
 					variant="outline"
 					size="icon"
 					class="rounded-full"
+					title="Disadvantage"
 					onclick={() => rollInfluence.negative()}
 					><Icons.Disadvantage class="pointer-events-none size-6" /></Button
 				>
@@ -124,6 +131,7 @@
 					title="Vicious"
 					onclick={() => (vicious = !vicious)}><Vicious /></Button
 				>
+				<Input class="w-full flex-1" type="number" placeholder="Modifier" bind:value={modifier} />
 			</DropdownMenu.Label>
 		{/if}
 		<DropdownMenu.Label>
