@@ -105,7 +105,7 @@ class OwlbearIntegration {
 		}
 	};
 
-	#handleRollMessage = async ({ roll, label, character, rollModifier }: RollMessage) => {
+	#handleRollMessage = async ({ roll, label, character, rollModifier, rollId }: RollMessage) => {
 		if (this.embedded && this.ready) {
 			logger(`[OWLBEAR:handleRollMessage] Received roll`, roll);
 			const pname = await OBR.player.getName();
@@ -116,14 +116,21 @@ class OwlbearIntegration {
 					from: character || pname,
 					label,
 					rollModifier,
+					rollId,
 				},
 				{ destination: 'ALL' }
 			);
 		}
 	};
 
-	async sendDiceRoll(roll: NimbleRoll, label?: string, character?: string, rollModifier?: number) {
-		const msg = { type: 'roll' as const, roll, label, character, rollModifier };
+	async sendDiceRoll(
+		roll: NimbleRoll,
+		rollId: string,
+		label?: string,
+		character?: string,
+		rollModifier?: number
+	) {
+		const msg = { type: 'roll' as const, roll, label, character, rollModifier, rollId };
 		logger(`[OWLBEAR:sendDiceRoll] Received roll`, msg);
 		if (this.embedded && this.ready) {
 			await this.#handleRollMessage(msg);

@@ -22,6 +22,7 @@ export type RollMessage = {
 	label?: string;
 	character?: string;
 	rollModifier?: number;
+	rollId: string;
 };
 
 export type HailMessage = { type: 'hail' };

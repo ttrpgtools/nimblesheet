@@ -61,13 +61,13 @@
 				<Icons.Dice class="h-5 w-5" />
 				<span class="sr-only">Roll dice</span>
 			</Button>
-			{#if rollInfluence.value !== 0}<Badge
+			{#if rollInfluence.value === 20}<Badge
 					variant={rollInfluence.value < 0 ? `destructive` : `default`}
 					class="absolute -top-1 -right-2">{Math.abs(rollInfluence.value)}</Badge
 				>{/if}
 		</div>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="center" class="w-64">
+	<DropdownMenu.Content align="center">
 		<DropdownMenu.Label class="flex justify-between gap-2">
 			<div class="relative">
 				<Button
@@ -116,22 +116,24 @@
 			</DropdownMenu.Item>
 		{/each}
 		{#if mode === 'multi'}
-			<DropdownMenu.Label class="flex gap-2">
-				<Button
-					variant="outline"
-					class={[exploding && 'bg-muted border-primary']}
-					size="sm"
-					title="Exploding Crits"
-					onclick={() => (exploding = !exploding)}><Explode /></Button
-				>
-				<Button
-					variant="outline"
-					class={[vicious && 'bg-muted border-primary']}
-					size="sm"
-					title="Vicious"
-					onclick={() => (vicious = !vicious)}><Vicious /></Button
-				>
-				<Input class="w-full flex-1" type="number" placeholder="Modifier" bind:value={modifier} />
+			<DropdownMenu.Label class="flex flex-col gap-2">
+				<div>
+					<Button
+						variant="outline"
+						class={[exploding && 'bg-muted border-primary']}
+						size="sm"
+						title="Exploding Crits"
+						onclick={() => (exploding = !exploding)}><Explode /></Button
+					>
+					<Button
+						variant="outline"
+						class={[vicious && 'bg-muted border-primary']}
+						size="sm"
+						title="Vicious"
+						onclick={() => (vicious = !vicious)}><Vicious /></Button
+					>
+				</div>
+				<Input class="w-22 flex-1" type="number" placeholder="Modifier" bind:value={modifier} />
 			</DropdownMenu.Label>
 		{/if}
 		<DropdownMenu.Label>

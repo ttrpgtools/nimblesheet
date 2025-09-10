@@ -3,7 +3,8 @@ import { evaluateDiceRoll } from './rolling';
 import DiceRoll from './DiceRoll.svelte';
 import { rollInfluence } from './influence.svelte';
 import { owlbear } from '$lib/owlbear.svelte';
-//import { sendBusDiceRoll } from '$lib/bus-roll';
+import { id } from '$lib/random';
+import { sendBusDiceRoll } from '$lib/bus-roll';
 
 type RollOptions = {
 	label?: string;
@@ -23,7 +24,9 @@ export async function rollDice(
 		class:
 			'[--initial-height:7.5rem]! bg-gray-200! dark:bg-gray-800! dark:text-white! border-gray-400!',
 	});
-	await owlbear.sendDiceRoll(result, label, characterName, rollModifier);
-	//await sendBusDiceRoll(result, label, characterName, rollModifier);
+	const rollId = id();
+	await owlbear.sendDiceRoll(result, rollId, label, characterName, rollModifier);
+	await sendBusDiceRoll(result, rollId, label, characterName, rollModifier);
+	rollInfluence.reset();
 	return result;
 }

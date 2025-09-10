@@ -428,14 +428,14 @@
 	</Card.Root>
 
 	<Card.Root>
-		<Card.Content class="flex items-center gap-3">
+		<Card.Content class="flex items-center gap-2">
 			<h4 class="grow text-lg font-bold">Save</h4>
 			<div class="flex flex-wrap items-center justify-end gap-2">
 				{#each saves as save}
 					<Button
 						variant="secondary"
 						size="sm"
-						class="w-20"
+						class="w-18 gap-1 px-2"
 						onclick={() =>
 							onroll(
 								`d20+[${save}]`,

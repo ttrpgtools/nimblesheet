@@ -18,6 +18,10 @@
 	import PageOwlbear from './page-owlbear.svelte';
 	import OwlbearMenu from '$lib/OwlbearMenu.svelte';
 	import ModeSwitcher from '$lib/ModeSwitcher.svelte';
+	import { rollInfluence } from '$lib/dice/influence.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
+	import Bus from '$lib/bus.svelte';
 
 	$effect(() => {
 		owlbear.loadOwlbear();
@@ -60,17 +64,43 @@
 </svelte:head>
 <svelte:window bind:scrollY={topPos} />
 <Toaster richColors duration={10000} closeButton />
+<Bus src="https://bus.ttrpg.tools" />
 <div class="flex min-h-screen w-full flex-col">
 	<header
 		class="bg-background/30 sticky top-0 z-50 flex h-16 items-center gap-4 border-b px-4 backdrop-blur-md md:px-6"
 	>
-		<nav class="flex w-full grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
-			<h1 class="flex items-center gap-2 text-lg font-semibold md:text-base">
+		<nav class="flex min-w-0 grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
+			<h1 class="flex min-w-0 items-center gap-2 text-lg font-semibold md:text-base">
 				<NavMenu items={nav} current={currentNav} {onnav} disabled={disableNav} />
-				<span class="whitespace-nowrap">{pageTitle}</span>
+				<span class="shrink truncate whitespace-nowrap">{pageTitle}</span>
 			</h1>
 		</nav>
-		<div class="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+		<div class="flex items-center gap-2 md:ml-auto md:gap-2 lg:gap-4">
+			<div class="relative flex gap-2">
+				<Button
+					variant="outline"
+					size="icon"
+					class="rounded-full"
+					title="Advantage"
+					onclick={() => rollInfluence.positive()}
+					><Icons.Advantage class="pointer-events-none size-6" /></Button
+				>
+
+				{#if rollInfluence.value !== 0}<Badge
+						variant={rollInfluence.value < 0 ? 'destructive' : 'default'}
+						class="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2"
+						>{rollInfluence.value}</Badge
+					>{/if}
+
+				<Button
+					variant="outline"
+					size="icon"
+					class="rounded-full"
+					title="Disadvantage"
+					onclick={() => rollInfluence.negative()}
+					><Icons.Disadvantage class="pointer-events-none size-6" /></Button
+				>
+			</div>
 			<DieRollerMenu />
 		</div>
 
