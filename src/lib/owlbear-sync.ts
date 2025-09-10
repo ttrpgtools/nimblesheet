@@ -21,6 +21,7 @@ export type RollMessage = {
 	roll: NimbleRoll;
 	label?: string;
 	character?: string;
+	rollModifier?: number;
 };
 
 export type HailMessage = { type: 'hail' };
