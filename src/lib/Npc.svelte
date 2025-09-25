@@ -68,7 +68,7 @@
 					{npc.armor[0].toUpperCase()}
 				</div>
 			{/if}
-			{#if npc.speed && npc.speed !== '30'}
+			{#if npc.speed && npc.speed !== '6'}
 				<div class="flex items-center gap-1">
 					<Movement size="size-4" />
 					{npc.speed}

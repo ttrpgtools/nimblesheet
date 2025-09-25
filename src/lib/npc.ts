@@ -33,7 +33,7 @@ export function createBlankNpc() {
 		version: 1,
 		level: 1,
 		armor: 'none',
-		speed: '30',
+		speed: '6',
 		hp: 10,
 		maxHp: 10,
 		actions: [],
