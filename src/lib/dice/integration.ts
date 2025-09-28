@@ -18,9 +18,9 @@ export async function rollDice(
 	{ label, context, rollModifier, characterName }: RollOptions = {}
 ) {
 	rollModifier = (rollModifier ?? 0) + rollInfluence.value;
-	const result = await evaluateDiceRoll(formula, context, rollModifier);
+	const result = await evaluateDiceRoll(formula, context, rollModifier, rollInfluence.primary);
 	toast(DiceRoll, {
-		componentProps: { formula, label, rollModifier, result },
+		componentProps: { formula, label, rollModifier, result, primaryoffset: rollInfluence.primary },
 		class:
 			'[--initial-height:7.5rem]! bg-gray-200! dark:bg-gray-800! dark:text-white! border-gray-400!',
 	});

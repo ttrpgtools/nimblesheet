@@ -9,17 +9,21 @@
 		formula: string;
 		label?: string;
 		rollModifier?: number;
+		primaryoffset?: number;
 		result: NimbleRoll;
 	};
-	let { formula, label = '', rollModifier = 0, result }: Props = $props();
+	let { formula, label = '', rollModifier = 0, primaryoffset = 0, result }: Props = $props();
 
 	const modDisplay = Math.abs(rollModifier) === 1 ? '' : ` ${Math.abs(rollModifier)}`;
 </script>
 
 <div class="flex flex-col gap-2">
 	<div class="">
-		Rolling {formula}{label ? ` (${label})` : ``}
+		Rolling {result.formula.replace(/\+\-/g, '-')}{label ? ` (${label})` : ``}
 		{rollModifier === 0 ? `` : `with${modDisplay} ${rollModifier < 0 ? `dis` : ''}advantage`}
+		{primaryoffset === 0
+			? ''
+			: `(${primaryoffset > 0 ? '+' : '-'}${Math.abs(primaryoffset)} to primary)`}
 	</div>
 	<div class="flex items-center gap-4">
 		<div

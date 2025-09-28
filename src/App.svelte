@@ -67,16 +67,22 @@
 <Bus src="https://bus.ttrpg.tools" />
 <div class="flex min-h-screen w-full flex-col">
 	<header
-		class="bg-background/30 sticky top-0 z-50 flex h-16 items-center gap-4 border-b px-4 backdrop-blur-md md:px-6"
+		class="bg-background/30 sticky top-0 z-50 flex h-28 flex-col gap-2 border-b px-4 backdrop-blur-md sm:h-16 sm:flex-row md:px-6"
 	>
-		<nav class="flex min-w-0 grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
-			<h1 class="flex min-w-0 items-center gap-2 text-lg font-semibold md:text-base">
-				<NavMenu items={nav} current={currentNav} {onnav} disabled={disableNav} />
-				<span class="shrink truncate whitespace-nowrap">{pageTitle}</span>
-			</h1>
-		</nav>
-		<div class="flex items-center gap-2 md:ml-auto md:gap-2 lg:gap-4">
-			<div class="relative flex gap-2">
+		<div class="flex items-center justify-between gap-4 pt-2 sm:w-full sm:pt-0">
+			<nav class="flex min-w-0 grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
+				<h1 class="flex min-w-0 items-center gap-2 text-lg font-semibold md:text-base">
+					<NavMenu items={nav} current={currentNav} {onnav} disabled={disableNav} />
+					<span class="shrink truncate whitespace-nowrap">{pageTitle}</span>
+				</h1>
+			</nav>
+			<div class="w-0 sm:w-80"></div>
+			<route.menu type={currentNav.id === 'char' ? 'char' : 'npc'} />
+		</div>
+		<div
+			class="flex items-center justify-end gap-4 sm:absolute sm:top-1/2 sm:right-18 sm:-translate-y-1/2 md:right-24 md:ml-auto md:gap-2 lg:gap-4"
+		>
+			<div class="relative hidden gap-2">
 				<Button
 					variant="outline"
 					size="icon"
@@ -101,10 +107,45 @@
 					><Icons.Disadvantage class="pointer-events-none size-6" /></Button
 				>
 			</div>
+			<div class="relative flex gap-4">
+				<div class="relative flex gap-2">
+					<Button
+						variant={rollInfluence.primary > 0 ? 'default' : 'outline'}
+						size="sm"
+						title="Opening"
+						onclick={() => rollInfluence.opening()}>Open</Button
+					>
+					<Button
+						variant={rollInfluence.primary < 0 ? 'default' : 'outline'}
+						size="sm"
+						title="Anticipate"
+						onclick={() => rollInfluence.anticipate()}>Ant</Button
+					>
+				</div>
+				<div class="relative flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						title="Advantage"
+						onclick={() => rollInfluence.positive()}>Adv</Button
+					>
+
+					{#if rollInfluence.value !== 0}<Badge
+							variant={rollInfluence.value < 0 ? 'destructive' : 'default'}
+							class="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2"
+							>{rollInfluence.value}</Badge
+						>{/if}
+
+					<Button
+						variant="outline"
+						size="sm"
+						title="Disadvantage"
+						onclick={() => rollInfluence.negative()}>Dis</Button
+					>
+				</div>
+			</div>
 			<DieRollerMenu />
 		</div>
-
-		<route.menu type={currentNav.id === 'char' ? 'char' : 'npc'} />
 	</header>
 	<main class="flex flex-col gap-4 p-4 md:gap-8 md:p-10">
 		<route.page />

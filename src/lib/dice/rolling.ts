@@ -1,3 +1,4 @@
+import { stopImmediatePropagation } from 'svelte/legacy';
 import { getRandomInt } from '../random';
 
 const numberlike = /^-?\d+(\.\d+)?$/;
@@ -37,11 +38,11 @@ class NimbleDie {
 	}
 
 	get isMax() {
-		return this.sides === this.value;
+		return this.sides <= this.value;
 	}
 
 	get isMin() {
-		return this.value === 1;
+		return this.value <= 1;
 	}
 
 	get sortPosition() {
@@ -122,6 +123,7 @@ class NimbleRoller {
 		const removals = { h: 0, l: 0 };
 		let explode = false;
 		let vicious = false;
+		let primaryoffset = 0;
 		term = term.replace(/r([hl])(\d*)/, (_, dir: 'h' | 'l', num: string) => {
 			removals[dir] += +(num || '1');
 			return '';
@@ -132,6 +134,10 @@ class NimbleRoller {
 		});
 		term = term.replace(/!/, () => {
 			explode = true;
+			return '';
+		});
+		term = term.replace(/p([pm])(\d*)/, (_, op: 'p' | 'm', num: string) => {
+			primaryoffset = (op === 'm' ? -1 : 1) * (num ? parseInt(num, 10) : 1);
 			return '';
 		});
 		const [count, sides] = term.split('d');
@@ -175,6 +181,7 @@ class NimbleRoller {
 			}
 		} else {
 			results[0].type = 'primary';
+			results[0].value += primaryoffset;
 			extra = blowUp(results[0], explode, vicious);
 		}
 		const value =
@@ -222,10 +229,20 @@ function integrateModifier(expression: string, modifier: number) {
 	);
 }
 
+function integrateOffset(expression: string, offset: number) {
+	if (offset === 0) return expression;
+	return smoosh(expression).replace(
+		/(\d*)(d\d+)/g,
+		(_, count, size) =>
+			`${count}${size}p${offset > 0 ? `p` : `m`}${Math.abs(offset) === 1 ? '' : Math.abs(offset)}`
+	);
+}
+
 export async function evaluateDiceRoll(
 	expression: string,
 	context: Record<string, number> = {},
-	modifier: number = 0
+	modifier: number = 0,
+	primaryoffset: number = 0
 ) {
 	//console.log(`Evaluating = ${expression}`, context, modifier);
 	expression = expression.replace(/\[([^\]]+)\]/g, (_, key) => {
@@ -235,6 +252,7 @@ export async function evaluateDiceRoll(
 			throw new Error(`Context key '${key}' not found from '${expression}'`);
 		}
 	});
+	expression = integrateOffset(expression, primaryoffset);
 	expression = integrateModifier(expression, modifier);
 	const roller = new NimbleRoller(expression);
 	await roller.roll();
