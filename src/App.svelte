@@ -22,6 +22,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import Bus from '$lib/bus.svelte';
+	import HelpTip from '$lib/components/HelpTip.svelte';
 
 	$effect(() => {
 		owlbear.loadOwlbear();
@@ -76,39 +77,19 @@
 					<span class="shrink truncate whitespace-nowrap">{pageTitle}</span>
 				</h1>
 			</nav>
-			<div class="w-0 sm:w-80"></div>
+			<div class="w-0 shrink-0 sm:w-80"></div>
 			<route.menu type={currentNav.id === 'char' ? 'char' : 'npc'} />
 		</div>
 		<div
 			class="flex items-center justify-end gap-4 sm:absolute sm:top-1/2 sm:right-18 sm:-translate-y-1/2 md:right-24 md:ml-auto md:gap-2 lg:gap-4"
 		>
-			<div class="relative hidden gap-2">
-				<Button
-					variant="outline"
-					size="icon"
-					class="rounded-full"
-					title="Advantage"
-					onclick={() => rollInfluence.positive()}
-					><Icons.Advantage class="pointer-events-none size-6" /></Button
-				>
-
-				{#if rollInfluence.value !== 0}<Badge
-						variant={rollInfluence.value < 0 ? 'destructive' : 'default'}
-						class="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2"
-						>{rollInfluence.value}</Badge
-					>{/if}
-
-				<Button
-					variant="outline"
-					size="icon"
-					class="rounded-full"
-					title="Disadvantage"
-					onclick={() => rollInfluence.negative()}
-					><Icons.Disadvantage class="pointer-events-none size-6" /></Button
-				>
-			</div>
 			<div class="relative flex gap-4">
 				<div class="relative flex gap-2">
+					<HelpTip
+						>The <code>Open</code> button will increase the primary die roll by one, which is an
+						option if using the Assess action. Likewise <code>Ant</code> is for anticipating danger and
+						reduces the primary die roll by one.</HelpTip
+					>
 					<Button
 						variant={rollInfluence.primary > 0 ? 'default' : 'outline'}
 						size="sm"
