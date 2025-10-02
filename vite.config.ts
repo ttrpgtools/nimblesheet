@@ -15,4 +15,9 @@ export default defineConfig({
 	define: {
 		__VERSION__: JSON.stringify(pkg.version),
 	},
+	server: {
+		cors: {
+			origin: 'https://www.owlbear.rodeo',
+		},
+	},
 });

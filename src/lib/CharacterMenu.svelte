@@ -120,12 +120,15 @@
 		{/if}
 		{#if manager.list.length > 0}
 			<div class="flex items-center gap-2">
-				<Button variant="secondary" class="grow" onclick={() => exportCharacters(selectedIds, type)}
+				<Button
+					variant="secondary"
+					class="grow"
+					onclick={() => exportCharacters(selectedIds, type, owlbear.embedded)}
 					><Icons.Export class="mr-2 size-4" />Export {selectedIds.length
 						? `Selected`
 						: `All`}</Button
 				>
-				{#if selectedIds.length === 1 && owlbear.role === 'GM'}
+				{#if selectedIds.length === 1 && owlbear.role === 'GM' && type === 'char'}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline' })}
 							><Icons.Send class="size-4" /></DropdownMenu.Trigger
