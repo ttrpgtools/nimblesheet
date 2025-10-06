@@ -1,6 +1,8 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { NavItem } from './types';
+	import { Icons } from './icons';
+	import { Button } from './components/ui/button';
 
 	type Props = {
 		items: NavItem[];
@@ -14,7 +16,9 @@
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger {disabled}>
 		<div class="relative">
-			<current.icon class="size-6" />
+			<Button variant="outline" size="icon" class="shrink-0">
+				<Icons.Menu class="w-5" />
+			</Button>
 			<span class="sr-only">Navigate to</span>
 		</div>
 	</DropdownMenu.Trigger>

@@ -74,6 +74,7 @@
 			<nav class="flex min-w-0 grow flex-row items-center gap-5 text-lg font-medium lg:gap-6">
 				<h1 class="flex min-w-0 items-center gap-2 text-lg font-semibold md:text-base">
 					<NavMenu items={nav} current={currentNav} {onnav} disabled={disableNav} />
+					<currentNav.icon class="size-6" />
 					<span class="shrink truncate whitespace-nowrap">{pageTitle}</span>
 				</h1>
 			</nav>
