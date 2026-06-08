@@ -157,6 +157,7 @@
 				<Input
 					class="w-16 text-center"
 					type="number"
+					min="0"
 					inputmode="numeric"
 					onfocus={(ev) => ev.currentTarget.select()}
 					bind:value={mana}

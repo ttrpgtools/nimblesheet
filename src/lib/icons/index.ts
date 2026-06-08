@@ -12,6 +12,7 @@ import Skull from '@lucide/svelte/icons/skull';
 import Bulky from '@lucide/svelte/icons/weight';
 import Weapon from '@lucide/svelte/icons/sword';
 import X from '@lucide/svelte/icons/x';
+import CircleX from '@lucide/svelte/icons/circle-x';
 import CirclePlus from '@lucide/svelte/icons/circle-plus';
 import CircleMinus from '@lucide/svelte/icons/circle-minus';
 import Dice from '@lucide/svelte/icons/dices';
@@ -56,6 +57,7 @@ export const Icons = {
 	Bulky,
 	Weapon,
 	X,
+	CircleX,
 	CirclePlus,
 	CircleMinus,
 	Dice,

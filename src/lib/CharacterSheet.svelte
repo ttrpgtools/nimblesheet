@@ -127,6 +127,9 @@
 		character.size = race.size;
 	}
 
+	const diceButtonClasses =
+		'ml-4 absolute ring-offset-background focus-visible:ring-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10';
+
 	const itemPop: [string, Inventory[]][] = [
 		['Melee Weapons', meleeWeapons],
 		['Ranged Weapons', rangedWeapons],
@@ -200,7 +203,7 @@
 			<div class="col-span-2 flex gap-2">
 				<Label for="charclass" class="sr-only">Class</Label>
 				<Select.Root type="single" bind:value={character.charClass} onValueChange={setClass}>
-					<Select.Trigger class="w-full">
+					<Select.Trigger class="w-full py-5" title="Character class">
 						{character.charClass || `Class`}
 					</Select.Trigger>
 					<Select.Content>
@@ -210,7 +213,7 @@
 					</Select.Content>
 				</Select.Root>
 				<Select.Root type="single" bind:value={character.hitdie} onValueChange={onchange}>
-					<Select.Trigger class="w-16">
+					<Select.Trigger class="w-16 py-5" title="Hit dice">
 						{character.hitdie || `Hit Die`}
 					</Select.Trigger>
 					<Select.Content>
@@ -224,6 +227,7 @@
 				<Label for="level" class="sr-only">Level</Label>
 				<Input
 					id="level"
+					title="Level"
 					placeholder="LVL"
 					type="number"
 					inputmode="numeric"
@@ -293,8 +297,8 @@
 					}}
 					variant="outline"
 					size="icon"
-					class="border-foreground absolute right-1.5 bottom-1.5 size-4 rounded-full"
-					><Icons.X /></Button
+					class="absolute right-1.5 bottom-1.5 size-4"
+					><Icons.CircleX /></Button
 				>
 			{/if}
 		</Card.Content>
@@ -332,13 +336,15 @@
 					id="sstat-hp"
 					class="text-center"
 					type="number"
+					min="0"
 					inputmode="numeric"
 					onfocus={autoSel}
 					bind:value={character.hp}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-hp">HP</Label>
+					<Label for="sstat-hp" title="Hit points">HP</Label>
 					<button
+						class={diceButtonClasses}
 						type="button"
 						disabled={!character.hitdie}
 						onclick={() => character.hitdie && onroll(character.hitdie, `Hit Point Increase`, 1)}
@@ -351,13 +357,15 @@
 					id="sstat-hd"
 					class="text-center"
 					type="number"
+					min="1"
 					inputmode="numeric"
 					onfocus={autoSel}
 					bind:value={character.hd}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-hd">HD</Label>
+					<Label for="sstat-hd" title="Hit dice">HD</Label>
 					<button
+						class={diceButtonClasses}
 						type="button"
 						disabled={!character.hitdie}
 						onclick={() => character.hitdie && onroll(`${character.hitdie}+[STR]`, `Hit Die`)}
@@ -375,8 +383,8 @@
 					bind:value={character.initiative}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-init">Init</Label>
-					<button type="button" onclick={rollInitiative}><Icons.Dice class="size-4" /></button>
+					<Label for="sstat-init" title="Initiative">Init</Label>
+					<button class={diceButtonClasses} type="button" onclick={rollInitiative}><Icons.Dice class="size-4" /></button>
 				</div>
 			</div>
 
@@ -400,7 +408,7 @@
 					onfocus={autoSel}
 					bind:value={character.maxHp}
 				/>
-				<Label for="sstat-maxhp">Max HP</Label>
+				<Label for="sstat-maxhp" title="Maximum hit points">Max HP</Label>
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<Input
@@ -411,13 +419,14 @@
 					onfocus={autoSel}
 					bind:value={character.maxHd}
 				/>
-				<Label for="sstat-maxhd">Max HD</Label>
+				<Label for="sstat-maxhd" title="Maximum hit dice">Max HD</Label>
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<Input
 					id="sstat-speed"
 					class="text-center"
 					type="number"
+					min="1"
 					inputmode="numeric"
 					onfocus={autoSel}
 					bind:value={character.speed}
@@ -456,7 +465,7 @@
 					actions = 0;
 				}}
 			>
-				<Icons.X class="size-6 {actions === 0 ? `text-gray-500` : ``}" />
+				<Icons.CircleX class="size-5 {actions === 0 ? `text-gray-500` : ``}" />
 			</button>
 			{#each [1, 2, 3] as action}
 				<button
@@ -483,7 +492,7 @@
 					onchange();
 				}}
 			>
-				<Icons.X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" />
+				<Icons.CircleX class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" />
 			</button>
 			{#each [1, 2, 3, 4, 5] as wnd}
 				<button
@@ -493,7 +502,7 @@
 						onchange();
 					}}
 				>
-					<Icons.Droplet class="size-5 {character.wounds >= wnd ? `text-red-500` : ``}" />
+					<Icons.Droplet class="size-5 {character.wounds >= wnd ? `text-red-500 fill-red-500` : ``}"/>
 				</button>
 			{/each}
 			<button
@@ -670,6 +679,7 @@
 					id="coin-gp"
 					class="w-20 md:w-24"
 					type="number"
+					min="0"
 					onfocus={autoSel}
 					bind:value={character.gp}
 				/>
@@ -678,6 +688,7 @@
 					id="coin-sp"
 					class="w-20 md:w-24"
 					type="number"
+					min="0"
 					onfocus={autoSel}
 					bind:value={character.sp}
 				/>
