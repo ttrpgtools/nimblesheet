@@ -145,10 +145,53 @@
 	function deleteNote(index: number) {
 		character.notes.splice(index, 1);
 	}
+
+	let avatarInput: HTMLInputElement | undefined = $state();
+
+	function handleAvatarUpload(event: Event) {
+		const file = (event.target as HTMLInputElement).files?.[0];
+		if (!file) return;
+		const canvas = document.createElement('canvas');
+		const SIZE = 256;
+		canvas.width = SIZE;
+		canvas.height = SIZE;
+		const ctx = canvas.getContext('2d')!;
+		const img = new Image();
+		const url = URL.createObjectURL(file);
+		img.onload = () => {
+			const side = Math.min(img.width, img.height);
+			const sx = (img.width - side) / 2;
+			const sy = (img.height - side) / 2;
+			ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+			URL.revokeObjectURL(url);
+			character.avatar = canvas.toDataURL('image/webp', 0.8);
+			onchange();
+		};
+		img.src = url;
+	}
 </script>
 
 <div class="mx-auto flex max-w-lg flex-col sm:gap-4" oninput={onchange}>
 	<div class="mb-4 flex items-center gap-2 sm:mb-0">
+		<button
+			type="button"
+			class="border-input relative size-16 shrink-0 overflow-hidden rounded-full border transition-all hover:scale-110 hover:border-2 focus:outline-none"
+			onclick={() => avatarInput?.click()}
+			title="Upload avatar"
+		>
+			{#if character.avatar}
+				<img src={character.avatar} alt="Avatar" class="size-full object-cover" />
+			{:else}
+				<Icons.CirclePlus class="text-muted-foreground absolute inset-0 m-auto size-6" />
+			{/if}
+		</button>
+		<input
+			bind:this={avatarInput}
+			type="file"
+			accept="image/*"
+			class="hidden"
+			onchange={handleAvatarUpload}
+		/>
 		<Label for="charname" class="sr-only">Name</Label>
 		<Input
 			id="charname"

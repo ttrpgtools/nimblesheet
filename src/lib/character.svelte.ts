@@ -43,6 +43,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		sp: $state.snapshot(character.sp),
 		mana: $state.snapshot(character.mana),
 		extraSchool: $state.snapshot(character.extraSchool),
+		avatar: $state.snapshot(character.avatar),
 		inventory: $state.snapshot(character.inventory),
 		utilspells: $state.snapshot(character.utilspells),
 		resources: $state.snapshot(character.resources),
@@ -95,6 +96,7 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.sp = data.sp ?? 0;
 	newChar.mana = data.mana ?? 0;
 	newChar.extraSchool = data.extraSchool;
+	newChar.avatar = data.avatar;
 	newChar.inventory = data.inventory ?? [];
 	newChar.utilspells = data.utilspells ?? {};
 	newChar.resources = data.resources ?? [];
@@ -140,6 +142,7 @@ export class NimbleCharacter {
 	sp: number = $state(0);
 	mana: number = $state(0);
 	extraSchool: MagicSchool | undefined = $state();
+	avatar: string | undefined = $state();
 	inventory: Inventory[] = $state([]);
 	utilspells: Record<string, boolean> = $state({});
 	resources: Resource[] = $state([]);
