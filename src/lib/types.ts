@@ -42,3 +42,34 @@ export type NavItem = {
 	icon: Component | ComponentType<SvelteComponent>;
 	id: string;
 };
+
+type LogEntryBase = {
+	id: string;
+	type: 'log';
+	touched: string;
+};
+
+export type LogRollEntry = LogEntryBase & {
+	kind: 'roll';
+	characterId?: string;
+	characterName?: string;
+	formula: string;
+	result: number;
+	label?: string;
+	rollModifier: number;
+	influence: number;
+	primary: number;
+	isCrit: boolean;
+	isMiss: boolean;
+};
+
+export type LogChangeEntry = LogEntryBase & {
+	kind: 'change';
+	characterId: string;
+	characterName: string;
+	field: string;
+	from?: string;
+	to?: string;
+};
+
+export type LogEntry = LogRollEntry | LogChangeEntry;

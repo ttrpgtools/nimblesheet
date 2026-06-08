@@ -33,6 +33,7 @@
 	import { rollDice } from './dice/integration';
 	import { owlbear } from './owlbear.svelte';
 	import Note from './Note.svelte';
+	import { activityLog } from './activity-log.svelte';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -81,8 +82,34 @@
 			context,
 			rollModifier: addMod,
 			characterName: character.name,
+			characterId: character.id,
 		});
 	}
+
+	let _prevCharId = '';
+	let _prevHp = 0;
+	let _prevWounds = 0;
+	$effect(() => {
+		const charId = character.id;
+		const hp = character.hp;
+		const wounds = character.wounds;
+		if (charId !== _prevCharId) {
+			_prevCharId = charId;
+			_prevHp = hp;
+			_prevWounds = wounds;
+			return;
+		}
+		if (hp !== _prevHp) {
+			const from = _prevHp;
+			_prevHp = hp;
+			activityLog.logChange({ characterId: charId, characterName: character.name, field: 'HP', from: String(from), to: String(hp) });
+		}
+		if (wounds !== _prevWounds) {
+			const from = _prevWounds;
+			_prevWounds = wounds;
+			activityLog.logChange({ characterId: charId, characterName: character.name, field: 'Wounds', from: String(from), to: String(wounds) });
+		}
+	});
 	function autoSel(ev: FocusEvent) {
 		const el = ev.target as HTMLInputElement;
 		el.select();

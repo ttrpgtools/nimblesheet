@@ -23,6 +23,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import Bus from '$lib/bus.svelte';
 	import HelpTip from '$lib/components/HelpTip.svelte';
+	import ActivityLog from '$lib/ActivityLog.svelte';
 
 	$effect(() => {
 		owlbear.loadOwlbear();
@@ -125,6 +126,7 @@
 					>
 				</div>
 			</div>
+			<ActivityLog />
 			<DieRollerMenu />
 		</div>
 	</header>
