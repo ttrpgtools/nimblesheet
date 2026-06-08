@@ -8,7 +8,9 @@
 
 	import ConfirmButton from './ConfirmButton.svelte';
 	import { exportCharacters } from './export';
+	import { backupToDrive, importFromDrive } from './google-drive';
 
+	import { toast } from 'svelte-sonner';
 	import { charManager, npcManager } from '$lib/character-manager.svelte';
 	import Sidebar from './Sidebar.svelte';
 	import { owlbear } from './owlbear.svelte';
@@ -49,6 +51,34 @@
 		if (!sheet) return;
 		console.log(`Send to player`, id, $state.snapshot(sheet));
 		owlbear.sendSheetToPlayer($state.snapshot(sheet), id);
+	}
+
+	let driveBacking = $state(false);
+	let driveImporting = $state(false);
+
+	async function handleDriveImport() {
+		driveImporting = true;
+		try {
+			const data = await importFromDrive();
+			await manager.import(data as any, warning?.show);
+		} catch (e) {
+			if (e instanceof Error && e.message !== 'Cancelled') {
+				toast.error(e.message);
+			}
+		} finally {
+			driveImporting = false;
+		}
+	}
+
+	async function handleDriveBackup() {
+		driveBacking = true;
+		try {
+			await backupToDrive(selectedIds, type);
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : 'Google Drive backup failed');
+		} finally {
+			driveBacking = false;
+		}
 	}
 
 	$effect(() => (type === 'char' ? owlbear.onSentSheet(charManager.receive) : () => {}));
@@ -104,7 +134,7 @@
 			</div>
 		{/if}
 	{/snippet}
-	{#snippet footer()}
+	{#snippet footer(done)}
 		{#if selectedIds.length > 0}
 			<ConfirmButton
 				onconfirm={handleDelete}
@@ -128,6 +158,20 @@
 						? `Selected`
 						: `All`}</Button
 				>
+				<Button
+					variant="outline"
+					size="icon"
+					onclick={() => { done(); handleDriveBackup(); }}
+					disabled={driveBacking}
+					title="Backup to Google Drive"
+				>
+					{#if driveBacking}
+						<Icons.Loader class="size-4 animate-spin" />
+					{:else}
+						<Icons.DriveBackup class="size-4" />
+					{/if}
+					<span class="sr-only">Backup to Google Drive</span>
+				</Button>
 				{#if selectedIds.length === 1 && owlbear.role === 'GM' && type === 'char'}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline' })}
@@ -146,9 +190,25 @@
 				{/if}
 			</div>
 		{/if}
-		<Button variant="secondary" onclick={startImport}
-			><Icons.Import class="mr-2 size-4" />Import from file</Button
-		>
+		<div class="flex items-center gap-2">
+			<Button variant="secondary" class="grow" onclick={startImport}
+				><Icons.Import class="mr-2 size-4" />Import from file</Button
+			>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={() => { done(); handleDriveImport(); }}
+				disabled={driveImporting}
+				title="Import from Google Drive"
+			>
+				{#if driveImporting}
+					<Icons.Loader class="size-4 animate-spin" />
+				{:else}
+					<Icons.DriveImport class="size-4" />
+				{/if}
+				<span class="sr-only">Import from Google Drive</span>
+			</Button>
+		</div>
 		<input type="file" use:input />
 		{#if owlbear.embedded}
 			<Button variant="secondary" onclick={popout}

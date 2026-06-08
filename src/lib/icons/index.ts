@@ -31,6 +31,8 @@ import Advantage from '@lucide/svelte/icons/smile';
 import Disadvantage from '@lucide/svelte/icons/frown';
 import Multi from '@lucide/svelte/icons/square-stack';
 import Loader from '@lucide/svelte/icons/loader-circle';
+import DriveBackup from '@lucide/svelte/icons/cloud-upload';
+import DriveImport from '@lucide/svelte/icons/cloud-download';
 
 // Spell Schools
 import Fire from '@lucide/svelte/icons/flame';
@@ -75,6 +77,8 @@ export const Icons = {
 	Disadvantage,
 	Multi,
 	Loader,
+	DriveBackup,
+	DriveImport,
 	Fire,
 	Ice,
 	Wind,
