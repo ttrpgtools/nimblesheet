@@ -19,6 +19,8 @@
 		rangedWeapons,
 		hitDice,
 	} from './nimble';
+	import { skillDescs, statDocs, cardDocs, inventoryUrl, skillsUrl } from './nimble-docs';
+	import RulePopover from '$lib/components/RulePopover.svelte';
 	import {
 		type Alteration,
 		type Ancestry,
@@ -325,7 +327,7 @@
 					onfocus={autoSel}
 					bind:value={character.armor}
 				/>
-				<Label for="sstat-armor">Armor</Label>
+				<RulePopover doc={statDocs.Armor}><Label for="sstat-armor">Armor</Label></RulePopover>
 			</div>
 			<div class="flex flex-col items-center gap-2">
 				<Input
@@ -337,7 +339,7 @@
 					bind:value={character.hp}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-hp">HP</Label>
+					<RulePopover doc={statDocs.HP}><Label for="sstat-hp" title="Hit Points">HP</Label></RulePopover>
 					<button
 						type="button"
 						disabled={!character.hitdie}
@@ -356,7 +358,7 @@
 					bind:value={character.hd}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-hd">HD</Label>
+					<RulePopover doc={statDocs.HD}><Label for="sstat-hd" title="Hit Dice">HD</Label></RulePopover>
 					<button
 						type="button"
 						disabled={!character.hitdie}
@@ -375,7 +377,7 @@
 					bind:value={character.initiative}
 				/>
 				<div class="flex items-center gap-3">
-					<Label for="sstat-init">Init</Label>
+					<RulePopover doc={statDocs.Init}><Label for="sstat-init" title="Initiative">Init</Label></RulePopover>
 					<button type="button" onclick={rollInitiative}><Icons.Dice class="size-4" /></button>
 				</div>
 			</div>
@@ -422,14 +424,14 @@
 					onfocus={autoSel}
 					bind:value={character.speed}
 				/>
-				<Label for="sstat-speed">Speed</Label>
+				<RulePopover doc={statDocs.Speed}><Label for="sstat-speed">Speed</Label></RulePopover>
 			</div>
 		</Card.Content>
 	</Card.Root>
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-2">
-			<h4 class="grow text-lg font-bold">Save</h4>
+			<RulePopover doc={cardDocs.Save} class="grow text-left"><h4 class="text-lg font-bold">Save</h4></RulePopover>
 			<div class="flex flex-wrap items-center justify-end gap-2">
 				{#each saves as save}
 					<Button
@@ -450,7 +452,7 @@
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-4">
-			<h4 class=" grow text-lg font-bold">Actions</h4>
+			<RulePopover doc={cardDocs.Actions} class="grow text-left"><h4 class="text-lg font-bold">Actions</h4></RulePopover>
 			<button
 				onclick={() => {
 					actions = 0;
@@ -475,7 +477,7 @@
 
 	<Card.Root>
 		<Card.Content class="flex items-center gap-3">
-			<h4 class="grow text-lg font-bold">Wounds</h4>
+			<RulePopover doc={cardDocs.Wounds} class="grow text-left"><h4 class="text-lg font-bold">Wounds</h4></RulePopover>
 			<button
 				type="button"
 				onclick={() => {
@@ -514,7 +516,9 @@
 				{@const score = +(character.stats[skill.type] ?? '0') + skill.extra}
 				<div class="flex items-center gap-2">
 					<div class="w-full">
-						{skill.name} <span class="text-muted-foreground">({skill.type})</span>
+						<RulePopover doc={{ desc: skillDescs[skill.name], url: skillsUrl }} class="text-left">
+							{skill.name} <span class="text-muted-foreground">({skill.type})</span>
+						</RulePopover>
 					</div>
 					<div class="flex items-center">
 						<span class="px-4">{score}</span>
@@ -600,6 +604,7 @@
 				So <code>1d4!v+[DEX]</code> rolls a d4 with exploding crits and vicious damage, adding your Dexterity
 				modifier.
 			</p>
+			<a class="mt-2 block text-muted-foreground" href={inventoryUrl} target="nimble-docs"><Icons.BookOpenText class="size-4" /></a>
 		{/snippet}
 		{#snippet headerExtra()}
 			<div class:text-destructive={invCount > +character.stats.STR + 10}>

@@ -18,6 +18,8 @@
 	import type { MagicSchool, Spell, Stat } from './types';
 	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
 	import { Input } from '$lib/components/ui/input';
+	import { spellUrl, manaDoc } from './nimble-docs';
+	import RulePopover from '$lib/components/RulePopover.svelte';
 
 	type Props = {
 		allowed: MagicSchool[];
@@ -153,7 +155,7 @@
 				</Popover.Root>
 			</Card.Title>
 			{#if available.length}
-				<Icons.Mana />
+				<RulePopover doc={manaDoc}><Icons.Mana /></RulePopover>
 				<Input
 					class="w-16 text-center"
 					type="number"
@@ -228,6 +230,11 @@
 											{/if}
 											{spell.desc}
 										</div>
+										<a
+											class="mt-2 block text-xs text-muted-foreground underline"
+											href={spellUrl(spell.name)}
+											target="nimble-docs"
+										><Icons.BookOpenText class="size-4" /></a>
 									</Popover.Content>
 								</Popover.Root>
 								{#if school.name !== 'Utility'}<span class=" text-muted-foreground text-sm"
