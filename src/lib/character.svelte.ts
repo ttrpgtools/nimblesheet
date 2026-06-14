@@ -23,6 +23,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		shared: $state.snapshot(character.shared),
 		name: $state.snapshot(character.name),
 		charClass: $state.snapshot(character.charClass),
+		subclass: $state.snapshot(character.subclass),
 		ancestry: $state.snapshot(character.ancestry),
 		size: $state.snapshot(character.size),
 		level: $state.snapshot(character.level),
@@ -60,6 +61,7 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.shared = data.shared;
 	newChar.name = data.name;
 	newChar.charClass = data.charClass;
+	newChar.subclass = data.subclass ?? '';
 	newChar.ancestry = data.ancestry;
 	newChar.size = data.size;
 	newChar.level = data.level;
@@ -115,6 +117,7 @@ export class NimbleCharacter {
 	shared: string | undefined = $state();
 	name: string = $state('');
 	charClass: string = $state('');
+	subclass: string = $state('');
 	ancestry: string = $state('');
 	size: string = $state('');
 	level: number = $state(1);

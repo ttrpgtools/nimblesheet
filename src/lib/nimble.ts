@@ -162,6 +162,73 @@ export const ancestries: Ancestry[] = [
 	{ name: 'Wyrdling', size: 'Small' },
 ];
 
+export const allSubclasses: Record<string, string[]> = {
+	Berserker: [
+		'Muscle Mage',
+		'Path of the Burning Rage',
+		'Path of the Mountainheart',
+		'Path of the Red Mist',
+		"Path of the Titan's Grip",
+	],
+	Commander: [
+		'Champion of the Bulwark',
+		'Champion of the Phalanx',
+		'Champion of the Siege-Breaker',
+		'Champion of the Vanguard',
+		'Spellblade',
+	],
+	Hexbinder: ['Coven of The Hex', 'Coven of The Hunt'],
+	Hunter: [
+		'Beastmaster',
+		'Keeper of Traps',
+		'Keeper of the Shadowpath',
+		'Keeper of the Wild Heart',
+	],
+	Mage: [
+		'Invoker of Chaos',
+		'Invoker of Control',
+		'Invoker of Flame',
+		'Invoker of Frost',
+		'Invoker of Surges',
+		'Invoker of Wards',
+	],
+	Oathsworn: ['Oath of Refuge', 'Oath of Roaring Thunder', 'Oath of Vengeance', 'Oathbreaker'],
+	Shadowmancer: [
+		'Pact of the Abyssal Depths',
+		'Pact of the Endless Swarm',
+		'Pact of the High Celestial',
+		'Pact of the Red Dragon',
+		'Pact of the Void',
+		'Reaver',
+	],
+	Shepherd: [
+		'Luminary of Malice',
+		'Luminary of Mercy',
+		'Luminary of Protection',
+		'Luminary of the Forge',
+	],
+	Songweaver: [
+		'Herald of Courage',
+		'Herald of Singing Steel',
+		'Herald of Snark',
+		'Herald of Torment',
+	],
+	Stormshifter: [
+		'Circle of Cinder & Ash',
+		'Circle of Fang & Claw',
+		'Circle of Sky & Storm',
+		'Circle of Venom & Web',
+	],
+	'The Cheat': [
+		'The Honorseeker',
+		'Tools of the Gambler',
+		'Tools of the Scoundrel',
+		'Tools of the Serpent',
+		'Tools of the Silent Blade',
+	],
+	Zephyr: ['Way of Flame', 'Way of Hurricanes', 'Way of Iron', 'Way of Pain'],
+};
+
 export const meleeWeapons: Inventory[] = [
 	{ name: 'Dagger', roll: '1d4!+[DEX]' },
 	{ name: 'Sickle', roll: '1d4!v+[DEX]' },
