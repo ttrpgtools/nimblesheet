@@ -27,6 +27,7 @@
 		type Save,
 	} from './types';
 	import SpellSelect from './SpellSelect.svelte';
+	import ClassAbilities from './ClassAbilities.svelte';
 	import Owlbear from '$lib/icons/OwlbearIcon.svelte';
 	import Caret from '$lib/icons/Caret.svelte';
 	import Coin from '$lib/icons/Coin.svelte';
@@ -684,6 +685,13 @@
 			</div>
 		{/snippet}
 	</ListManager>
+
+	<ClassAbilities
+		charClass={character.charClass}
+		level={character.level}
+		bind:selectedAbilities={character.selectedAbilities}
+		{onchange}
+	/>
 
 	<SpellSelect
 		charClass={character.charClass}

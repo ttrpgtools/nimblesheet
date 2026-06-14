@@ -45,6 +45,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		extraSchool: $state.snapshot(character.extraSchool),
 		inventory: $state.snapshot(character.inventory),
 		utilspells: $state.snapshot(character.utilspells),
+		selectedAbilities: $state.snapshot(character.selectedAbilities),
 		resources: $state.snapshot(character.resources),
 		notes: $state.snapshot(character.notes),
 	};
@@ -97,6 +98,7 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.extraSchool = data.extraSchool;
 	newChar.inventory = data.inventory ?? [];
 	newChar.utilspells = data.utilspells ?? {};
+	newChar.selectedAbilities = data.selectedAbilities ?? {};
 	newChar.resources = data.resources ?? [];
 	newChar.notes =
 		typeof data.notes === 'string'
@@ -142,6 +144,7 @@ export class NimbleCharacter {
 	extraSchool: MagicSchool | undefined = $state();
 	inventory: Inventory[] = $state([]);
 	utilspells: Record<string, boolean> = $state({});
+	selectedAbilities: Record<string, boolean> = $state({});
 	resources: Resource[] = $state([]);
 	notes: Note[] = $state([
 		{ name: 'Ancestry', content: '', rolls: [] },
