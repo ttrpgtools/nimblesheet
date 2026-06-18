@@ -11,8 +11,9 @@
 		note: Note;
 		ondelete: () => void;
 		onroll: (roll: string, label?: string, addMod?: number) => void;
+		locked?: boolean;
 	};
-	let { note = $bindable(), ondelete, onroll }: Props = $props();
+	let { note = $bindable(), ondelete, onroll, locked = false }: Props = $props();
 	let editing = $state(false);
 	let deleteMode = $state(false);
 	// svelte-ignore non_reactive_update - It doesn't need to be reactive
@@ -41,10 +42,10 @@
 	}
 </script>
 
-<Card.Root class={deleteMode ? `border-destructive bg-destructive/20` : ``}>
+<Card.Root class={deleteMode ? `border-destructive bg-destructive/20` : ``} style={locked && !note.content.trim() && !note.rolls.length ? 'display: none;' : ''}>
 	<Card.Header class="flex flex-row items-center justify-between gap-3">
 		<Card.Title class="flex flex-row items-center gap-3 text-lg">
-			{#if editing}
+			{#if editing && !locked}
 				<Input
 					bind:ref={inputElement}
 					type="text"
@@ -58,32 +59,36 @@
 				>
 			{:else}
 				<span>{note.name}</span>
-				<Button size="icon" variant="ghost" onclick={startEditing}
-					><Icons.Pencil class="size-4" /></Button
-				>
+				{#if !locked}
+					<Button size="icon" variant="ghost" onclick={startEditing}
+						><Icons.Pencil class="size-4" /></Button
+					>
+				{/if}
 			{/if}
 		</Card.Title>
-		<div class="flex items-center gap-2">
-			<Button
-				size="icon"
-				variant={deleteMode ? `destructive` : `outline`}
-				onclick={() => (deleteMode = !deleteMode)}
-			>
-				<Icons.Trash
-					class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
-				/>
-			</Button>
-		</div>
+		{#if !locked}
+			<div class="flex items-center gap-2">
+				<Button
+					size="icon"
+					variant={deleteMode ? `destructive` : `outline`}
+					onclick={() => (deleteMode = !deleteMode)}
+				>
+					<Icons.Trash
+						class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
+					/>
+				</Button>
+			</div>
+		{/if}
 	</Card.Header>
 	<Card.Content>
-		<Textarea rows={5} bind:value={note.content} />
+		<Textarea rows={5} bind:value={note.content} disabled={locked} />
 		<div class="mt-3 flex flex-col gap-2">
 			{#each note.rolls as _, index}
 				<div class="flex flex-row items-center gap-2">
-					<Input bind:value={note.rolls[index].name} class="w-full" />
+					<Input bind:value={note.rolls[index].name} class="w-full" disabled={locked} />
 
-					<Input class="w-20 md:w-24" bind:value={note.rolls[index].roll} />
-					{#if deleteMode}
+					<Input class="w-20 md:w-24" bind:value={note.rolls[index].roll} disabled={locked} />
+					{#if deleteMode && !locked}
 						<Button size="icon" variant="outline" onclick={() => deleteRoll(index)}>
 							<Icons.Trash class="text-destructive size-5" />
 						</Button>
@@ -102,13 +107,17 @@
 	</Card.Content>
 	<Card.Footer>
 		<div class="flex w-full items-center justify-between gap-2">
-			<Button
-				variant="secondary"
-				class="border-primary/50 rounded-full hover:border"
-				size="icon"
-				onclick={addRoll}><Icons.Add class="size-5" /></Button
-			>
-			{#if deleteMode}
+			{#if !locked}
+				<Button
+					variant="secondary"
+					class="border-primary/50 rounded-full hover:border"
+					size="icon"
+					onclick={addRoll}><Icons.Add class="size-5" /></Button
+				>
+			{:else}
+				<div></div>
+			{/if}
+			{#if deleteMode && !locked}
 				<ConfirmButton
 					confirmText={`Click again to delete`}
 					onconfirm={ondelete}

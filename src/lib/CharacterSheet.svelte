@@ -109,7 +109,26 @@
 	}
 
 	let isSharedHere = $derived(character.shared === `owlbear::${owlbear.room}`);
+	let locked = $state(true);
 	let actions = $state(0);
+
+	const INACTIVITY_MS = 3 * 60 * 1000;
+	let inactivityTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function resetInactivityTimer() {
+		clearTimeout(inactivityTimer);
+		inactivityTimer = setTimeout(() => {
+			locked = true;
+		}, INACTIVITY_MS);
+	}
+
+	$effect(() => {
+		if (!locked) {
+			resetInactivityTimer();
+			return () => clearTimeout(inactivityTimer);
+		}
+		clearTimeout(inactivityTimer);
+	});
 
 	async function rollInitiative() {
 		const result = await onroll(`d20+[INIT]`, `Initiative`);
@@ -147,7 +166,12 @@
 	}
 </script>
 
-<div class="mx-auto flex max-w-lg flex-col sm:gap-4" oninput={onchange}>
+<div
+	class="mx-auto flex max-w-lg flex-col sm:gap-4"
+	class:sheet-locked={locked}
+	oninput={onchange}
+	onpointerdown={locked ? undefined : resetInactivityTimer}
+>
 	<div class="mb-4 flex items-center gap-2 sm:mb-0">
 		<Label for="charname" class="sr-only">Name</Label>
 		<Input
@@ -156,6 +180,7 @@
 			type="text"
 			placeholder="Character Name"
 			required
+			disabled={locked}
 			bind:value={character.name}
 		/>
 		{#if owlbear.room}
@@ -163,6 +188,18 @@
 				><Owlbear size="size-10 {isSharedHere ? `` : `opacity-30`}" /></button
 			>
 		{/if}
+		<button
+			type="button"
+			onclick={() => (locked = !locked)}
+			class="shrink-0"
+			aria-label={locked ? 'Unlock sheet' : 'Lock sheet'}
+		>
+			{#if locked}
+				<Icons.Lock class="size-6" />
+			{:else}
+				<Icons.Unlock class="size-6 text-muted-foreground" />
+			{/if}
+		</button>
 	</div>
 	<Card.Root>
 		<Card.Content class="grid grid-cols-3 gap-x-2 gap-y-4">
@@ -173,31 +210,40 @@
 					type="text"
 					placeholder="Ancestry"
 					class="pr-7"
+					disabled={locked}
 					bind:value={character.ancestry}
 				/>
-				<Popover.Root>
-					<Popover.Trigger class="absolute top-1/2 right-2 -translate-y-1/2">
-						<Icons.Question class="size-4" />
-					</Popover.Trigger>
-					<Popover.Content>
-						<div class="">
-							{#each ancestries as race}
-								<button
-									type="button"
-									onclick={() => setRace(race)}
-									class="hover:bg-secondary block w-full text-left text-sm"
-									>{race.name} ({race.size})</button
-								>
-							{/each}
-						</div>
-					</Popover.Content>
-				</Popover.Root>
+				{#if !locked}
+					<Popover.Root>
+						<Popover.Trigger class="absolute top-1/2 right-2 -translate-y-1/2">
+							<Icons.Question class="size-4" />
+						</Popover.Trigger>
+						<Popover.Content>
+							<div class="">
+								{#each ancestries as race}
+									<button
+										type="button"
+										onclick={() => setRace(race)}
+										class="hover:bg-secondary block w-full text-left text-sm"
+										>{race.name} ({race.size})</button
+									>
+								{/each}
+							</div>
+						</Popover.Content>
+					</Popover.Root>
+				{/if}
 			</div>
 			<div class="flex gap-2">
 				<Label for="sizeinfo" class="sr-only">Size</Label>
-				<Input id="sizeinfo" type="text" placeholder="Size" bind:value={character.size} />
+				<Input
+					id="sizeinfo"
+					type="text"
+					placeholder="Size"
+					disabled={locked}
+					bind:value={character.size}
+				/>
 			</div>
-			<div class="col-span-2 flex gap-2">
+			<div class="col-span-2 flex gap-2" class:pointer-events-none={locked}>
 				<Label for="charclass" class="sr-only">Class</Label>
 				<Select.Root type="single" bind:value={character.charClass} onValueChange={setClass}>
 					<Select.Trigger class="w-full">
@@ -228,6 +274,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.level}
 				/>
 			</div>
@@ -252,7 +299,11 @@
 				</Popover.Content>
 			</Popover.Root>
 			{#each saves as save}
-				<button type="button" onclick={() => toggleSave(save, 1)} class="flex justify-center">
+				<button
+					type="button"
+					onclick={() => !locked && toggleSave(save, 1)}
+					class="flex justify-center"
+				>
 					<Caret
 						size="size-6"
 						dir="up"
@@ -269,6 +320,7 @@
 						min={-10}
 						max={20}
 						onfocus={autoSel}
+						disabled={locked}
 						bind:value={character.stats[stat]}
 					/>
 					<Label class="{currentClass?.key.includes(stat) ? `font-bold` : ``} "
@@ -277,7 +329,11 @@
 				</div>
 			{/each}
 			{#each saves as save}
-				<button type="button" onclick={() => toggleSave(save, -1)} class="flex justify-center">
+				<button
+					type="button"
+					onclick={() => !locked && toggleSave(save, -1)}
+					class="flex justify-center"
+				>
 					<Caret
 						size="size-6"
 						dir="down"
@@ -285,7 +341,7 @@
 					/>
 				</button>
 			{/each}
-			{#if hasSaveOverrides}
+			{#if hasSaveOverrides && !locked}
 				<Button
 					onclick={() => {
 						character.saveOverride = {};
@@ -323,6 +379,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.armor}
 				/>
 				<Label for="sstat-armor">Armor</Label>
@@ -353,6 +410,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.hd}
 				/>
 				<div class="flex items-center gap-3">
@@ -372,6 +430,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.initiative}
 				/>
 				<div class="flex items-center gap-3">
@@ -387,6 +446,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.tempHp}
 				/>
 				<Label for="sstat-temp">Temp</Label>
@@ -398,6 +458,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.maxHp}
 				/>
 				<Label for="sstat-maxhp">Max HP</Label>
@@ -409,6 +470,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.maxHd}
 				/>
 				<Label for="sstat-maxhd">Max HD</Label>
@@ -420,6 +482,7 @@
 					type="number"
 					inputmode="numeric"
 					onfocus={autoSel}
+					disabled={locked}
 					bind:value={character.speed}
 				/>
 				<Label for="sstat-speed">Speed</Label>
@@ -518,30 +581,32 @@
 					</div>
 					<div class="flex items-center">
 						<span class="px-4">{score}</span>
-						<Button
-							variant="ghost"
-							size="icon"
-							class="rounded-full"
-							disabled={score === 12}
-							onclick={() => {
-								skill.extra += 1;
-								onchange();
-							}}
-						>
-							<Icons.CirclePlus class="size-4" />
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							class="rounded-full"
-							disabled={score <= 0}
-							onclick={() => {
-								skill.extra = skill.extra - 1;
-								onchange();
-							}}
-						>
-							<Icons.CircleMinus class="size-4" />
-						</Button>
+						{#if !locked}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="rounded-full"
+								disabled={score === 12}
+								onclick={() => {
+									skill.extra += 1;
+									onchange();
+								}}
+							>
+								<Icons.CirclePlus class="size-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								class="rounded-full"
+								disabled={score <= 0}
+								onclick={() => {
+									skill.extra = skill.extra - 1;
+									onchange();
+								}}
+							>
+								<Icons.CircleMinus class="size-4" />
+							</Button>
+						{/if}
 						<Button size="icon" variant="ghost" onclick={() => onroll(`d20+${score}`, skill.name)}>
 							<Icons.Dice class="size-5" />
 						</Button>
@@ -569,13 +634,15 @@
 		</Card.Content>
 	</Card.Root>
 
-	<ListManager
-		bind:list={character.inventory}
-		title="Inventory"
-		emptyLabel="No items."
-		initialRow={{ name: 'Dagger', roll: 'd4!' }}
-		{onchange}
-	>
+	{#if !locked || character.inventory.length > 0}
+		<ListManager
+			bind:list={character.inventory}
+			title="Inventory"
+			emptyLabel="No items."
+			initialRow={{ name: 'Dagger', roll: 'd4!' }}
+			{onchange}
+			{locked}
+		>
 		{#snippet helpText()}
 			<p>
 				Track the things you are carrying. Up to 500 coins count as one item. Toggling the weight
@@ -611,13 +678,15 @@
 				<Button
 					size="icon"
 					variant="ghost"
-					onclick={() => (item.bulky = !item.bulky)}
+					onclick={() => !locked && (item.bulky = !item.bulky)}
+					disabled={locked}
 					class="absolute top-1/2 right-0 -translate-y-1/2"
 				>
 					<Icons.Bulky class=" size-5 {item.bulky ? `` : `text-muted-foreground`}" />
 				</Button>
 				<Input
 					bind:value={item.name}
+					disabled={locked}
 					class="w-full pr-10 {item.name.length === 0 ? 'pl-8' : ''} {item.bulky
 						? `font-black underline`
 						: ``}"
@@ -647,7 +716,7 @@
 					</Popover.Root>
 				{/if}
 			</div>
-			<Input class="w-20 md:w-24" bind:value={item.roll} />
+			<Input class="w-20 md:w-24" bind:value={item.roll} disabled={locked} />
 			{@render delBtn()}
 		{/snippet}
 		{#snippet deleteAlt(item)}
@@ -672,6 +741,7 @@
 					type="number"
 					onfocus={autoSel}
 					bind:value={character.gp}
+					disabled={locked}
 				/>
 				<label for="coin-sp"><Coin type="sp" size="size-5" /></label>
 				<Input
@@ -680,10 +750,12 @@
 					type="number"
 					onfocus={autoSel}
 					bind:value={character.sp}
+					disabled={locked}
 				/>
 			</div>
 		{/snippet}
 	</ListManager>
+{/if}
 
 	<SpellSelect
 		charClass={character.charClass}
@@ -695,15 +767,18 @@
 		bind:mana={character.mana}
 		{onroll}
 		{onchange}
+		{locked}
 	/>
 
-	<ListManager
-		bind:list={character.resources}
-		title="Resources"
-		emptyLabel="No resources."
-		initialRow={{ name: 'Resource', current: 0, max: 0 }}
-		{onchange}
-	>
+	{#if !locked || character.resources.length > 0}
+		<ListManager
+			bind:list={character.resources}
+			title="Resources"
+			emptyLabel="No resources."
+			initialRow={{ name: 'Resource', current: 0, max: 0 }}
+			{onchange}
+			{locked}
+		>
 		{#snippet helpText()}
 			<p>
 				This is for anything you want to track a quantity of with a current and maximum value. It
@@ -711,26 +786,31 @@
 			</p>
 		{/snippet}
 		{#snippet row(res, delBtn)}
-			<Input bind:value={res.name} class="w-full" />
-			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} />
+			<Input bind:value={res.name} class="w-full" disabled={locked} />
+			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.current} disabled={locked} />
 			{@render delBtn()}
 		{/snippet}
 		{#snippet deleteAlt(res)}
-			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />
+			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} disabled={locked} />
 		{/snippet}
 	</ListManager>
+{/if}
 
-	{#each character.notes as _, index}
-		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} {onroll} />
-	{/each}
-	<Card.Root>
-		<Card.Content class="flex justify-center">
-			<Button
-				variant="secondary"
-				class="border-primary/50 rounded-full pr-5 hover:border"
-				size="sm"
-				onclick={addNote}><Icons.Add class="size-5" /> Note Section</Button
-			>
-		</Card.Content>
-	</Card.Root>
+	{#if !locked || character.notes.length > 0}
+		{#each character.notes as _, index}
+			<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} {onroll} {locked} />
+		{/each}
+		{#if !locked}
+			<Card.Root>
+				<Card.Content class="flex justify-center">
+					<Button
+						variant="secondary"
+						class="border-primary/50 rounded-full pr-5 hover:border"
+						size="sm"
+						onclick={addNote}><Icons.Add class="size-5" /> Note Section</Button
+					>
+				</Card.Content>
+			</Card.Root>
+		{/if}
+	{/if}
 </div>

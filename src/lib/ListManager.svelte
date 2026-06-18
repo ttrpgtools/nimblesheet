@@ -15,6 +15,7 @@
 		onchange: () => void;
 		initialRow: T;
 		grid?: string;
+		locked?: boolean;
 		row: Snippet<[T, Snippet]>;
 		deleteAlt: Snippet<[T]>;
 	};
@@ -27,6 +28,7 @@
 		emptyLabel,
 		initialRow,
 		grid,
+		locked = false,
 		onchange,
 		row,
 		deleteAlt,
@@ -67,14 +69,16 @@
 			{#if headerExtra}
 				{@render headerExtra()}
 			{/if}
-			<Button
-				size="icon"
-				variant={deleteMode ? `destructive` : `outline`}
-				onclick={() => (deleteMode = !deleteMode)}
-				><Icons.Trash
-					class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
-				/></Button
-			>
+			{#if !locked}
+				<Button
+					size="icon"
+					variant={deleteMode ? `destructive` : `outline`}
+					onclick={() => (deleteMode = !deleteMode)}
+					><Icons.Trash
+						class="size-5 {deleteMode ? `text-destructive-foreground` : `text-destructive`}"
+					/></Button
+				>
+			{/if}
 		</div>
 	</Card.Header>
 	<Card.Content class="grid {grid ? grid : `grid-cols-[minmax(0,1fr)_auto_auto]`} gap-2">
@@ -95,12 +99,16 @@
 	</Card.Content>
 	<Card.Footer>
 		<div class="flex w-full items-center justify-between gap-2">
-			<Button
-				variant="secondary"
-				class="border-primary/50 rounded-full hover:border"
-				size="icon"
-				onclick={addRow}><Icons.Add class="size-5" /></Button
-			>
+			{#if !locked}
+				<Button
+					variant="secondary"
+					class="border-primary/50 rounded-full hover:border"
+					size="icon"
+					onclick={addRow}><Icons.Add class="size-5" /></Button
+				>
+			{:else}
+				<div></div>
+			{/if}
 			{#if footerExtra}{@render footerExtra()}{/if}
 		</div>
 	</Card.Footer>

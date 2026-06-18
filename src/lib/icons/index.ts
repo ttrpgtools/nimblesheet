@@ -31,6 +31,8 @@ import Advantage from '@lucide/svelte/icons/smile';
 import Disadvantage from '@lucide/svelte/icons/frown';
 import Multi from '@lucide/svelte/icons/square-stack';
 import Loader from '@lucide/svelte/icons/loader-circle';
+import Lock from '@lucide/svelte/icons/lock';
+import Unlock from '@lucide/svelte/icons/lock-open';
 
 // Spell Schools
 import Fire from '@lucide/svelte/icons/flame';
@@ -75,6 +77,8 @@ export const Icons = {
 	Disadvantage,
 	Multi,
 	Loader,
+	Lock,
+	Unlock,
 	Fire,
 	Ice,
 	Wind,
