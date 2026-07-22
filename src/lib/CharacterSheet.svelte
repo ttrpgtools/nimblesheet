@@ -77,10 +77,12 @@
 			CANTRIP: Math.floor(+character.level / 5),
 			CANTRIP_DIE: [4, 6, 8, 10, 12][Math.min(Math.floor(+character.level / 5), 4)],
 			SHADOW_DICE: 1 + Math.floor(+character.level / 5),
-			KEY: (currentClass?.key ?? []).reduce(
-				(p, c) => Math.max(+character.stats[c], p),
-				Number.NEGATIVE_INFINITY
-			),
+			KEY: character.spellcasting.keyStat
+				? +character.stats[character.spellcasting.keyStat]
+				: (currentClass?.key ?? []).reduce(
+						(p, c) => Math.max(+character.stats[c], p),
+						Number.NEGATIVE_INFINITY
+					),
 		};
 		return await rollDice(roll, {
 			label,
@@ -786,9 +788,8 @@
 		charClass={character.charClass}
 		level={character.level}
 		stats={character.stats}
-		allowed={currentClass?.magicSchools ?? []}
-		bind:utilspells={character.utilspells}
-		bind:extraSchool={character.extraSchool}
+		classSchools={currentClass?.magicSchools ?? []}
+		bind:spellcasting={character.spellcasting}
 		bind:mana={character.mana}
 		{onroll}
 		{onchange}

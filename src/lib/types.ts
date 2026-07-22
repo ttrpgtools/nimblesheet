@@ -16,9 +16,21 @@ export type Spell = {
 	school: MagicSchool;
 	tier: number;
 	desc: string;
-	actions: number;
+	actions?: number;
+	castingTime?: string;
 	roll: string;
 	onlyFor?: string;
+};
+
+export type SpellcastingProfile = {
+	schools?: MagicSchool[];
+	tier?: number;
+	maxMana?: number;
+	keyStat?: Stat;
+	utilitySpells: string[];
+	addedSpells: string[];
+	excludedSpells: string[];
+	customSpells: Spell[];
 };
 
 export interface NimbleClass {

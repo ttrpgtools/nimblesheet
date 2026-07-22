@@ -1,4 +1,4 @@
-import { allSkills } from './nimble';
+import { allClasses, allSkills } from './nimble';
 import { id } from './random';
 import {
 	type Alteration,
@@ -9,10 +9,11 @@ import {
 	type Resource,
 	type Save,
 	type Skill,
+	type SpellcastingProfile,
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 3;
+const SHEET_VERSION = 4;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -44,15 +45,18 @@ function serializeCharacter(character: NimbleCharacter) {
 		gp: $state.snapshot(character.gp),
 		sp: $state.snapshot(character.sp),
 		mana: $state.snapshot(character.mana),
-		extraSchool: $state.snapshot(character.extraSchool),
+		spellcasting: $state.snapshot(character.spellcasting),
 		inventory: $state.snapshot(character.inventory),
-		utilspells: $state.snapshot(character.utilspells),
 		resources: $state.snapshot(character.resources),
 		notes: $state.snapshot(character.notes),
 	};
 }
 
 function deserializeCharacter(data: CharacterSave) {
+	const legacy = data as CharacterSave & {
+		extraSchool?: MagicSchool;
+		utilspells?: Record<string, boolean>;
+	};
 	const newChar = new NimbleCharacter();
 	if (data.id) newChar.id = data.id;
 	newChar.type = data.type || 'char';
@@ -101,9 +105,30 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.gp = data.gp ?? 0;
 	newChar.sp = data.sp ?? 0;
 	newChar.mana = data.mana ?? 0;
-	newChar.extraSchool = data.extraSchool;
+	if (data.spellcasting) {
+		newChar.spellcasting = {
+			schools: data.spellcasting.schools,
+			tier: data.spellcasting.tier,
+			maxMana: data.spellcasting.maxMana,
+			keyStat: data.spellcasting.keyStat,
+			utilitySpells: data.spellcasting.utilitySpells ?? [],
+			addedSpells: data.spellcasting.addedSpells ?? [],
+			excludedSpells: data.spellcasting.excludedSpells ?? [],
+			customSpells: data.spellcasting.customSpells ?? [],
+		};
+	} else {
+		const classSchools = allClasses.find((c) => c.name === data.charClass)?.magicSchools ?? [];
+		newChar.spellcasting = {
+			schools: legacy.extraSchool ? [...new Set([...classSchools, legacy.extraSchool])] : undefined,
+			utilitySpells: Object.entries(legacy.utilspells ?? {})
+				.filter(([, known]) => known)
+				.map(([name]) => name),
+			addedSpells: [],
+			excludedSpells: [],
+			customSpells: [],
+		};
+	}
 	newChar.inventory = data.inventory ?? [];
-	newChar.utilspells = data.utilspells ?? {};
 	newChar.resources = data.resources ?? [];
 	newChar.notes =
 		typeof data.notes === 'string'
@@ -148,9 +173,13 @@ export class NimbleCharacter {
 	gp: number = $state(0);
 	sp: number = $state(0);
 	mana: number = $state(0);
-	extraSchool: MagicSchool | undefined = $state();
+	spellcasting: SpellcastingProfile = $state({
+		utilitySpells: [],
+		addedSpells: [],
+		excludedSpells: [],
+		customSpells: [],
+	});
 	inventory: Inventory[] = $state([]);
-	utilspells: Record<string, boolean> = $state({});
 	resources: Resource[] = $state([]);
 	notes: Note[] = $state([
 		{ name: 'Ancestry', content: '', rolls: [] },
