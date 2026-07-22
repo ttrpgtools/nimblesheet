@@ -10,6 +10,7 @@
 	import Vicious from './Vicious.svelte';
 	import Explode from './Explode.svelte';
 	import { Input } from '$lib/components/ui/input';
+	import RollHistory from './RollHistory.svelte';
 
 	let { characterName }: { characterName?: string | undefined } = $props();
 
@@ -25,6 +26,12 @@
 			(modifier > 0 ? ` + ${modifier}` : modifier < 0 ? ` - ${Math.abs(modifier)}` : '')
 	);
 	let open = $state(false);
+	let historyOpen = $state(false);
+
+	function showHistory() {
+		open = false;
+		historyOpen = true;
+	}
 
 	async function simpleRoll(sides: number) {
 		return await rollDice(`d${sides}`, { characterName });
@@ -153,5 +160,12 @@
 				{/if}
 			</Button>
 		</DropdownMenu.Label>
+		<DropdownMenu.Separator />
+		<DropdownMenu.Item onclick={showHistory} class="cursor-pointer">
+			<Icons.History />
+			Roll History
+		</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
+
+<RollHistory bind:open={historyOpen} />

@@ -5,6 +5,7 @@ import { rollInfluence } from './influence.svelte';
 import { owlbear } from '$lib/owlbear.svelte';
 import { id } from '$lib/random';
 import { sendBusDiceRoll } from '$lib/bus-roll';
+import { rollHistory } from './history';
 
 type RollOptions = {
 	label?: string;
@@ -25,6 +26,14 @@ export async function rollDice(
 			'[--initial-height:7.5rem]! bg-gray-200! dark:bg-gray-800! dark:text-white! border-gray-400!',
 	});
 	const rollId = id();
+	await rollHistory.add({
+		id: rollId,
+		rolledAt: new Date().toISOString(),
+		formula,
+		label,
+		characterName,
+		result,
+	});
 	await owlbear.sendDiceRoll(result, rollId, label, characterName, rollModifier);
 	await sendBusDiceRoll(result, rollId, label, characterName, rollModifier);
 	rollInfluence.reset();
