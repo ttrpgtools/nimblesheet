@@ -13,7 +13,7 @@ import {
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 4;
+const SHEET_VERSION = 5;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -48,6 +48,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		spellcasting: $state.snapshot(character.spellcasting),
 		inventory: $state.snapshot(character.inventory),
 		resources: $state.snapshot(character.resources),
+		languages: $state.snapshot(character.languages),
 		notes: $state.snapshot(character.notes),
 	};
 }
@@ -130,6 +131,7 @@ function deserializeCharacter(data: CharacterSave) {
 	}
 	newChar.inventory = data.inventory ?? [];
 	newChar.resources = data.resources ?? [];
+	newChar.languages = data.languages ?? ['Common'];
 	newChar.notes =
 		typeof data.notes === 'string'
 			? [{ name: 'Notes', content: data.notes ?? '', rolls: [] }]
@@ -181,6 +183,7 @@ export class NimbleCharacter {
 	});
 	inventory: Inventory[] = $state([]);
 	resources: Resource[] = $state([]);
+	languages: string[] = $state(['Common']);
 	notes: Note[] = $state([
 		{ name: 'Ancestry', content: '', rolls: [] },
 		{ name: 'Background', content: '', rolls: [] },

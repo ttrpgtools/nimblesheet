@@ -34,6 +34,7 @@
 	import { rollDice } from './dice/integration';
 	import { owlbear } from './owlbear.svelte';
 	import Note from './Note.svelte';
+	import Languages from './Languages.svelte';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -817,6 +818,8 @@
 			<Input class="w-12 md:w-16" type="number" onfocus={autoSel} bind:value={res.max} />
 		{/snippet}
 	</ListManager>
+
+	<Languages bind:languages={character.languages} {onchange} />
 
 	{#each character.notes as _, index}
 		<Note bind:note={character.notes[index]} ondelete={() => deleteNote(index)} {onroll} />
