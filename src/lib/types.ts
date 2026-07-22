@@ -11,7 +11,8 @@ export type Inventory = { name: string; roll: string; bulky?: boolean };
 export type Ancestry = { name: string; size: string };
 export type Note = { name: string; content: string; rolls: { name: string; roll: string }[] };
 
-export type MagicSchool = 'Fire' | 'Ice' | 'Lightning' | 'Wind' | 'Necrotic' | 'Radiant';
+export type MagicSchool = string;
+export type MagicSchoolDefinition = { id: MagicSchool; name: string };
 export type Spell = {
 	name: string;
 	school: MagicSchool;
@@ -28,6 +29,7 @@ export type SpellcastingProfile = {
 	tier?: number;
 	maxMana?: number;
 	keyStat?: Stat;
+	customSchools: MagicSchoolDefinition[];
 	utilitySpells: string[];
 	addedSpells: string[];
 	excludedSpells: string[];
@@ -35,13 +37,23 @@ export type SpellcastingProfile = {
 };
 
 export interface NimbleClass {
+	id: string;
 	name: string;
 	key: Stat[];
 	saves: Partial<Record<Save, Alteration>>;
-	die: Die;
+	die?: Die;
 	startHp: number;
 	magicSchools?: MagicSchool[];
+	spellTierProgression?: 'standard' | 'oathsworn' | 'shadowmancer';
+	manaFormula?: {
+		stat: Stat;
+		statMultiplier: number;
+		addLevel: boolean;
+		minimumLevel: number;
+	};
 }
+
+export type CharacterClass = NimbleClass & { presetId?: string };
 
 export type Identifiable = { id: string };
 export type Named = { name: string };

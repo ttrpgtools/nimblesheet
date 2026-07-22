@@ -20,13 +20,7 @@
 		rangedWeapons,
 		hitDice,
 	} from './nimble';
-	import {
-		type Alteration,
-		type Ancestry,
-		type Inventory,
-		type NimbleClass,
-		type Save,
-	} from './types';
+	import { type Alteration, type Ancestry, type Inventory, type Save, type Stat } from './types';
 	import SpellSelect from './SpellSelect.svelte';
 	import Owlbear from '$lib/icons/OwlbearIcon.svelte';
 	import Caret from '$lib/icons/Caret.svelte';
@@ -42,17 +36,64 @@
 		onchange: () => void;
 	};
 	let { character = $bindable(), onchange }: Props = $props();
-	let currentClass: NimbleClass | undefined = $derived(
-		allClasses.find((c) => c.name === character.charClass)
-	);
+	let currentClass = $derived(character.classConfig);
 
-	function setClass() {
-		if (currentClass) {
-			character.hitdie = currentClass.die;
+	function setClass(presetId: string) {
+		if (presetId === 'custom') {
+			character.classConfig = {
+				...structuredClone($state.snapshot(character.classConfig)),
+				id: character.classConfig.id === 'unconfigured' ? 'custom' : character.classConfig.id,
+				presetId: undefined,
+				die: character.hitdie ?? character.classConfig.die ?? 'd8',
+			};
+			character.hitdie = character.classConfig.die;
+			character.charClass = character.classConfig.name;
+		} else {
+			const preset = allClasses.find((candidate) => candidate.id === presetId);
+			if (!preset) return;
+			character.classConfig = { ...structuredClone(preset), presetId: preset.id };
+			character.charClass = preset.name;
+			character.hitdie = preset.die;
 			if (+character.level === 1 && !character.hp) {
-				character.hp = currentClass.startHp;
-				character.maxHp = currentClass.startHp;
+				character.hp = preset.startHp;
+				character.maxHp = preset.startHp;
 			}
+		}
+		onchange();
+	}
+
+	function setCustomClassName(name: string) {
+		character.classConfig.name = name;
+		character.charClass = name;
+		onchange();
+	}
+
+	function setClassKey(stat: Stat, selected: boolean) {
+		character.classConfig.key = selected
+			? [...new Set([...character.classConfig.key, stat])]
+			: character.classConfig.key.filter((candidate) => candidate !== stat);
+		onchange();
+	}
+
+	function setClassSave(save: Save, value: Alteration | 0) {
+		if (value === 1 || value === -1) character.classConfig.saves[save] = value;
+		else delete character.classConfig.saves[save];
+		delete character.saveOverride[save];
+		onchange();
+	}
+
+	function setHitDie(die: string) {
+		character.hitdie = die as typeof character.hitdie;
+		character.classConfig.die = character.hitdie;
+		onchange();
+	}
+
+	function setStartingHp(raw: string) {
+		const startingHp = Math.max(0, +raw || 0);
+		character.classConfig.startHp = startingHp;
+		if (+character.level === 1 && !character.hp && !character.maxHp) {
+			character.hp = startingHp;
+			character.maxHp = startingHp;
 		}
 		onchange();
 	}
@@ -209,17 +250,154 @@
 			</div>
 			<div class="col-span-2 flex gap-2">
 				<Label for="charclass" class="sr-only">Class</Label>
-				<Select.Root type="single" bind:value={character.charClass} onValueChange={setClass}>
+				<Select.Root
+					type="single"
+					value={character.classConfig.presetId ??
+						(character.classConfig.id === 'unconfigured' ? undefined : 'custom')}
+					onValueChange={setClass}
+				>
 					<Select.Trigger class="w-full">
-						{character.charClass || `Class`}
+						{character.classConfig.id === 'unconfigured'
+							? `Class`
+							: character.classConfig.presetId
+								? character.classConfig.name
+								: character.classConfig.name
+									? `${character.classConfig.name}*`
+									: `Custom class*`}
 					</Select.Trigger>
 					<Select.Content>
 						{#each allClasses as nc}
-							<Select.Item value={nc.name}>{nc.name}</Select.Item>
+							<Select.Item value={nc.id}>{nc.name}</Select.Item>
 						{/each}
+						<Select.Item value="custom">Custom…</Select.Item>
 					</Select.Content>
 				</Select.Root>
-				<Select.Root type="single" bind:value={character.hitdie} onValueChange={onchange}>
+				{#if !character.classConfig.presetId && character.classConfig.id !== 'unconfigured'}
+					<Sheet.Root>
+						<Sheet.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+							aria-label="Edit custom class"
+						>
+							<Icons.Pencil class="size-4" />
+						</Sheet.Trigger>
+						<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
+							<Sheet.Header>
+								<Sheet.Title>Custom class</Sheet.Title>
+								<Sheet.Description>
+									These class defaults are saved with this character. Configure magic in the Spells
+									section.
+								</Sheet.Description>
+							</Sheet.Header>
+							<div class="flex flex-col gap-6 px-4 pb-8">
+								<div class="flex flex-col gap-2">
+									<Label for="custom-class-name">Class name</Label>
+									<Input
+										id="custom-class-name"
+										value={character.classConfig.name}
+										oninput={(event) => setCustomClassName(event.currentTarget.value)}
+										placeholder="Class name"
+									/>
+								</div>
+								<section class="flex flex-col gap-2">
+									<h3 class="font-semibold">KEY stats</h3>
+									<div class="grid grid-cols-2 gap-2">
+										{#each stats as stat}
+											<label class="flex items-center gap-2">
+												<input
+													type="checkbox"
+													checked={character.classConfig.key.includes(stat)}
+													onchange={(event) => setClassKey(stat, event.currentTarget.checked)}
+												/>
+												<span>{stat}</span>
+											</label>
+										{/each}
+									</div>
+								</section>
+								<section class="flex flex-col gap-2">
+									<h3 class="font-semibold">Saving throws</h3>
+									{#each saves as save}
+										<div class="flex items-center gap-3">
+											<span class="w-10 font-medium">{save}</span>
+											<div
+												class="border-input grid grow grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-md border"
+												role="group"
+												aria-label={`${save} save`}
+											>
+												<button
+													type="button"
+													class="hover:bg-muted flex h-9 items-center justify-center {character
+														.classConfig.saves[save] === -1
+														? 'bg-secondary'
+														: ''}"
+													aria-label={`${save} disadvantage`}
+													aria-pressed={character.classConfig.saves[save] === -1}
+													onclick={() => setClassSave(save, -1)}
+												>
+													<Caret
+														dir="down"
+														size="size-4"
+														save={character.classConfig.saves[save] ?? 0}
+													/>
+												</button>
+												<button
+													type="button"
+													class="hover:bg-muted border-input h-9 border-x px-2 text-sm {character
+														.classConfig.saves[save] === undefined
+														? 'bg-secondary'
+														: ''}"
+													aria-pressed={character.classConfig.saves[save] === undefined}
+													onclick={() => setClassSave(save, 0)}
+												>
+													Normal
+												</button>
+												<button
+													type="button"
+													class="hover:bg-muted flex h-9 items-center justify-center {character
+														.classConfig.saves[save] === 1
+														? 'bg-secondary'
+														: ''}"
+													aria-label={`${save} advantage`}
+													aria-pressed={character.classConfig.saves[save] === 1}
+													onclick={() => setClassSave(save, 1)}
+												>
+													<Caret
+														dir="up"
+														size="size-4"
+														save={character.classConfig.saves[save] ?? 0}
+													/>
+												</button>
+											</div>
+										</div>
+									{/each}
+								</section>
+								<div class="grid grid-cols-2 gap-3">
+									<div class="flex flex-col gap-2">
+										<Label for="custom-hit-die">Hit Die</Label>
+										<select
+											id="custom-hit-die"
+											class="border-input bg-background h-10 rounded-md border px-3 text-sm"
+											value={character.classConfig.die ?? ''}
+											onchange={(event) => setHitDie(event.currentTarget.value)}
+										>
+											{#each hitDice as hd}<option value={hd}>{hd}</option>{/each}
+										</select>
+									</div>
+									<div class="flex flex-col gap-2">
+										<Label for="custom-start-hp">Starting HP</Label>
+										<Input
+											id="custom-start-hp"
+											type="number"
+											min="0"
+											value={character.classConfig.startHp}
+											onchange={(event) => setStartingHp(event.currentTarget.value)}
+										/>
+									</div>
+								</div>
+							</div>
+						</Sheet.Content>
+					</Sheet.Root>
+				{/if}
+				<Select.Root type="single" value={character.hitdie} onValueChange={setHitDie}>
 					<Select.Trigger class="w-16">
 						{character.hitdie || `Hit Die`}
 					</Select.Trigger>
@@ -804,10 +982,9 @@
 	</ListManager>
 
 	<SpellSelect
-		charClass={character.charClass}
+		classConfig={character.classConfig}
 		level={character.level}
 		stats={character.stats}
-		classSchools={currentClass?.magicSchools ?? []}
 		bind:spellcasting={character.spellcasting}
 		bind:mana={character.mana}
 		{onroll}

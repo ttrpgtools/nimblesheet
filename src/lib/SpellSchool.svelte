@@ -2,7 +2,7 @@
 	import { Icons } from '$lib/icons';
 	import type { MagicSchool } from './types';
 
-	const schoolMap = {
+	const schoolMap: Record<string, typeof Icons.Fire> = {
 		Fire: Icons.Fire,
 		Ice: Icons.Ice,
 		Lightning: Icons.Lightning,
@@ -17,7 +17,7 @@
 		...others
 	}: { school: MagicSchool | 'Utility'; class?: string } = $props();
 
-	const Icon = $derived(schoolMap[school]);
+	const Icon = $derived(schoolMap[school] ?? Icons.Mana);
 </script>
 
 <Icon class={cls || 'size-4'} {...others} />

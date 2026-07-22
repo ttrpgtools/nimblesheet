@@ -2,6 +2,7 @@ import { allClasses, allSkills } from './nimble';
 import { id } from './random';
 import {
 	type Alteration,
+	type CharacterClass,
 	type Die,
 	type Inventory,
 	type MagicSchool,
@@ -14,7 +15,22 @@ import {
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 6;
+const SHEET_VERSION = 7;
+
+function snapshotClass(preset: (typeof allClasses)[number]): CharacterClass {
+	return { ...structuredClone(preset), presetId: preset.id };
+}
+
+function customClass(name = ''): CharacterClass {
+	return {
+		id: name ? 'custom' : 'unconfigured',
+		name,
+		key: [],
+		saves: {},
+		startHp: 0,
+		magicSchools: [],
+	};
+}
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -25,6 +41,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		shared: $state.snapshot(character.shared),
 		name: $state.snapshot(character.name),
 		charClass: $state.snapshot(character.charClass),
+		classConfig: $state.snapshot(character.classConfig),
 		ancestry: $state.snapshot(character.ancestry),
 		size: $state.snapshot(character.size),
 		level: $state.snapshot(character.level),
@@ -68,7 +85,14 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.version = SHEET_VERSION;
 	newChar.shared = data.shared;
 	newChar.name = data.name;
-	newChar.charClass = data.charClass;
+	const preset = allClasses.find((candidate) => candidate.name === data.charClass);
+	newChar.classConfig = data.classConfig
+		? structuredClone(data.classConfig)
+		: preset
+			? snapshotClass(preset)
+			: customClass(data.charClass);
+	newChar.classConfig.die ??= data.hitdie;
+	newChar.charClass = newChar.classConfig.name;
 	newChar.ancestry = data.ancestry;
 	newChar.size = data.size;
 	newChar.level = data.level;
@@ -115,6 +139,7 @@ function deserializeCharacter(data: CharacterSave) {
 			tier: data.spellcasting.tier,
 			maxMana: data.spellcasting.maxMana,
 			keyStat: data.spellcasting.keyStat,
+			customSchools: data.spellcasting.customSchools ?? [],
 			utilitySpells: data.spellcasting.utilitySpells ?? [],
 			addedSpells: data.spellcasting.addedSpells ?? [],
 			excludedSpells: data.spellcasting.excludedSpells ?? [],
@@ -127,6 +152,7 @@ function deserializeCharacter(data: CharacterSave) {
 			utilitySpells: Object.entries(legacy.utilspells ?? {})
 				.filter(([, known]) => known)
 				.map(([name]) => name),
+			customSchools: [],
 			addedSpells: [],
 			excludedSpells: [],
 			customSpells: [],
@@ -152,6 +178,7 @@ export class NimbleCharacter {
 	shared: string | undefined = $state();
 	name: string = $state('');
 	charClass: string = $state('');
+	classConfig: CharacterClass = $state(customClass());
 	ancestry: string = $state('');
 	size: string = $state('');
 	level: number = $state(1);
@@ -180,6 +207,7 @@ export class NimbleCharacter {
 	sp: number = $state(0);
 	mana: number = $state(0);
 	spellcasting: SpellcastingProfile = $state({
+		customSchools: [],
 		utilitySpells: [],
 		addedSpells: [],
 		excludedSpells: [],

@@ -19,31 +19,37 @@
 		utilitySpells,
 		windSpells,
 	} from './magic';
+	import { magicSchools } from './nimble';
+	import { id } from './random';
 	import SpellSchool from './SpellSchool.svelte';
-	import type { MagicSchool, Spell, SpellcastingProfile, Stat } from './types';
+	import type {
+		CharacterClass,
+		MagicSchool,
+		MagicSchoolDefinition,
+		Spell,
+		SpellcastingProfile,
+		Stat,
+	} from './types';
 
 	type Props = {
-		classSchools: MagicSchool[];
+		classConfig: CharacterClass;
 		level: number;
 		stats: Record<Stat, number>;
 		spellcasting: SpellcastingProfile;
 		mana: number;
 		onroll?: (roll: string, label?: string) => void;
 		onchange: () => void;
-		charClass?: string;
 	};
 	let {
-		classSchools = [],
+		classConfig,
 		level = 1,
 		stats,
 		spellcasting = $bindable(),
 		mana = $bindable(),
-		charClass = '',
 		onroll = () => {},
 		onchange,
 	}: Props = $props();
 
-	const schools: MagicSchool[] = ['Fire', 'Ice', 'Lightning', 'Necrotic', 'Radiant', 'Wind'];
 	const standardSpells = [
 		...fireSpells,
 		...iceSpells,
@@ -53,60 +59,69 @@
 		...windSpells,
 	];
 	const addableSpells = [...standardSpells, ...secretSpells];
-	const standardCasterClasses = ['Mage', 'Shepherd', 'Songweaver', 'Stormshifter'];
-
 	let classTier = $derived(
-		charClass === 'Oathsworn'
+		classConfig.spellTierProgression === 'oathsworn'
 			? level === 1
 				? -1
 				: level < 13
 					? Math.floor(Math.min(level, 10) / 2)
 					: Math.floor((level - 13) / 4) + 6
-			: charClass === 'Shadowmancer'
+			: classConfig.spellTierProgression === 'shadowmancer'
 				? level === 1
 					? -1
 					: level < 7
 						? Math.floor((level + 1) / 3)
 						: Math.floor((level + 2) / 3)
-				: standardCasterClasses.includes(charClass)
+				: classConfig.spellTierProgression === 'standard'
 					? Math.floor(level / 2)
 					: 0
 	);
+	let hasAutomaticTier = $derived(classConfig.spellTierProgression !== undefined);
 	let tierCap = $derived(spellcasting.tier ?? classTier);
-	let effectiveSchools = $derived(spellcasting.schools ?? classSchools);
-
-	function classMaxMana() {
-		if (level < 2) return 0;
-		switch (charClass) {
-			case 'Mage':
-			case 'Songweaver':
-				return Math.max(stats.INT * 3 + level, 0);
-			case 'Shepherd':
-			case 'Stormshifter':
-				return Math.max(stats.WIL * 3 + level, 0);
-			case 'Oathsworn':
-				return Math.max(stats.WIL + level, 0);
-			default:
-				return 0;
+	let effectiveSchools = $derived(spellcasting.schools ?? classConfig.magicSchools ?? []);
+	let schoolDefinitions = $derived([...magicSchools, ...(spellcasting.customSchools ?? [])]);
+	let displaySchools = $derived.by(() => {
+		const definitions = new Map(schoolDefinitions.map((school) => [school.id, school]));
+		for (const spell of spellcasting.customSpells) {
+			if (!definitions.has(spell.school)) {
+				definitions.set(spell.school, { id: spell.school, name: spell.school });
+			}
 		}
+		return [...definitions.values()];
+	});
+	function classMaxMana() {
+		const formula = classConfig.manaFormula;
+		if (!formula || level < formula.minimumLevel) return 0;
+		return Math.max(
+			stats[formula.stat] * formula.statMultiplier + (formula.addLevel ? level : 0),
+			0
+		);
+	}
+	function tierDescription(tier: number) {
+		if (tier < 0) return 'class-specific starting spells';
+		if (tier === 0) return 'cantrips';
+		return `spells through tier ${tier}`;
 	}
 	let maxMana = $derived(spellcasting.maxMana ?? classMaxMana());
+	let expandedCustomSpells: number[] = $state([]);
 
 	type DisplaySpell = Spell & { source?: 'secret' | 'custom' };
-	type SchoolGroup = { name: MagicSchool | 'Utility'; spells: DisplaySpell[] };
+	type SchoolGroup = { id: MagicSchool | 'Utility'; name: string; spells: DisplaySpell[] };
 	let automaticSpells = $derived(
 		standardSpells.filter(
 			(spell) =>
-				effectiveSchools.includes(spell.school) && (!spell.onlyFor || spell.onlyFor === charClass)
+				effectiveSchools.includes(spell.school) &&
+				(!spell.onlyFor || spell.onlyFor === classConfig.id)
 		)
 	);
 	let additionalSpellGroups = $derived(
-		schools
-			.map((name) => ({
-				name,
+		magicSchools
+			.map((school) => ({
+				id: school.id,
+				name: school.name,
 				spells: addableSpells.filter(
 					(spell) =>
-						spell.school === name &&
+						spell.school === school.id &&
 						!automaticSpells.some((automatic) => automatic.name === spell.name) &&
 						!spellcasting.addedSpells.includes(spell.name)
 				),
@@ -114,12 +129,13 @@
 			.filter((group) => group.spells.length)
 	);
 	let hideableSpellGroups = $derived(
-		schools
-			.map((name) => ({
-				name,
+		magicSchools
+			.map((school) => ({
+				id: school.id,
+				name: school.name,
 				spells: addableSpells.filter(
 					(spell) =>
-						spell.school === name &&
+						spell.school === school.id &&
 						(automaticSpells.some((automatic) => automatic.name === spell.name) ||
 							spellcasting.addedSpells.includes(spell.name)) &&
 						!spellcasting.excludedSpells.includes(spell.name)
@@ -146,13 +162,17 @@
 		);
 	});
 	let available = $derived.by(() => {
-		const groups: SchoolGroup[] = schools
-			.map((name) => ({ name, spells: knownSpells.filter((spell) => spell.school === name) }))
+		const groups: SchoolGroup[] = displaySchools
+			.map((school) => ({
+				id: school.id,
+				name: school.name,
+				spells: knownSpells.filter((spell) => spell.school === school.id),
+			}))
 			.filter((group) => group.spells.length);
 		const utilities = utilitySpells.filter((spell) =>
 			spellcasting.utilitySpells.includes(spell.name)
 		);
-		if (utilities.length) groups.push({ name: 'Utility', spells: utilities });
+		if (utilities.length) groups.push({ id: 'Utility', name: 'Utility', spells: utilities });
 		return groups;
 	});
 
@@ -166,6 +186,28 @@
 			? [...new Set([...selected, school])]
 			: selected.filter((item) => item !== school);
 		updateProfile({ schools: next });
+	}
+	function addCustomSchool() {
+		const school: MagicSchoolDefinition = { id: `custom-${id()}`, name: 'New school' };
+		updateProfile({
+			customSchools: [...spellcasting.customSchools, school],
+			schools: [...new Set([...effectiveSchools, school.id])],
+		});
+	}
+	function renameCustomSchool(index: number, name: string) {
+		updateProfile({
+			customSchools: spellcasting.customSchools.map((school, schoolIndex) =>
+				schoolIndex === index ? { ...school, name } : school
+			),
+		});
+	}
+	function removeCustomSchool(index: number) {
+		const school = spellcasting.customSchools[index];
+		if (!school || spellcasting.customSpells.some((spell) => spell.school === school.id)) return;
+		updateProfile({
+			customSchools: spellcasting.customSchools.filter((_, schoolIndex) => schoolIndex !== index),
+			schools: effectiveSchools.filter((schoolId) => schoolId !== school.id),
+		});
 	}
 	function setUtility(name: string, checked: boolean) {
 		updateProfile({
@@ -190,12 +232,26 @@
 		updateProfile({ [kind]: raw === '' ? undefined : Math.max(kind === 'tier' ? -1 : 0, +raw) });
 	}
 	function addCustomSpell() {
+		const newIndex = spellcasting.customSpells.length;
 		updateProfile({
 			customSpells: [
 				...spellcasting.customSpells,
-				{ name: 'New spell', school: 'Fire', tier: 0, desc: '', actions: 1, roll: '' },
+				{
+					name: 'New spell',
+					school: effectiveSchools[0] ?? 'Fire',
+					tier: 0,
+					desc: '',
+					actions: 1,
+					roll: '',
+				},
 			],
 		});
+		expandedCustomSpells = [...expandedCustomSpells, newIndex];
+	}
+	function setCustomSpellOpen(index: number, open: boolean) {
+		expandedCustomSpells = open
+			? [...new Set([...expandedCustomSpells, index])]
+			: expandedCustomSpells.filter((candidate) => candidate !== index);
 	}
 	function updateCustomSpell(index: number, patch: Partial<Spell>) {
 		updateProfile({
@@ -206,6 +262,12 @@
 	}
 	function removeCustomSpell(index: number) {
 		updateProfile({ customSpells: spellcasting.customSpells.filter((_, i) => i !== index) });
+		expandedCustomSpells = expandedCustomSpells
+			.filter((candidate) => candidate !== index)
+			.map((candidate) => (candidate > index ? candidate - 1 : candidate));
+	}
+	function schoolName(schoolId: MagicSchool) {
+		return schoolDefinitions.find((school) => school.id === schoolId)?.name ?? schoolId;
 	}
 	function spellTime(spell: Spell) {
 		if (spell.castingTime) return spell.castingTime;
@@ -247,14 +309,19 @@
 					<Sheet.Header>
 						<Sheet.Title>Spellcasting</Sheet.Title>
 						<Sheet.Description>
-							Customize this character's magic without changing the class rules.
+							Customize this character's spellcasting, schools, and spell list.
 						</Sheet.Description>
 					</Sheet.Header>
 
 					<div class="flex flex-col gap-6 px-4 pb-8">
 						<section class="flex flex-col gap-3">
 							<div class="flex items-center justify-between gap-2">
-								<h3 class="font-semibold">Spell schools</h3>
+								<div>
+									<h3 class="font-semibold">Spell schools</h3>
+									<p class="text-muted-foreground text-xs">
+										Choose which schools this character knows.
+									</p>
+								</div>
 								<Button
 									variant="ghost"
 									size="sm"
@@ -263,20 +330,58 @@
 								>
 							</div>
 							<div class="grid grid-cols-2 gap-3">
-								{#each schools as school}
+								{#each schoolDefinitions as school}
 									<label class="flex items-center gap-2">
 										<Checkbox
-											checked={effectiveSchools.includes(school)}
-											onCheckedChange={(checked) => setSchool(school, !!checked)}
+											checked={effectiveSchools.includes(school.id)}
+											onCheckedChange={(checked) => setSchool(school.id, !!checked)}
 										/>
-										<SpellSchool {school} class="size-4" />
-										<span>{school}</span>
+										<SpellSchool school={school.id} class="size-4" />
+										<span>{school.name}</span>
 									</label>
 								{/each}
 							</div>
+							<div class="flex items-center justify-between gap-2 pt-2">
+								<div>
+									<h4 class="text-sm font-medium">Create custom schools</h4>
+									<p class="text-muted-foreground text-xs">
+										Custom spells can be assigned to these schools below.
+									</p>
+								</div>
+								<Button variant="outline" size="sm" onclick={addCustomSchool}>
+									<Icons.Add class="size-4" /> Add school
+								</Button>
+							</div>
+							{#each spellcasting.customSchools as school, index}
+								<div class="flex items-center gap-2">
+									<SpellSchool school={school.id} class="size-4" />
+									<Input
+										aria-label="School name"
+										value={school.name}
+										oninput={(event) => renameCustomSchool(index, event.currentTarget.value)}
+									/>
+									<Button
+										variant="ghost"
+										size="icon"
+										disabled={spellcasting.customSpells.some((spell) => spell.school === school.id)}
+										title={spellcasting.customSpells.some((spell) => spell.school === school.id)
+											? 'Move or remove this school’s custom spells first'
+											: 'Remove school'}
+										onclick={() => removeCustomSchool(index)}
+									>
+										<Icons.Trash class="size-4" />
+									</Button>
+								</div>
+							{/each}
 						</section>
 
-						<section class="grid grid-cols-2 gap-3">
+						<section class="grid grid-cols-2 gap-3 border-t pt-5">
+							<div class="col-span-2">
+								<h3 class="font-semibold">Character-wide spellcasting</h3>
+								<p class="text-muted-foreground text-xs">
+									These settings apply across every spell school.
+								</p>
+							</div>
 							<div class="col-span-2 flex flex-col gap-2">
 								<Label for="spell-key">Spellcasting KEY</Label>
 								<select
@@ -296,15 +401,23 @@
 								</select>
 							</div>
 							<div class="flex flex-col gap-2">
-								<Label for="spell-tier">Maximum tier</Label>
+								<Label for="spell-tier">Current spell tier</Label>
 								<Input
 									id="spell-tier"
 									type="number"
 									min="-1"
-									placeholder={`Class: ${classTier}`}
+									placeholder={hasAutomaticTier ? `Automatic: ${classTier}` : 'Set current tier'}
 									value={spellcasting.tier ?? ''}
 									onchange={(event) => setOptionalNumber('tier', event)}
 								/>
+								<p class="text-muted-foreground text-xs">
+									{#if hasAutomaticTier}
+										Highest tier currently available. The class and level currently allow
+										{tierDescription(tierCap)}.
+									{:else}
+										This class has no automatic tier progression. Enter the tier currently allowed.
+									{/if}
+								</p>
 							</div>
 							<div class="flex flex-col gap-2">
 								<Label for="max-mana">Maximum mana</Label>
@@ -312,14 +425,18 @@
 									id="max-mana"
 									type="number"
 									min="0"
-									placeholder={`Class: ${classMaxMana()}`}
+									placeholder={`Automatic: ${classMaxMana()}`}
 									value={spellcasting.maxMana ?? ''}
 									onchange={(event) => setOptionalNumber('maxMana', event)}
 								/>
+								<p class="text-muted-foreground text-xs">
+									{#if classConfig.manaFormula}
+										Calculated from class, stats, and level when left blank.
+									{:else}
+										This class has no automatic mana formula. Enter a maximum if it uses mana.
+									{/if}
+								</p>
 							</div>
-							<p class="text-muted-foreground col-span-2 text-xs">
-								Leave either field blank to follow class and level automatically.
-							</p>
 						</section>
 
 						<section class="flex flex-col gap-3">
@@ -416,79 +533,110 @@
 								</Button>
 							</div>
 							{#each spellcasting.customSpells as spell, index}
-								<div class="flex flex-col gap-3 rounded-lg border p-3">
-									<div class="flex gap-2">
-										<Input
-											aria-label="Spell name"
-											value={spell.name}
-											onchange={(event) =>
-												updateCustomSpell(index, { name: event.currentTarget.value })}
-										/>
-										<Button variant="ghost" size="icon" onclick={() => removeCustomSpell(index)}>
+								<Collapsible.Root
+									open={expandedCustomSpells.includes(index)}
+									onOpenChange={(open) => setCustomSpellOpen(index, open)}
+									class="rounded-lg border"
+								>
+									<div class="flex items-center gap-1 p-2">
+										<Collapsible.Trigger
+											class="group flex min-w-0 grow items-center gap-2 rounded-md p-1 text-left"
+										>
+											<Icons.ChevronRight
+												class="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90"
+											/>
+											<SpellSchool school={spell.school} class="size-5 shrink-0" />
+											<span class="min-w-0 grow">
+												<span class="block truncate font-medium"
+													>{spell.name || 'Unnamed spell'}</span
+												>
+												<span class="text-muted-foreground block truncate text-xs">
+													{schoolName(spell.school)} · {spell.tier <= 0
+														? 'Cantrip'
+														: `Tier ${spell.tier}`}
+												</span>
+											</span>
+										</Collapsible.Trigger>
+										<Button
+											variant="ghost"
+											size="icon"
+											aria-label={`Delete ${spell.name || 'custom spell'}`}
+											onclick={() => removeCustomSpell(index)}
+										>
 											<Icons.Trash class="size-4" />
 										</Button>
 									</div>
-									<div class="grid grid-cols-3 gap-2">
-										<label class="flex min-w-0 flex-col gap-1 text-xs">
-											School
-											<select
-												class="border-input bg-background h-10 min-w-0 rounded-md border px-2 text-sm"
-												value={spell.school}
-												onchange={(event) =>
-													updateCustomSpell(index, {
-														school: event.currentTarget.value as MagicSchool,
-													})}
-											>
-												{#each schools as school}<option value={school}>{school}</option>{/each}
-											</select>
-										</label>
-										<label class="flex min-w-0 flex-col gap-1 text-xs">
-											Tier
-											<Input
-												type="number"
-												min="0"
-												value={spell.tier}
-												onchange={(event) =>
-													updateCustomSpell(index, { tier: +event.currentTarget.value })}
-											/>
-										</label>
-										<label class="flex min-w-0 flex-col gap-1 text-xs">
-											Actions
-											<Input
-												type="number"
-												min="1"
-												value={spell.actions ?? ''}
-												onchange={(event) =>
-													updateCustomSpell(index, {
-														actions: +event.currentTarget.value || undefined,
-													})}
-											/>
-										</label>
-									</div>
-									<Input
-										aria-label="Casting time"
-										placeholder="Casting time (optional, e.g. 10 minutes)"
-										value={spell.castingTime ?? ''}
-										onchange={(event) =>
-											updateCustomSpell(index, {
-												castingTime: event.currentTarget.value || undefined,
-											})}
-									/>
-									<Input
-										aria-label="Dice roll"
-										placeholder="Dice roll, e.g. 2d8!+[KEY]"
-										value={spell.roll}
-										onchange={(event) =>
-											updateCustomSpell(index, { roll: event.currentTarget.value })}
-									/>
-									<Textarea
-										aria-label="Spell description"
-										placeholder="Spell description"
-										value={spell.desc}
-										onchange={(event) =>
-											updateCustomSpell(index, { desc: event.currentTarget.value })}
-									/>
-								</div>
+									<Collapsible.Content class="flex flex-col gap-3 border-t p-3">
+										<Input
+											aria-label="Spell name"
+											value={spell.name}
+											oninput={(event) =>
+												updateCustomSpell(index, { name: event.currentTarget.value })}
+										/>
+										<div class="grid grid-cols-3 gap-2">
+											<label class="flex min-w-0 flex-col gap-1 text-xs">
+												School
+												<select
+													class="border-input bg-background h-10 min-w-0 rounded-md border px-2 text-sm"
+													value={spell.school}
+													onchange={(event) =>
+														updateCustomSpell(index, {
+															school: event.currentTarget.value as MagicSchool,
+														})}
+												>
+													{#each schoolDefinitions as school}
+														<option value={school.id}>{school.name}</option>
+													{/each}
+												</select>
+											</label>
+											<label class="flex min-w-0 flex-col gap-1 text-xs">
+												Tier
+												<Input
+													type="number"
+													min="0"
+													value={spell.tier}
+													onchange={(event) =>
+														updateCustomSpell(index, { tier: +event.currentTarget.value })}
+												/>
+											</label>
+											<label class="flex min-w-0 flex-col gap-1 text-xs">
+												Actions
+												<Input
+													type="number"
+													min="1"
+													value={spell.actions ?? ''}
+													onchange={(event) =>
+														updateCustomSpell(index, {
+															actions: +event.currentTarget.value || undefined,
+														})}
+												/>
+											</label>
+										</div>
+										<Input
+											aria-label="Casting time"
+											placeholder="Casting time (optional, e.g. 10 minutes)"
+											value={spell.castingTime ?? ''}
+											onchange={(event) =>
+												updateCustomSpell(index, {
+													castingTime: event.currentTarget.value || undefined,
+												})}
+										/>
+										<Input
+											aria-label="Dice roll"
+											placeholder="Dice roll, e.g. 2d8!+[KEY]"
+											value={spell.roll}
+											onchange={(event) =>
+												updateCustomSpell(index, { roll: event.currentTarget.value })}
+										/>
+										<Textarea
+											aria-label="Spell description"
+											placeholder="Spell description"
+											value={spell.desc}
+											onchange={(event) =>
+												updateCustomSpell(index, { desc: event.currentTarget.value })}
+										/>
+									</Collapsible.Content>
+								</Collapsible.Root>
 							{/each}
 						</section>
 					</div>
@@ -500,7 +648,7 @@
 		{#each available as school}
 			<Collapsible.Root>
 				<Collapsible.Trigger class="group flex w-full items-center gap-4">
-					<SpellSchool school={school.name} class="size-6" />
+					<SpellSchool school={school.id} class="size-6" />
 					<div class="grow text-left text-lg">{school.name}</div>
 					<Icons.ChevronRight
 						class="size-5 transition-transform group-data-[state=open]:rotate-90"
@@ -509,7 +657,7 @@
 				<Collapsible.Content class="py-2 pl-10">
 					{#each school.spells as spell}
 						<div class="flex items-center gap-2">
-							{#if school.name === 'Utility'}<SpellSchool school={spell.school} />{/if}
+							{#if school.id === 'Utility'}<SpellSchool school={spell.school} />{/if}
 							<div class="flex w-full grow items-center gap-2 py-2">
 								<Popover.Root>
 									<Popover.Trigger><div>{spell.name}</div></Popover.Trigger>
@@ -520,7 +668,7 @@
 										</div>
 									</Popover.Content>
 								</Popover.Root>
-								{#if school.name !== 'Utility'}
+								{#if school.id !== 'Utility'}
 									<span class="text-muted-foreground text-sm">
 										({spell.tier <= 0 ? 'Cantrip' : `Tier ${spell.tier}`}{spell.source
 											? `, ${spell.source}`

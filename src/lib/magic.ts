@@ -182,7 +182,7 @@ export const radiantSpells: Spell[] = [
 		desc: '(Shepherd Only) Call forth a spirit companion that faithfully follows you wherever you go. It is immune to damage and other harmful effects. It lasts until you cast it again, Safe Rest, or until it has healed a number of times equal to the mana spent to summon it. Upcast: Increases its die size by 1 (max d12), +1 healing use. Action: It attacks or heals a creature within Reach 4. It attacks for 1d6+WIL radiant damage (ignoring armor), or heals for the same amount.',
 		actions: 1,
 		roll: '1d6!+[WIL]',
-		onlyFor: 'Shepherd',
+		onlyFor: 'shepherd',
 	},
 	{
 		name: 'Warding Bond',
@@ -242,7 +242,7 @@ export const necroticSpells: Spell[] = [
 		desc: '(Shadowmancer Only.) Deal 1d12+KEY damage to a target within Range 8, 1/round. Higher Levels: +1d12 every 5 levels.',
 		actions: 1,
 		roll: '[SHADOW_DICE]d12!+[KEY]',
-		onlyFor: 'Shadowmancer',
+		onlyFor: 'shadowmancer',
 	},
 	{
 		name: 'Summon Shadow',
@@ -251,7 +251,7 @@ export const necroticSpells: Spell[] = [
 		desc: '(Shadowmancer Only.) Summon a d12 shadow minion within Reach 1 (the maximum number of minions you can summon this way is equal to your INT or LVL, whichever is lower). Your shadow minions follow the normal minion rules: They have 1 HP, no damage modifier, and do not crit. Additionally, as an Action (1/turn) you may command ALL of your minions to move up to 6 spaces and attack an adjacent target. They abandon you immediately outside of combat.',
 		actions: 1,
 		roll: 'd12',
-		onlyFor: 'Shadowmancer',
+		onlyFor: 'shadowmancer',
 	},
 	{
 		name: 'Entice',
@@ -429,7 +429,7 @@ export const windSpells: Spell[] = [
 		desc: '(Songweaver Only.) Range 12. 1d4+INT psychic damage (ignores armor). On hit: the target is taunted during their next turn. High Levels: +2 damage every 5th level).',
 		actions: 1,
 		roll: '1d4!+[INT]+[CANTRIP]*2',
-		onlyFor: 'Songweaver',
+		onlyFor: 'songweaver',
 	},
 	{
 		name: 'Blustery Gale',

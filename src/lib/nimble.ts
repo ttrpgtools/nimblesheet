@@ -1,8 +1,24 @@
-import type { Stat, Save, Skill, NimbleClass, Ancestry, Inventory } from './types';
+import type {
+	Stat,
+	Save,
+	Skill,
+	NimbleClass,
+	Ancestry,
+	Inventory,
+	MagicSchoolDefinition,
+} from './types';
 
 export const stats: Stat[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const saves: Save[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const hitDice = ['d6', 'd8', 'd10', 'd12', 'd20'];
+export const magicSchools: MagicSchoolDefinition[] = [
+	{ id: 'Fire', name: 'Fire' },
+	{ id: 'Ice', name: 'Ice' },
+	{ id: 'Lightning', name: 'Lightning' },
+	{ id: 'Necrotic', name: 'Necrotic' },
+	{ id: 'Radiant', name: 'Radiant' },
+	{ id: 'Wind', name: 'Wind' },
+];
 export const movementTypes = ['Fly', 'Swim', 'Climb', 'Burrow'] as const;
 export const allLanguages = [
 	'Common',
@@ -30,6 +46,7 @@ export const allSkills: Skill[] = [
 
 export const allClasses: NimbleClass[] = [
 	{
+		id: 'berserker',
 		name: 'Berserker',
 		key: ['STR', 'DEX'],
 		saves: {
@@ -40,6 +57,7 @@ export const allClasses: NimbleClass[] = [
 		startHp: 20,
 	},
 	{
+		id: 'the-cheat',
 		name: 'The Cheat',
 		key: ['DEX', 'INT'],
 		saves: {
@@ -50,6 +68,7 @@ export const allClasses: NimbleClass[] = [
 		startHp: 10,
 	},
 	{
+		id: 'commander',
 		name: 'Commander',
 		key: ['STR', 'INT'],
 		saves: {
@@ -60,6 +79,7 @@ export const allClasses: NimbleClass[] = [
 		startHp: 17,
 	},
 	{
+		id: 'hunter',
 		name: 'Hunter',
 		key: ['DEX', 'WIL'],
 		saves: {
@@ -70,6 +90,7 @@ export const allClasses: NimbleClass[] = [
 		startHp: 13,
 	},
 	{
+		id: 'mage',
 		name: 'Mage',
 		key: ['INT', 'WIL'],
 		saves: {
@@ -79,8 +100,11 @@ export const allClasses: NimbleClass[] = [
 		die: 'd6',
 		startHp: 10,
 		magicSchools: ['Fire', 'Ice', 'Lightning'],
+		spellTierProgression: 'standard',
+		manaFormula: { stat: 'INT', statMultiplier: 3, addLevel: true, minimumLevel: 2 },
 	},
 	{
+		id: 'oathsworn',
 		name: 'Oathsworn',
 		key: ['STR', 'WIL'],
 		saves: {
@@ -90,8 +114,11 @@ export const allClasses: NimbleClass[] = [
 		die: 'd10',
 		startHp: 17,
 		magicSchools: ['Radiant'],
+		spellTierProgression: 'oathsworn',
+		manaFormula: { stat: 'WIL', statMultiplier: 1, addLevel: true, minimumLevel: 2 },
 	},
 	{
+		id: 'shadowmancer',
 		name: 'Shadowmancer',
 		key: ['INT', 'DEX'],
 		saves: {
@@ -101,8 +128,10 @@ export const allClasses: NimbleClass[] = [
 		die: 'd8',
 		startHp: 13,
 		magicSchools: ['Necrotic'],
+		spellTierProgression: 'shadowmancer',
 	},
 	{
+		id: 'shepherd',
 		name: 'Shepherd',
 		key: ['WIL', 'STR'],
 		saves: {
@@ -112,8 +141,11 @@ export const allClasses: NimbleClass[] = [
 		die: 'd10',
 		startHp: 17,
 		magicSchools: ['Radiant', 'Necrotic'],
+		spellTierProgression: 'standard',
+		manaFormula: { stat: 'WIL', statMultiplier: 3, addLevel: true, minimumLevel: 2 },
 	},
 	{
+		id: 'songweaver',
 		name: 'Songweaver',
 		key: ['WIL', 'INT'],
 		saves: {
@@ -123,8 +155,11 @@ export const allClasses: NimbleClass[] = [
 		die: 'd8',
 		startHp: 13,
 		magicSchools: ['Wind'],
+		spellTierProgression: 'standard',
+		manaFormula: { stat: 'INT', statMultiplier: 3, addLevel: true, minimumLevel: 2 },
 	},
 	{
+		id: 'stormshifter',
 		name: 'Stormshifter',
 		key: ['WIL', 'DEX'],
 		saves: {
@@ -134,8 +169,11 @@ export const allClasses: NimbleClass[] = [
 		die: 'd8',
 		startHp: 13,
 		magicSchools: ['Lightning', 'Wind'],
+		spellTierProgression: 'standard',
+		manaFormula: { stat: 'WIL', statMultiplier: 3, addLevel: true, minimumLevel: 2 },
 	},
 	{
+		id: 'zephyr',
 		name: 'Zephyr',
 		key: ['DEX', 'STR'],
 		saves: {
