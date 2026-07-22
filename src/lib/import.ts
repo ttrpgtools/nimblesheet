@@ -3,7 +3,7 @@ import type { Action } from 'svelte/action';
 import { on } from 'svelte/events';
 
 class JsonArrayImporter<T> {
-	onComplete: (incoming: T[]) => void = () => {};
+	onComplete: (incoming: T[]) => void | Promise<void> = () => {};
 	#uploader: HTMLInputElement | undefined;
 
 	#handOff = async (ev: ProgressEvent<FileReader>) => {
@@ -22,7 +22,7 @@ class JsonArrayImporter<T> {
 			if (this.#uploader) {
 				this.#uploader.value = '';
 			}
-			this.onComplete(incomingList);
+			await this.onComplete(incomingList);
 		} catch {
 			toast.warning('Could not load characters from file.');
 		}

@@ -23,7 +23,7 @@
 	let warning: ReturnType<typeof Warning> | undefined;
 
 	let { input, startImport } = (function () {
-		return manager.createImporter(warning?.show);
+		return manager.createImporter((list) => warning?.show(list) ?? false);
 	})();
 
 	async function handleDelete() {

@@ -78,7 +78,9 @@
 				</h1>
 			</nav>
 			<div class="w-0 shrink-0 sm:w-80"></div>
-			<route.menu type={currentNav.id === 'char' ? 'char' : 'npc'} />
+			{#key currentNav.id}
+				<route.menu type={currentNav.id === 'char' ? 'char' : 'npc'} />
+			{/key}
 		</div>
 		<div
 			class="flex items-center justify-end gap-4 sm:absolute sm:top-1/2 sm:right-18 sm:-translate-y-1/2 md:right-24 md:ml-auto md:gap-2 lg:gap-4"
