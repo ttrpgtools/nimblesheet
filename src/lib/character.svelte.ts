@@ -5,6 +5,7 @@ import {
 	type Die,
 	type Inventory,
 	type MagicSchool,
+	type MovementSpeed,
 	type Note,
 	type Resource,
 	type Save,
@@ -13,7 +14,7 @@ import {
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 5;
+const SHEET_VERSION = 6;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -39,6 +40,7 @@ function serializeCharacter(character: NimbleCharacter) {
 		maxHd: $state.snapshot(character.maxHd),
 		initiative: $state.snapshot(character.initiative),
 		speed: $state.snapshot(character.speed),
+		movementSpeeds: $state.snapshot(character.movementSpeeds),
 		maxActions: $state.snapshot(character.maxActions),
 		wounds: $state.snapshot(character.wounds),
 		maxWounds: $state.snapshot(character.maxWounds),
@@ -100,6 +102,7 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.maxHd = +data.maxHd;
 	newChar.initiative = +data.initiative;
 	newChar.speed = +data.speed;
+	newChar.movementSpeeds = data.movementSpeeds ?? [];
 	newChar.maxActions = data.maxActions ?? 3;
 	newChar.wounds = data.wounds ?? 0;
 	newChar.maxWounds = data.maxWounds ?? 6;
@@ -169,6 +172,7 @@ export class NimbleCharacter {
 	maxHd: number = $state(1);
 	initiative: number = $state(0);
 	speed: number = $state(6);
+	movementSpeeds: MovementSpeed[] = $state([]);
 	maxActions: number = $state(3);
 	wounds: number = $state(0);
 	maxWounds: number = $state(6);

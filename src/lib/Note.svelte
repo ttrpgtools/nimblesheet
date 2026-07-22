@@ -75,9 +75,9 @@
 			</Button>
 		</div>
 	</Card.Header>
-	<Card.Content>
+	<Card.Content class="pb-2 sm:pb-2">
 		<Textarea rows={5} bind:value={note.content} />
-		<div class="mt-3 flex flex-col gap-2">
+		<div class:mt-3={note.rolls.length > 0} class="flex flex-col gap-2">
 			{#each note.rolls as _, index}
 				<div class="flex flex-row items-center gap-2">
 					<Input bind:value={note.rolls[index].name} class="w-full" />
@@ -106,7 +106,8 @@
 				variant="secondary"
 				class="border-primary/50 rounded-full hover:border"
 				size="icon"
-				onclick={addRoll}><Icons.Add class="size-5" /></Button
+				onclick={addRoll}
+				aria-label="Add roll"><Icons.Add class="size-5" /></Button
 			>
 			{#if deleteMode}
 				<ConfirmButton

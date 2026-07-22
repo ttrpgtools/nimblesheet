@@ -3,6 +3,7 @@ import type { Stat, Save, Skill, NimbleClass, Ancestry, Inventory } from './type
 export const stats: Stat[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const saves: Save[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const hitDice = ['d6', 'd8', 'd10', 'd12', 'd20'];
+export const movementTypes = ['Fly', 'Swim', 'Climb', 'Burrow'] as const;
 export const allLanguages = [
 	'Common',
 	'Dwarvish',

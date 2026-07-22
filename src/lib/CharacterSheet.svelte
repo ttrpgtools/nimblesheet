@@ -35,6 +35,7 @@
 	import { owlbear } from './owlbear.svelte';
 	import Note from './Note.svelte';
 	import Languages from './Languages.svelte';
+	import MovementEditor from './MovementEditor.svelte';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -431,8 +432,27 @@
 					onfocus={autoSel}
 					bind:value={character.speed}
 				/>
-				<Label for="sstat-speed">Speed</Label>
+				<div class="flex items-center gap-1">
+					<Label for="sstat-speed">Speed</Label>
+					<MovementEditor
+						bind:movements={character.movementSpeeds}
+						baseSpeed={character.speed}
+						{onchange}
+					/>
+				</div>
 			</div>
+			{#if character.movementSpeeds.length}
+				<div
+					class="text-muted-foreground col-span-4 -mt-1 truncate text-right text-xs"
+					title={character.movementSpeeds
+						.map((movement) => `${movement.type} ${movement.speed}`)
+						.join(' · ')}
+				>
+					{character.movementSpeeds
+						.map((movement) => `${movement.type} ${movement.speed}`)
+						.join(' · ')}
+				</div>
+			{/if}
 		</Card.Content>
 	</Card.Root>
 
@@ -568,43 +588,7 @@
 	</Card.Root>
 
 	<Card.Root>
-		<Card.Content class="relative grid pt-12">
-			<Sheet.Root>
-				<Sheet.Trigger
-					class={buttonVariants({
-						variant: 'ghost',
-						size: 'icon',
-						className: 'absolute top-1 right-1',
-					})}
-					aria-label="Edit skill bonuses"
-				>
-					<Icons.Pencil class="size-4" />
-				</Sheet.Trigger>
-				<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
-					<Sheet.Header>
-						<Sheet.Title>Skill bonuses</Sheet.Title>
-						<Sheet.Description>
-							Bonuses from ancestries, backgrounds, boons, and equipment do not count as allocated
-							skill points.
-						</Sheet.Description>
-					</Sheet.Header>
-					<div class="grid gap-3 px-4 pb-4">
-						{#each character.skills as skill}
-							<div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-3">
-								<Label for="skill-bonus-{skill.name}">{skill.name}</Label>
-								<Input
-									id="skill-bonus-{skill.name}"
-									class="text-center"
-									type="number"
-									inputmode="numeric"
-									bind:value={skill.bonus}
-									oninput={onchange}
-								/>
-							</div>
-						{/each}
-					</div>
-				</Sheet.Content>
-			</Sheet.Root>
+		<Card.Content class="grid">
 			{#each character.skills as skill}
 				{@const score = +(character.stats[skill.type] ?? '0') + skill.extra + (skill.bonus ?? 0)}
 				<div class="flex items-center gap-2">
@@ -649,19 +633,53 @@
 				</div>
 			{/each}
 			<div
-				class="relative mt-1 border-t pt-3 text-sm {skillPoints > maxSkillPoints
+				class="mt-1 flex items-center gap-1 border-t pt-3 text-sm {skillPoints > maxSkillPoints
 					? `text-destructive`
 					: `text-muted-foreground`}"
 			>
-				Skill Points allocated: {skillPoints} / {maxSkillPoints}
+				<span class="grow">Skill Points allocated: {skillPoints} / {maxSkillPoints}</span>
+				<Sheet.Root>
+					<Sheet.Trigger
+						class={buttonVariants({ variant: 'ghost', size: 'icon', className: 'size-7' })}
+						aria-label="Edit skill bonuses"
+					>
+						<Icons.Pencil class="size-4" />
+					</Sheet.Trigger>
+					<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
+						<Sheet.Header>
+							<Sheet.Title>Skill bonuses</Sheet.Title>
+							<Sheet.Description>
+								Bonuses from ancestries, backgrounds, boons, and equipment do not count as allocated
+								skill points.
+							</Sheet.Description>
+						</Sheet.Header>
+						<div class="grid gap-3 px-4 pb-4">
+							{#each character.skills as skill}
+								<div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-3">
+									<Label for="skill-bonus-{skill.name}">{skill.name}</Label>
+									<Input
+										id="skill-bonus-{skill.name}"
+										class="text-center"
+										type="number"
+										inputmode="numeric"
+										bind:value={skill.bonus}
+										oninput={onchange}
+									/>
+								</div>
+							{/each}
+						</div>
+					</Sheet.Content>
+				</Sheet.Root>
 				<Popover.Root>
-					<Popover.Trigger class="absolute right-1.5 bottom-1">
+					<Popover.Trigger class="flex size-7 items-center justify-center">
 						<Icons.Question class="size-4" />
 					</Popover.Trigger>
 					<Popover.Content>
 						<p>
 							You can assign extra skill points, spreading your initial 4 points over 3 skills. At
-							each level you get one more, and can move one.
+							each level you get one more, and can move one. Use the pencil to record additional
+							bonuses from ancestries, backgrounds, boons, or equipment; those bonuses do not count
+							against this allocation.
 						</p>
 					</Popover.Content>
 				</Popover.Root>
