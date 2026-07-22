@@ -7,7 +7,7 @@ export const fireSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 1d10 damage to any target within Range 8. Inflicts Smoldering on crit. High Levels: +5 damage every 5 levels.',
 		actions: 1,
-		roll: '1d10!',
+		roll: '1d10!+[CANTRIP]*5',
 	},
 	{
 		name: "Heart's Fire",
@@ -37,7 +37,7 @@ export const fireSpells: Spell[] = [
 		name: 'Flame Barrier',
 		school: 'Fire',
 		tier: 3,
-		desc: '(Reaction, when you would Defend) Defend for free, until the start of your next turn, melee attackers against you take KEY damage and gain Smoldering. Upcast: +KEY damage.',
+		desc: '(Reaction, when attacked) Defend for free. Until the start of your next turn, melee attackers against you take KEY damage (ignoring armor) and gain Smoldering. Upcast: +KEY damage.',
 		actions: 1,
 		roll: '',
 	},
@@ -45,8 +45,8 @@ export const fireSpells: Spell[] = [
 		name: 'Pyroclasm',
 		school: 'Fire',
 		tier: 4,
-		desc: 'Other creatures within Reach 3 of you take 2d20+10 damage on a failed DEX save, half on save. Smoldering creatures automatically fail. Upcast: +1 Reach, +2 damage.',
-		actions: 3,
+		desc: 'Other creatures within Reach 3 of you take 2d20+10 damage (ignoring armor) on a failed DEX save, half on save. Smoldering creatures automatically fail. Upcast: +1 Reach, +2 damage.',
+		actions: 2,
 		roll: '2d20+10',
 	},
 	{
@@ -69,7 +69,7 @@ export const fireSpells: Spell[] = [
 		name: 'Dragonform',
 		school: 'Fire',
 		tier: 9,
-		desc: 'Transform into a Huge dragon. Gain 3 actions, a fly speed of 12, LVL Armor, 10×LVL temp HP, and: • Tooth & Claw: Reach 2, 1d20+LVL damage (ignore armor). Inflicts Smoldering, ignores Armor. • Immolating Breath: Cone 8. DC 20 DEX save, [KEY]d6 damage, half on save. Smoldering targets fail. You can maintain this form for as long as the temp HP granted by this spell remains (max. 10 minutes). When it ends, you drop to 0 HP.',
+		desc: 'Transform into a Huge dragon. Gain 3 actions, a fly speed of 12, LVL Armor, 10×LVL temp HP, and: • Tooth & Claw: Reach 2, 1d20+LVL damage (ignoring armor). Inflicts Smoldering. • Immolating Breath: Cone 8. DC 20 DEX save, KEY d20 damage, half on save. Smoldering targets fail. You can maintain this form for as long as the temp HP granted by this spell remains (max. 10 minutes). When it ends, you drop to 0 HP.',
 		actions: 5,
 		roll: '1d20!+[LVL]',
 	},
@@ -82,7 +82,7 @@ export const iceSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 1d6 cold or piercing damage to a target within Range 12. On hit: slowed. High Levels: +3 cold damage every 5 levels.',
 		actions: 1,
-		roll: '1d6!',
+		roll: '1d6!+[CANTRIP]*3',
 	},
 	{
 		name: 'Snowblind',
@@ -90,14 +90,14 @@ export const iceSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 1d6 damage to single target withing Reach 1. On hit: Blinded until end of their next turn. High Levels: +3 damage every 5 levels.',
 		actions: 1,
-		roll: '1d6!',
+		roll: '1d6!+[CANTRIP]*3',
 	},
 	{
 		name: 'Frost Shield',
 		school: 'Ice',
 		tier: 1,
-		desc: 'When attacked, gain 2×KEY temp HP and Defend for free. The ice melts and these temp HP are lost at the start of your next turn. Upcast: +2×KEY temp HP.',
-		actions: 0,
+		desc: 'When attacked, gain 2×KEY temp HP and Defend for free. The ice melts and these temp HP are lost at the start of your next turn. High Levels: +2×KEY temp HP.',
+		actions: 1,
 		roll: '',
 	},
 	{
@@ -146,7 +146,7 @@ export const iceSpells: Spell[] = [
 		tier: 9,
 		desc: 'Choose any number of objects or willing creatures within Reach 12 to encase in ice. They are Incapacitated and immune to damage and effects until start of next turn. All other creatures and objects within Reach take d66 damage. Surviving creatures must make STR save or be Incapacitated for 1 round. Must Safe Rest for 1 week before reusing.',
 		actions: 3,
-		roll: 'd66',
+		roll: 'd6,6',
 	},
 ];
 
@@ -157,7 +157,7 @@ export const radiantSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 1d6 damage to a target within Reach 4, ignoring Armor, does not miss. Deal double damage against undead or cowardly (those Frightened, or behind cover). High Levels: +2 every 5 levels.',
 		actions: 1,
-		roll: '1d6!',
+		roll: '1d6!+[CANTRIP]*2',
 	},
 	{
 		name: 'True Strike',
@@ -214,7 +214,7 @@ export const radiantSpells: Spell[] = [
 		tier: 5,
 		desc: 'Deal 1d100 damage to a creature within Reach 1 that attacked a dying ally or reduced one to 0 HP since your last turn. Upcast: +1 reach, roll with advantage.',
 		actions: 2,
-		roll: '1d100',
+		roll: '1d100!',
 	},
 	{
 		name: 'Sacrifice',
@@ -241,7 +241,7 @@ export const necroticSpells: Spell[] = [
 		tier: -1,
 		desc: '(Shadowmancer Only.) Deal 1d12+KEY damage to a target within Range 8, 1/round. Higher Levels: +1d12 every 5 levels.',
 		actions: 1,
-		roll: '1d12!+[KEY]',
+		roll: '[SHADOW_DICE]d12!+[KEY]',
 		onlyFor: 'Shadowmancer',
 	},
 	{
@@ -259,7 +259,7 @@ export const necroticSpells: Spell[] = [
 		tier: 0,
 		desc: 'On a hit a target within Range 8 takes 1d4 damage (ignore armor) and moves 2 spaces nearer to you. High Levels: Increment the die size 1 step every 5 levels (d6 → d8 → d10 → d12).',
 		actions: 1,
-		roll: '1d4!',
+		roll: '1d[CANTRIP_DIE]!',
 	},
 	{
 		name: 'Withering Touch',
@@ -267,7 +267,7 @@ export const necroticSpells: Spell[] = [
 		tier: 0,
 		desc: 'Touch a target and deal 1d12 damage. They are considered undead for 1 round. High Levels: +6 damage every 5 levels.',
 		actions: 1,
-		roll: '1d12!',
+		roll: '1d12!+[CANTRIP]*6',
 	},
 	{
 		name: 'Shadow Trap',
@@ -316,7 +316,7 @@ export const necroticSpells: Spell[] = [
 		name: 'Unspeakable Word',
 		school: 'Necrotic',
 		tier: 6,
-		desc: 'A target within Reach 8 takes d66 damage (with advantage, ignore armor, does not miss or crit) on a failed INT save. If they succeed, you each take half damage. The target has disadvantage if they are Bloodied or Frightened. Upcast: +1 save DC.',
+		desc: 'A target within Reach 8 takes d66 damage (with advantage, ignore armor, does not miss or crit) on a failed INT save. If they succeed, you each take half damage. The target has disadvantage if they are Bloodied or Frightened. Upcast: +1 save DC, +10 damage.',
 		actions: 2,
 		roll: 'd6,6,6rl1',
 	},
@@ -326,7 +326,7 @@ export const necroticSpells: Spell[] = [
 		tier: 7,
 		desc: 'Deal 4d20 damage to a creature within Reach 8. If this kills the creature, it violently erupts and you MUST deal the same amount of damage to another creature within Reach 8 of it that has not yet been damaged by this effect. Repeat until a creature survives this damage or no other creatures are in range. Upcast: +1d20 damage.',
 		actions: 3,
-		roll: '4d20!',
+		roll: '4d20',
 	},
 ];
 
@@ -337,7 +337,7 @@ export const lightningSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 2d8 damage to a target within 12 spaces. If this misses, the lightning fails to find ground and strikes you instead. High Levels: +6 damage every 5 levels.',
 		actions: 1,
-		roll: '2d8!',
+		roll: '2d8!+[CANTRIP]*6',
 	},
 	{
 		name: 'Overload',
@@ -345,7 +345,7 @@ export const lightningSpells: Spell[] = [
 		tier: 0,
 		desc: '(Can only be cast if you are charged.) Deal 2d8 damage to all other creatures within Reach 2 of you. High Levels: +4 damage every 5 levels.',
 		actions: 1,
-		roll: '2d8',
+		roll: '2d8+[CANTRIP]*4',
 	},
 	{
 		name: 'Arc Lightning',
@@ -369,13 +369,13 @@ export const lightningSpells: Spell[] = [
 		tier: 3,
 		desc: 'In a line of lenght 12, deal 3d8+4 damage (ignoring metal armor). Surviving creatures are Dazed on a failed STR save, or Incapacitated instead for 1 of their turns if they fail by 5 or more. Creatures with a large amount of metal (e.g., armor or a longsword) roll with disadvantage. Upcast: +4 damage.',
 		actions: 2,
-		roll: '5d8',
+		roll: '3d8+4',
 	},
 	{
 		name: 'Electrickery',
 		school: 'Lightning',
 		tier: 4,
-		desc: '(Reaction) When an ally is attacked, choose another creature within Range 8 to swap places with your ally on a failed WIL save (they become the new target). Costs 1 action while charged, ending the condition. Upcast: +2 range',
+		desc: '(Reaction) When an ally is attacked, choose another creature within Range 8 to swap places with your ally on a failed WIL save (they become the new target). Costs 1 action while charged, ending the condition. Upcast: +4 Range.',
 		actions: 3,
 		roll: '',
 	},
@@ -383,7 +383,7 @@ export const lightningSpells: Spell[] = [
 		name: 'Electrocharge',
 		school: 'Lightning',
 		tier: 5,
-		desc: '(Concentration, up to 1 minute.) A target you touch gains the Charged condition, +1 max Action, +5 Armor, double Speed, and advantage on DEX saves. Upcast: +1 minute duration.',
+		desc: '(Concentration, up to 1 minute.) A target you touch gains the Charged condition, +1 max Action, +5 Armor, double Speed, and advantage on DEX saves. Upcast: +4 Range.',
 		actions: 2,
 		roll: '',
 	},
@@ -412,7 +412,7 @@ export const windSpells: Spell[] = [
 		tier: 0,
 		desc: 'Deal 1d4 slashing damage to up to 2 adjacent targets Range 12. Vicious (roll an additional die whenever this crits). High Levels: +2 damage every 5 levels.',
 		actions: 1,
-		roll: '1d4!v',
+		roll: '1d4!v+[CANTRIP]*2',
 	},
 	{
 		name: 'Breath of Life',
@@ -428,7 +428,7 @@ export const windSpells: Spell[] = [
 		tier: 0,
 		desc: '(Songweaver Only.) Range 12. 1d4+INT psychic damage (ignores armor). On hit: the target is taunted during their next turn. High Levels: +2 damage every 5th level).',
 		actions: 1,
-		roll: '1d4!+[INT]',
+		roll: '1d4!+[INT]+[CANTRIP]*2',
 		onlyFor: 'Songweaver',
 	},
 	{

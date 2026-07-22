@@ -1,12 +1,13 @@
 <script lang="ts">
 	import ListManager from './ListManager.svelte';
 
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Select from '$lib/components/ui/select';
+	import * as Sheet from '$lib/components/ui/sheet';
 	import type { NimbleCharacter } from './character.svelte';
 	import { Icons } from '$lib/icons';
 
@@ -61,6 +62,8 @@
 
 	let skillPoints = $derived(character.skills.reduce((p, c) => p + c.extra, 0));
 	let maxSkillPoints = $derived(+(character.level ?? '0') + 3);
+	let maxActions = $derived(Math.max(1, Math.floor(+character.maxActions || 1)));
+	let maxWounds = $derived(Math.max(1, Math.floor(+character.maxWounds || 1)));
 
 	async function onroll(roll: string, label?: string, addMod = 0) {
 		const context = {
@@ -71,6 +74,9 @@
 			WIL: +character.stats.WIL,
 			WIT: Math.max(+character.stats.INT, +character.stats.WIL),
 			INIT: Math.max(+character.stats.DEX, +character.initiative),
+			CANTRIP: Math.floor(+character.level / 5),
+			CANTRIP_DIE: [4, 6, 8, 10, 12][Math.min(Math.floor(+character.level / 5), 4)],
+			SHADOW_DICE: 1 + Math.floor(+character.level / 5),
 			KEY: (currentClass?.key ?? []).reduce(
 				(p, c) => Math.max(+character.stats[c], p),
 				Number.NEGATIVE_INFINITY
@@ -449,7 +455,7 @@
 	</Card.Root>
 
 	<Card.Root>
-		<Card.Content class="flex items-center gap-4">
+		<Card.Content class="flex flex-wrap items-center gap-4">
 			<h4 class=" grow text-lg font-bold">Actions</h4>
 			<button
 				onclick={() => {
@@ -458,7 +464,7 @@
 			>
 				<Icons.X class="size-6 {actions === 0 ? `text-gray-500` : ``}" />
 			</button>
-			{#each [1, 2, 3] as action}
+			{#each Array.from({ length: maxActions }, (_, index) => index + 1) as action}
 				<button
 					type="button"
 					onclick={() => {
@@ -470,11 +476,36 @@
 					>{action}</button
 				>
 			{/each}
+			<Sheet.Root>
+				<Sheet.Trigger
+					class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+					aria-label="Edit maximum actions"
+				>
+					<Icons.Pencil class="size-4" />
+				</Sheet.Trigger>
+				<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
+					<Sheet.Header>
+						<Sheet.Title>Actions</Sheet.Title>
+						<Sheet.Description>Set the maximum number of actions for this hero.</Sheet.Description>
+					</Sheet.Header>
+					<div class="grid gap-2 px-4">
+						<Label for="max-actions">Maximum actions</Label>
+						<Input
+							id="max-actions"
+							type="number"
+							inputmode="numeric"
+							min={1}
+							bind:value={character.maxActions}
+							oninput={onchange}
+						/>
+					</div>
+				</Sheet.Content>
+			</Sheet.Root>
 		</Card.Content>
 	</Card.Root>
 
 	<Card.Root>
-		<Card.Content class="flex items-center gap-3">
+		<Card.Content class="flex flex-wrap items-center gap-3">
 			<h4 class="grow text-lg font-bold">Wounds</h4>
 			<button
 				type="button"
@@ -485,7 +516,7 @@
 			>
 				<Icons.X class="size-5 {character.wounds === 0 ? `text-gray-500` : ``}" />
 			</button>
-			{#each [1, 2, 3, 4, 5] as wnd}
+			{#each Array.from({ length: Math.max(maxWounds - 1, 0) }, (_, index) => index + 1) as wnd}
 				<button
 					type="button"
 					onclick={() => {
@@ -499,22 +530,88 @@
 			<button
 				type="button"
 				onclick={() => {
-					character.wounds = 6;
+					character.wounds = maxWounds;
 					onchange();
 				}}
 			>
-				<Icons.Skull class="size-5 {character.wounds >= 6 ? `text-red-500` : ``}" />
+				<Icons.Skull class="size-5 {character.wounds >= maxWounds ? `text-red-500` : ``}" />
 			</button>
+			<Sheet.Root>
+				<Sheet.Trigger
+					class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+					aria-label="Edit maximum wounds"
+				>
+					<Icons.Pencil class="size-4" />
+				</Sheet.Trigger>
+				<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
+					<Sheet.Header>
+						<Sheet.Title>Wounds</Sheet.Title>
+						<Sheet.Description>Set the number of Wounds at which this hero dies.</Sheet.Description>
+					</Sheet.Header>
+					<div class="grid gap-2 px-4">
+						<Label for="max-wounds">Maximum wounds</Label>
+						<Input
+							id="max-wounds"
+							type="number"
+							inputmode="numeric"
+							min={1}
+							bind:value={character.maxWounds}
+							oninput={onchange}
+						/>
+					</div>
+				</Sheet.Content>
+			</Sheet.Root>
 		</Card.Content>
 	</Card.Root>
 
 	<Card.Root>
-		<Card.Content class="grid">
+		<Card.Content class="relative grid pt-12">
+			<Sheet.Root>
+				<Sheet.Trigger
+					class={buttonVariants({
+						variant: 'ghost',
+						size: 'icon',
+						className: 'absolute top-1 right-1',
+					})}
+					aria-label="Edit skill bonuses"
+				>
+					<Icons.Pencil class="size-4" />
+				</Sheet.Trigger>
+				<Sheet.Content side="right" class="w-full overflow-y-auto sm:max-w-sm">
+					<Sheet.Header>
+						<Sheet.Title>Skill bonuses</Sheet.Title>
+						<Sheet.Description>
+							Bonuses from ancestries, backgrounds, boons, and equipment do not count as allocated
+							skill points.
+						</Sheet.Description>
+					</Sheet.Header>
+					<div class="grid gap-3 px-4 pb-4">
+						{#each character.skills as skill}
+							<div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-3">
+								<Label for="skill-bonus-{skill.name}">{skill.name}</Label>
+								<Input
+									id="skill-bonus-{skill.name}"
+									class="text-center"
+									type="number"
+									inputmode="numeric"
+									bind:value={skill.bonus}
+									oninput={onchange}
+								/>
+							</div>
+						{/each}
+					</div>
+				</Sheet.Content>
+			</Sheet.Root>
 			{#each character.skills as skill}
-				{@const score = +(character.stats[skill.type] ?? '0') + skill.extra}
+				{@const score = +(character.stats[skill.type] ?? '0') + skill.extra + (skill.bonus ?? 0)}
 				<div class="flex items-center gap-2">
 					<div class="w-full">
 						{skill.name} <span class="text-muted-foreground">({skill.type})</span>
+						{#if skill.bonus}
+							<span class="text-muted-foreground text-xs"
+								>({skill.bonus > 0 ? '+' : ''}{skill.bonus} bonus)</span
+							>
+						{/if}
 					</div>
 					<div class="flex items-center">
 						<span class="px-4">{score}</span>
@@ -522,7 +619,7 @@
 							variant="ghost"
 							size="icon"
 							class="rounded-full"
-							disabled={score === 12}
+							disabled={score >= 12}
 							onclick={() => {
 								skill.extra += 1;
 								onchange();
@@ -534,7 +631,7 @@
 							variant="ghost"
 							size="icon"
 							class="rounded-full"
-							disabled={score <= 0}
+							disabled={skill.extra <= 0}
 							onclick={() => {
 								skill.extra = skill.extra - 1;
 								onchange();

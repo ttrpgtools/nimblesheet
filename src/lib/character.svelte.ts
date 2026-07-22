@@ -12,7 +12,7 @@ import {
 	type Stat,
 } from './types';
 
-const SHEET_VERSION = 2;
+const SHEET_VERSION = 3;
 function serializeCharacter(character: NimbleCharacter) {
 	return {
 		id: $state.snapshot(character.id),
@@ -38,7 +38,9 @@ function serializeCharacter(character: NimbleCharacter) {
 		maxHd: $state.snapshot(character.maxHd),
 		initiative: $state.snapshot(character.initiative),
 		speed: $state.snapshot(character.speed),
+		maxActions: $state.snapshot(character.maxActions),
 		wounds: $state.snapshot(character.wounds),
+		maxWounds: $state.snapshot(character.maxWounds),
 		gp: $state.snapshot(character.gp),
 		sp: $state.snapshot(character.sp),
 		mana: $state.snapshot(character.mana),
@@ -81,7 +83,10 @@ function deserializeCharacter(data: CharacterSave) {
 		};
 	}
 	newChar.saveOverride = data.saveOverride ?? {};
-	newChar.skills = data.skills ?? structuredClone(allSkills);
+	newChar.skills = (data.skills ?? structuredClone(allSkills)).map((skill) => ({
+		...skill,
+		bonus: skill.bonus ?? 0,
+	}));
 	newChar.armor = +data.armor;
 	newChar.hp = +data.hp;
 	newChar.maxHp = +data.maxHp;
@@ -90,7 +95,9 @@ function deserializeCharacter(data: CharacterSave) {
 	newChar.maxHd = +data.maxHd;
 	newChar.initiative = +data.initiative;
 	newChar.speed = +data.speed;
+	newChar.maxActions = data.maxActions ?? 3;
 	newChar.wounds = data.wounds ?? 0;
+	newChar.maxWounds = data.maxWounds ?? 6;
 	newChar.gp = data.gp ?? 0;
 	newChar.sp = data.sp ?? 0;
 	newChar.mana = data.mana ?? 0;
@@ -135,7 +142,9 @@ export class NimbleCharacter {
 	maxHd: number = $state(1);
 	initiative: number = $state(0);
 	speed: number = $state(6);
+	maxActions: number = $state(3);
 	wounds: number = $state(0);
+	maxWounds: number = $state(6);
 	gp: number = $state(0);
 	sp: number = $state(0);
 	mana: number = $state(0);

@@ -4,16 +4,16 @@ export const stats: Stat[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const saves: Save[] = ['STR', 'DEX', 'INT', 'WIL'];
 export const hitDice = ['d6', 'd8', 'd10', 'd12', 'd20'];
 export const allSkills: Skill[] = [
-	{ name: 'Arcana', type: 'INT', extra: 0 },
-	{ name: 'Examination', type: 'INT', extra: 0 },
-	{ name: 'Finesse', type: 'DEX', extra: 0 },
-	{ name: 'Influence', type: 'WIL', extra: 0 },
-	{ name: 'Insight', type: 'WIL', extra: 0 },
-	{ name: 'Lore', type: 'INT', extra: 0 },
-	{ name: 'Might', type: 'STR', extra: 0 },
-	{ name: 'Naturecraft', type: 'WIL', extra: 0 },
-	{ name: 'Perception', type: 'WIL', extra: 0 },
-	{ name: 'Stealth', type: 'DEX', extra: 0 },
+	{ name: 'Arcana', type: 'INT', extra: 0, bonus: 0 },
+	{ name: 'Examination', type: 'INT', extra: 0, bonus: 0 },
+	{ name: 'Finesse', type: 'DEX', extra: 0, bonus: 0 },
+	{ name: 'Influence', type: 'WIL', extra: 0, bonus: 0 },
+	{ name: 'Insight', type: 'WIL', extra: 0, bonus: 0 },
+	{ name: 'Lore', type: 'INT', extra: 0, bonus: 0 },
+	{ name: 'Might', type: 'STR', extra: 0, bonus: 0 },
+	{ name: 'Naturecraft', type: 'WIL', extra: 0, bonus: 0 },
+	{ name: 'Perception', type: 'WIL', extra: 0, bonus: 0 },
+	{ name: 'Stealth', type: 'DEX', extra: 0, bonus: 0 },
 ];
 
 export const allClasses: NimbleClass[] = [
@@ -169,23 +169,23 @@ export const meleeWeapons: Inventory[] = [
 	{ name: 'Hand Axe', roll: '1d6!+[STR]' },
 	{ name: 'Short Sword', roll: '1d6!+[DEX]' },
 	{ name: 'Rapier', roll: '2d4!+[DEX]' },
-	{ name: 'Staff', roll: '1d8!+[STR]' },
-	{ name: 'Longsword', roll: '1d8!+[STR]' },
+	{ name: 'Staff', roll: '1d8!+[STR]', bulky: true },
+	{ name: 'Longsword', roll: '1d8!+[STR]', bulky: true },
 	{ name: 'Battleaxe', roll: '1d10!+[STR]', bulky: true },
-	{ name: 'Pole Hammer', roll: '1d10!+[STR]' },
-	{ name: 'Glaive', roll: '1d10!+[STR]' },
-	{ name: 'Spear', roll: '1d10!+[STR]' },
+	{ name: 'Pole Hammer', roll: '1d10!+[STR]', bulky: true },
+	{ name: 'Glaive', roll: '1d10!+[STR]', bulky: true },
+	{ name: 'Spear', roll: '1d10!+[STR]', bulky: true },
 	{ name: 'Greatmaul', roll: '1d12!+[STR]', bulky: true },
 	{ name: 'Greataxe', roll: '2d6!+[STR]', bulky: true },
 	{ name: 'Greatsword', roll: '3d4!+[STR]', bulky: true },
 ];
 
 export const rangedWeapons: Inventory[] = [
-	{ name: 'Sling', roll: '1d4!v+[DEX]' },
+	{ name: 'Sling', roll: '1d4!v+[DEX]', bulky: true },
 	{ name: 'Javelins', roll: '1d6!+[STR]' },
 	{ name: 'Throwing Hammers', roll: '1d8!+[STR]' },
-	{ name: 'Shortbow', roll: '1d6!+[DEX]' },
-	{ name: 'Longbow', roll: '1d8!+[DEX]' },
+	{ name: 'Shortbow', roll: '1d6!+[DEX]', bulky: true },
+	{ name: 'Longbow', roll: '1d8!+[DEX]', bulky: true },
 	{ name: 'Crossbow', roll: '4d4!+[DEX]', bulky: true },
 	{ name: 'Handheld Ballista', roll: '1d20!+[DEX]', bulky: true },
 ];
