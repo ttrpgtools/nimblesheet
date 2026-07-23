@@ -14,6 +14,8 @@ export type Note = { name: string; content: string; rolls: { name: string; roll:
 export type MagicSchool = string;
 export type MagicSchoolDefinition = { id: MagicSchool; name: string };
 export type Spell = {
+	id?: string;
+	category?: 'utility' | 'secret';
 	name: string;
 	school: MagicSchool;
 	tier: number;
@@ -53,7 +55,42 @@ export interface NimbleClass {
 	};
 }
 
-export type CharacterClass = NimbleClass & { presetId?: string };
+export type CharacterClass = NimbleClass & {
+	presetId?: string;
+	templateId?: string;
+	templatePackId?: string;
+};
+
+export type ContentSpell = Spell & { id: string };
+export type ClassSpellcastingTemplate = {
+	schools?: MagicSchool[];
+	keyStat?: Stat;
+	utilitySpellIds: string[];
+	addedSpellIds: string[];
+	excludedSpellIds: string[];
+	customSchoolIds: string[];
+	customSpellIds: string[];
+};
+export type ClassTemplate = {
+	id: string;
+	name: string;
+	classConfig: CharacterClass;
+	spellcasting: ClassSpellcastingTemplate;
+};
+export type ContentPack = {
+	format: 'nimblesheet-content-pack';
+	version: 1;
+	id: string;
+	metadata: {
+		name: string;
+		author?: string;
+		description?: string;
+		created: string;
+	};
+	classes: ClassTemplate[];
+	schools: MagicSchoolDefinition[];
+	spells: ContentSpell[];
+};
 
 export type Identifiable = { id: string };
 export type Named = { name: string };

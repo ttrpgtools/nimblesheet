@@ -143,7 +143,10 @@ function deserializeCharacter(data: CharacterSave) {
 			utilitySpells: data.spellcasting.utilitySpells ?? [],
 			addedSpells: data.spellcasting.addedSpells ?? [],
 			excludedSpells: data.spellcasting.excludedSpells ?? [],
-			customSpells: data.spellcasting.customSpells ?? [],
+			customSpells: (data.spellcasting.customSpells ?? []).map((spell) => ({
+				...spell,
+				id: spell.id ?? `user:spell:${id()}`,
+			})),
 		};
 	} else {
 		const classSchools = allClasses.find((c) => c.name === data.charClass)?.magicSchools ?? [];

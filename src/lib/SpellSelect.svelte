@@ -9,18 +9,10 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import {
-		fireSpells,
-		iceSpells,
-		lightningSpells,
-		necroticSpells,
-		radiantSpells,
-		secretSpells,
-		utilitySpells,
-		windSpells,
-	} from './magic';
+	import { secretSpells, utilitySpells } from './magic';
 	import { magicSchools } from './nimble';
 	import { id } from './random';
+	import { addableSpells, standardSpells } from './spell-catalog';
 	import SpellSchool from './SpellSchool.svelte';
 	import type {
 		CharacterClass,
@@ -50,15 +42,6 @@
 		onchange,
 	}: Props = $props();
 
-	const standardSpells = [
-		...fireSpells,
-		...iceSpells,
-		...lightningSpells,
-		...necroticSpells,
-		...radiantSpells,
-		...windSpells,
-	];
-	const addableSpells = [...standardSpells, ...secretSpells];
 	let classTier = $derived(
 		classConfig.spellTierProgression === 'oathsworn'
 			? level === 1
@@ -105,7 +88,7 @@
 	let maxMana = $derived(spellcasting.maxMana ?? classMaxMana());
 	let expandedCustomSpells: number[] = $state([]);
 
-	type DisplaySpell = Spell & { source?: 'secret' | 'custom' };
+	type DisplaySpell = Spell & { labels?: ('Secret' | 'Custom')[] };
 	type SchoolGroup = { id: MagicSchool | 'Utility'; name: string; spells: DisplaySpell[] };
 	let automaticSpells = $derived(
 		standardSpells.filter(
@@ -148,12 +131,14 @@
 			.filter((spell) => spellcasting.addedSpells.includes(spell.name))
 			.map((spell) => ({
 				...spell,
-				source: secretSpells.some((secret) => secret.name === spell.name) ? 'secret' : undefined,
+				labels: secretSpells.some((secret) => secret.name === spell.name) ? ['Secret'] : undefined,
 			}));
-		const custom: DisplaySpell[] = spellcasting.customSpells.map((spell) => ({
-			...spell,
-			source: 'custom',
-		}));
+		const custom: DisplaySpell[] = spellcasting.customSpells
+			.filter((spell) => spell.category !== 'utility')
+			.map((spell) => ({
+				...spell,
+				labels: spell.category === 'secret' ? ['Secret', 'Custom'] : ['Custom'],
+			}));
 		const unique = new Map<string, DisplaySpell>();
 		for (const spell of [...automaticSpells, ...additions, ...custom])
 			unique.set(spell.name, spell);
@@ -169,9 +154,10 @@
 				spells: knownSpells.filter((spell) => spell.school === school.id),
 			}))
 			.filter((group) => group.spells.length);
-		const utilities = utilitySpells.filter((spell) =>
-			spellcasting.utilitySpells.includes(spell.name)
-		);
+		const utilities = [
+			...utilitySpells.filter((spell) => spellcasting.utilitySpells.includes(spell.name)),
+			...spellcasting.customSpells.filter((spell) => spell.category === 'utility'),
+		];
 		if (utilities.length) groups.push({ id: 'Utility', name: 'Utility', spells: utilities });
 		return groups;
 	});
@@ -188,7 +174,7 @@
 		updateProfile({ schools: next });
 	}
 	function addCustomSchool() {
-		const school: MagicSchoolDefinition = { id: `custom-${id()}`, name: 'New school' };
+		const school: MagicSchoolDefinition = { id: `user:school:${id()}`, name: 'New school' };
 		updateProfile({
 			customSchools: [...spellcasting.customSchools, school],
 			schools: [...new Set([...effectiveSchools, school.id])],
@@ -237,6 +223,7 @@
 			customSpells: [
 				...spellcasting.customSpells,
 				{
+					id: `user:spell:${id()}`,
 					name: 'New spell',
 					school: effectiveSchools[0] ?? 'Fire',
 					tier: 0,
@@ -258,6 +245,12 @@
 			customSpells: spellcasting.customSpells.map((spell, i) =>
 				i === index ? { ...spell, ...patch } : spell
 			),
+		});
+	}
+	function setCustomSpellCategory(index: number, value: string) {
+		updateCustomSpell(index, {
+			category: value === 'standard' ? undefined : (value as 'utility' | 'secret'),
+			...(value === 'utility' ? { tier: 0 } : {}),
 		});
 	}
 	function removeCustomSpell(index: number) {
@@ -551,9 +544,13 @@
 													>{spell.name || 'Unnamed spell'}</span
 												>
 												<span class="text-muted-foreground block truncate text-xs">
-													{schoolName(spell.school)} · {spell.tier <= 0
-														? 'Cantrip'
-														: `Tier ${spell.tier}`}
+													{schoolName(spell.school)} · {spell.category === 'utility'
+														? 'Utility'
+														: spell.tier <= 0
+															? 'Cantrip'
+															: `Tier ${spell.tier}`}{spell.category === 'secret'
+														? ' · Secret'
+														: ''}
 												</span>
 											</span>
 										</Collapsible.Trigger>
@@ -573,7 +570,7 @@
 											oninput={(event) =>
 												updateCustomSpell(index, { name: event.currentTarget.value })}
 										/>
-										<div class="grid grid-cols-3 gap-2">
+										<div class="grid grid-cols-2 gap-2">
 											<label class="flex min-w-0 flex-col gap-1 text-xs">
 												School
 												<select
@@ -590,10 +587,24 @@
 												</select>
 											</label>
 											<label class="flex min-w-0 flex-col gap-1 text-xs">
+												Spell type
+												<select
+													class="border-input bg-background h-10 min-w-0 rounded-md border px-2 text-sm"
+													value={spell.category ?? 'standard'}
+													onchange={(event) =>
+														setCustomSpellCategory(index, event.currentTarget.value)}
+												>
+													<option value="standard">Standard</option>
+													<option value="utility">Utility</option>
+													<option value="secret">Secret</option>
+												</select>
+											</label>
+											<label class="flex min-w-0 flex-col gap-1 text-xs">
 												Tier
 												<Input
 													type="number"
 													min="0"
+													disabled={spell.category === 'utility'}
 													value={spell.tier}
 													onchange={(event) =>
 														updateCustomSpell(index, { tier: +event.currentTarget.value })}
@@ -670,8 +681,8 @@
 								</Popover.Root>
 								{#if school.id !== 'Utility'}
 									<span class="text-muted-foreground text-sm">
-										({spell.tier <= 0 ? 'Cantrip' : `Tier ${spell.tier}`}{spell.source
-											? `, ${spell.source}`
+										({spell.tier <= 0 ? 'Cantrip' : `Tier ${spell.tier}`}{spell.labels?.length
+											? `, ${spell.labels.join(', ')}`
 											: ''})
 									</span>
 								{/if}

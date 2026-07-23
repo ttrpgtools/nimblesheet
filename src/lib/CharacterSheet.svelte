@@ -20,7 +20,14 @@
 		rangedWeapons,
 		hitDice,
 	} from './nimble';
-	import { type Alteration, type Ancestry, type Inventory, type Save, type Stat } from './types';
+	import {
+		type Alteration,
+		type Ancestry,
+		type CharacterClass,
+		type Inventory,
+		type Save,
+		type Stat,
+	} from './types';
 	import SpellSelect from './SpellSelect.svelte';
 	import Owlbear from '$lib/icons/OwlbearIcon.svelte';
 	import Caret from '$lib/icons/Caret.svelte';
@@ -30,6 +37,10 @@
 	import Note from './Note.svelte';
 	import Languages from './Languages.svelte';
 	import MovementEditor from './MovementEditor.svelte';
+	import { contentLibrary } from './content-library.svelte';
+	import { applyClassTemplate, contentPackFilename, createClassContentPack } from './content-pack';
+	import { download, downloadViaPopup } from './download';
+	import { toast } from 'svelte-sonner';
 
 	type Props = {
 		character: NimbleCharacter;
@@ -37,19 +48,117 @@
 	};
 	let { character = $bindable(), onchange }: Props = $props();
 	let currentClass = $derived(character.classConfig);
+	let templateFileInput: HTMLInputElement;
+	let installedClassTemplates = $derived(contentLibrary.classTemplates);
+	let classSelectionValue = $derived(
+		character.classConfig.presetId ??
+			(character.classConfig.templateId && character.classConfig.templatePackId
+				? (installedClassTemplates.find(
+						(candidate) =>
+							candidate.pack.id === character.classConfig.templatePackId &&
+							candidate.template.id === character.classConfig.templateId
+					)?.selectionId ?? 'custom')
+				: character.classConfig.id === 'unconfigured'
+					? undefined
+					: 'custom')
+	);
+	const magicProgressionPresets = [
+		{
+			id: 'mage',
+			label: 'Mage / Songweaver',
+			description: 'Standard spell tiers; maximum mana is 3 × INT + level from level 2.',
+		},
+		{
+			id: 'shepherd',
+			label: 'Shepherd / Stormshifter',
+			description: 'Standard spell tiers; maximum mana is 3 × WIL + level from level 2.',
+		},
+		{
+			id: 'oathsworn',
+			label: 'Oathsworn',
+			description: 'Oathsworn spell tiers; maximum mana is WIL + level from level 2.',
+		},
+		{
+			id: 'shadowmancer',
+			label: 'Shadowmancer',
+			description: 'Shadowmancer spell tiers with no automatic mana formula.',
+		},
+	] as const;
 
-	function setClass(presetId: string) {
-		if (presetId === 'custom') {
+	function sameManaFormula(
+		left: CharacterClass['manaFormula'],
+		right: CharacterClass['manaFormula']
+	) {
+		if (!left || !right) return left === right;
+		return (
+			left.stat === right.stat &&
+			left.statMultiplier === right.statMultiplier &&
+			left.addLevel === right.addLevel &&
+			left.minimumLevel === right.minimumLevel
+		);
+	}
+
+	let magicProgressionPreset = $derived.by(() => {
+		if (!character.classConfig.spellTierProgression && !character.classConfig.manaFormula) {
+			return 'none';
+		}
+		return (
+			magicProgressionPresets.find((preset) => {
+				const source = allClasses.find((candidate) => candidate.id === preset.id);
+				return (
+					source?.spellTierProgression === character.classConfig.spellTierProgression &&
+					sameManaFormula(source?.manaFormula, character.classConfig.manaFormula)
+				);
+			})?.id ?? 'custom'
+		);
+	});
+	let magicProgressionDescription = $derived(
+		magicProgressionPresets.find((preset) => preset.id === magicProgressionPreset)?.description ??
+			(magicProgressionPreset === 'custom'
+				? 'This class uses progression rules supplied by an imported template.'
+				: 'No automatic tier progression or mana formula. Set current values on the character.')
+	);
+
+	$effect(() => {
+		void contentLibrary.initialize();
+	});
+
+	function setClass(selection: string) {
+		if (selection === 'import-template') {
+			templateFileInput?.click();
+			return;
+		}
+		const installed = contentLibrary.findTemplate(selection);
+		if (installed) {
+			const applied = applyClassTemplate(
+				$state.snapshot(installed.pack),
+				$state.snapshot(installed.template)
+			);
+			character.classConfig = applied.classConfig;
+			character.spellcasting = applied.spellcasting;
+			character.charClass = applied.classConfig.name;
+			character.hitdie = applied.classConfig.die;
+			character.saveOverride = {};
+			if (+character.level === 1 && !character.hp) {
+				character.hp = applied.classConfig.startHp;
+				character.maxHp = applied.classConfig.startHp;
+			}
+			onchange();
+			return;
+		}
+		if (selection === 'custom') {
 			character.classConfig = {
 				...structuredClone($state.snapshot(character.classConfig)),
 				id: character.classConfig.id === 'unconfigured' ? 'custom' : character.classConfig.id,
 				presetId: undefined,
+				templateId: undefined,
+				templatePackId: undefined,
 				die: character.hitdie ?? character.classConfig.die ?? 'd8',
 			};
 			character.hitdie = character.classConfig.die;
 			character.charClass = character.classConfig.name;
 		} else {
-			const preset = allClasses.find((candidate) => candidate.id === presetId);
+			const preset = allClasses.find((candidate) => candidate.id === selection);
 			if (!preset) return;
 			character.classConfig = { ...structuredClone(preset), presetId: preset.id };
 			character.charClass = preset.name;
@@ -60,6 +169,31 @@
 			}
 		}
 		onchange();
+	}
+
+	function saveClassTemplate() {
+		if (!character.classConfig.name.trim()) {
+			toast.error('Give this custom class a name before saving it as a template.');
+			return;
+		}
+		const prepared = createClassContentPack(
+			$state.snapshot(character.classConfig),
+			$state.snapshot(character.spellcasting)
+		);
+		character.classConfig = prepared.classConfig;
+		character.spellcasting = prepared.spellcasting;
+		character.charClass = prepared.classConfig.name;
+		onchange();
+		const payload = JSON.stringify(prepared.pack, null, 2);
+		if (owlbear.embedded) downloadViaPopup(payload, contentPackFilename(prepared.pack));
+		else download(payload, contentPackFilename(prepared.pack));
+		void contentLibrary.savePack(prepared.pack);
+	}
+
+	async function importClassTemplates(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		for (const file of Array.from(input.files ?? [])) await contentLibrary.importFile(file);
+		input.value = '';
 	}
 
 	function setCustomClassName(name: string) {
@@ -95,6 +229,26 @@
 			character.hp = startingHp;
 			character.maxHp = startingHp;
 		}
+		onchange();
+	}
+
+	function setMagicProgression(presetId: string) {
+		if (presetId === 'custom') return;
+		const nextClass = structuredClone($state.snapshot(character.classConfig));
+		const preset = allClasses.find((candidate) => candidate.id === presetId);
+		if (preset) {
+			nextClass.spellTierProgression = preset.spellTierProgression;
+			nextClass.manaFormula = preset.manaFormula ? structuredClone(preset.manaFormula) : undefined;
+			character.spellcasting = {
+				...$state.snapshot(character.spellcasting),
+				tier: undefined,
+				maxMana: undefined,
+			};
+		} else {
+			delete nextClass.spellTierProgression;
+			delete nextClass.manaFormula;
+		}
+		character.classConfig = nextClass;
 		onchange();
 	}
 
@@ -250,28 +404,45 @@
 			</div>
 			<div class="col-span-2 flex gap-2">
 				<Label for="charclass" class="sr-only">Class</Label>
-				<Select.Root
-					type="single"
-					value={character.classConfig.presetId ??
-						(character.classConfig.id === 'unconfigured' ? undefined : 'custom')}
-					onValueChange={setClass}
-				>
-					<Select.Trigger class="w-full">
-						{character.classConfig.id === 'unconfigured'
-							? `Class`
-							: character.classConfig.presetId
-								? character.classConfig.name
-								: character.classConfig.name
-									? `${character.classConfig.name}*`
-									: `Custom class*`}
-					</Select.Trigger>
-					<Select.Content>
-						{#each allClasses as nc}
-							<Select.Item value={nc.id}>{nc.name}</Select.Item>
-						{/each}
-						<Select.Item value="custom">Custom…</Select.Item>
-					</Select.Content>
-				</Select.Root>
+				{#key classSelectionValue}
+					<Select.Root type="single" value={classSelectionValue} onValueChange={setClass}>
+						<Select.Trigger class="w-full">
+							{character.classConfig.id === 'unconfigured'
+								? `Class`
+								: character.classConfig.presetId
+									? character.classConfig.name
+									: character.classConfig.name
+										? `${character.classConfig.name}*`
+										: `Custom class*`}
+						</Select.Trigger>
+						<Select.Content>
+							{#each allClasses as nc}
+								<Select.Item value={nc.id}>{nc.name}</Select.Item>
+							{/each}
+							<Select.Item value="custom">Custom…</Select.Item>
+							{#if installedClassTemplates.length}
+								<Select.Separator />
+								<Select.Group>
+									<Select.GroupHeading>Class templates</Select.GroupHeading>
+									{#each installedClassTemplates as installed}
+										<Select.Item value={installed.selectionId}>
+											{installed.template.name}
+										</Select.Item>
+									{/each}
+								</Select.Group>
+							{/if}
+							<Select.Separator />
+							<Select.Item value="import-template">Import class template…</Select.Item>
+						</Select.Content>
+					</Select.Root>
+				{/key}
+				<input
+					bind:this={templateFileInput}
+					type="file"
+					accept=".json,application/json"
+					class="sr-only"
+					onchange={importClassTemplates}
+				/>
 				{#if !character.classConfig.presetId && character.classConfig.id !== 'unconfigured'}
 					<Sheet.Root>
 						<Sheet.Trigger
@@ -393,6 +564,44 @@
 										/>
 									</div>
 								</div>
+								<section class="flex flex-col gap-2 border-t pt-5">
+									<div>
+										<h3 class="font-semibold">Magic progression</h3>
+										<p class="text-muted-foreground text-xs">
+											Copy only the tier progression and mana formula from a built-in class.
+										</p>
+									</div>
+									<Label for="custom-magic-progression">Progression preset</Label>
+									<select
+										id="custom-magic-progression"
+										class="border-input bg-background h-10 rounded-md border px-3 text-sm"
+										value={magicProgressionPreset}
+										onchange={(event) => setMagicProgression(event.currentTarget.value)}
+									>
+										<option value="none">None</option>
+										{#each magicProgressionPresets as preset}
+											<option value={preset.id}>{preset.label}</option>
+										{/each}
+										{#if magicProgressionPreset === 'custom'}
+											<option value="custom">Custom imported progression</option>
+										{/if}
+									</select>
+									<p class="text-muted-foreground text-xs">{magicProgressionDescription}</p>
+								</section>
+								<section class="flex flex-col gap-3 border-t pt-5">
+									<div>
+										<h3 class="font-semibold">Class template</h3>
+										<p class="text-muted-foreground text-xs">
+											Saves and exports this class configuration together with its spellcasting
+											schools, custom spell schools, and custom spells. Current tier, maximum mana,
+											character stats, inventory, and other character-specific details are not
+											included.
+										</p>
+									</div>
+									<Button variant="outline" onclick={saveClassTemplate}>
+										<Icons.Export class="size-4" /> Save & export class template
+									</Button>
+								</section>
 							</div>
 						</Sheet.Content>
 					</Sheet.Root>
