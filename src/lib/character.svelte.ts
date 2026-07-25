@@ -231,7 +231,10 @@ export class NimbleCharacter {
 	}
 
 	static load(save: CharacterSave) {
-		return deserializeCharacter(save);
+		// Saves can come from deeply reactive collections (for example, the
+		// Owlbear shared-sheet list). Unwrap their proxies before migration,
+		// since structuredClone cannot clone a Proxy.
+		return deserializeCharacter($state.snapshot(save));
 	}
 }
 
